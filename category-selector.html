@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>淘宝闪购 - 品类过滤配置</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#1890ff',
+            'primary-dark': '#096dd9',
+            'primary-light': '#e6f7ff',
+            sidebar: '#001529',
+            'sidebar-hover': '#1890ff',
+            border: '#d9d9d9',
+            'text-primary': '#333333',
+            'text-secondary': '#666666',
+            'text-muted': '#999999',
+            'bg-gray': '#f0f2f5'
+          },
+          fontFamily: {
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: #f0f2f5; color: #333; }
+
+    /* 自定义滚动条 */
+    .custom-scroll::-webkit-scrollbar { width: 6px; }
+    .custom-scroll::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 3px; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 3px; }
+    .custom-scroll::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+
+    /* ========== Dropdown 下拉选择器 ========== */
+    .dropdown-wrap { position: relative; overflow: visible; }
+    .dropdown-trigger {
+      width: 100%;
+      height: 32px;
+      padding-left: 10px;
+      padding-right: 28px;
+      border: 1px solid #d9d9d9;
+      border-radius: 4px;
+      font-size: 13px;
+      color: #333;
+      background: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 4px;
+      transition: all 0.15s ease;
+      line-height: 1;
+      min-height: 32px;
+    }
+    .dropdown-trigger:hover { border-color: #1890ff; }
+    .dropdown-trigger.open { border-color: #1890ff; box-shadow: 0 0 0 2px rgba(24,144,255,0.15); }
+    .dropdown-trigger .placeholder { color: #bbb; }
+    .dropdown-arrow {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #999;
+      font-size: 10px;
+      pointer-events: none;
+      transition: transform 0.2s ease;
+    }
+    .dropdown-trigger.open ~ .dropdown-arrow { transform: translateY(-50%) rotate(180deg); }
+
+    /* 下拉面板 — 树状结构 [fixed定位避免被父级overflow裁剪] */
+    .dropdown-panel {
+      position: fixed;
+      background: #fff;
+      border: 1px solid #d9d9d9;
+      border-radius: 4px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+      z-index: 99999;
+      display: none;
+      max-height: 260px;
+      width: 0; /* 由JS动态设置 */
+      overflow-y: auto;
+    }
+    .dropdown-panel.show { display: block; }
+
+    /* ========== 树状选择器样式 ========== */
+    .tree-node { user-select: none; }
+    .tree-row {
+      display: flex;
+      align-items: center;
+      padding: 5px 10px;
+      cursor: pointer;
+      border-radius: 2px;
+      font-size: 13px;
+      transition: background-color 0.15s ease;
+      line-height: 22px;
+    }
+    .tree-row:hover { background-color: #f5f5f5; }
+    .tree-toggle {
+      width: 18px;
+      height: 18px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      cursor: pointer;
+      color: #666;
+      font-size: 12px;
+      transition: transform 0.2s ease;
+    }
+    .tree-toggle.expanded { transform: rotate(90deg); }
+    .tree-toggle-placeholder { width: 18px; flex-shrink: 0; display: inline-block; }
+
+    /* 方框checkbox */
+    .cb-square {
+      width: 15px;
+      height: 15px;
+      border: 1.5px solid #d9d9d9;
+      border-radius: 2px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-right: 6px;
+      cursor: pointer;
+      background: #fff;
+      transition: all 0.15s ease;
+    }
+    .cb-square:hover { border-color: #1890ff; }
+    /* 全选状态：蓝底白勾 */
+    .cb-square.checked { background: #1890ff; border-color: #1890ff; }
+    .cb-square.checked svg { opacity: 1; }
+    /* 半选（indeterminate）状态：蓝底填充方块，无勾 */
+    .cb-square.indeterminate {
+      background: #1890ff;
+      border-color: #1890ff;
+    }
+    .cb-square.indeterminate svg { display: none; }
+    /* 半选时内部显示小方块 */
+    .cb-square.indeterminate::after {
+      content: "";
+      width: 7px;
+      height: 7px;
+      background: #fff;
+      border-radius: 1px;
+      display: block;
+    }
+    .cb-square svg { opacity: 0; width: 11px; height: 11px; color: white; pointer-events: none; }
+
+    /* 子节点缩进 */
+    .tree-children { padding-left: 24px; display: none; }
+    .tree-children.expanded { display: block; }
+
+    /* Tag标签（选中的一级大类） */
+    .tag-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 1px 7px;
+      border-radius: 3px;
+      font-size: 12px;
+      cursor: default;
+      transition: all 0.15s ease;
+    }
+    .tag-item:hover { opacity: 0.85; }
+    .tag-close {
+      cursor: pointer;
+      width: 14px;
+      height: 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      font-size: 12px;
+      line-height: 1;
+      transition: background 0.15s ease;
+      margin-left: 2px;
+    }
+    .tag-close:hover { background: rgba(0,0,0,0.12); color: #fff !important; }
+
+    /* 搜索框清除×号 */
+    .search-clear {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 16px;
+      height: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #ccc;
+      font-size: 14px;
+      line-height: 1;
+      border-radius: 50%;
+      opacity: 0;
+      transition: all 0.15s ease;
+    }
+    .search-clear:hover { color: #999; background: rgba(0,0,0,0.08); }
+
+    /* 分隔线 */
+    .modal-divider { border-top: 1px dashed #e8e8e8; margin: 16px 0; }
+
+    /* 问号气泡tooltip */
+    .tooltip-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      border: 1px solid #d9d9d9;
+      font-size: 10px;
+      color: #999;
+      cursor: help;
+      position: relative;
+      vertical-align: middle;
+      margin-left: 3px;
+      transition: all 0.15s ease;
+    }
+    .tooltip-icon:hover { border-color: #1890ff; color: #1890ff; }
+    .tooltip-bubble {
+      display: none;
+      position: absolute;
+      bottom: calc(100% + 6px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: #333;
+      color: #fff;
+      font-size: 12px;
+      white-space: nowrap;
+      padding: 6px 10px;
+      border-radius: 4px;
+      z-index: 100;
+      line-height: 1.5;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      min-width: 200px;
+      max-width: 280px;
+      white-space: normal;
+    }
+    .tooltip-bubble::after {
+      content: "";
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 5px solid transparent;
+      border-top-color: #333;
+    }
+    .tooltip-icon:hover .tooltip-bubble { display: block; }
+
+    /* ========== Toast 提示弹窗 ========== */
+    .toast-container {
+      position: fixed;
+      top: 15%;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 999999;
+      pointer-events: none;
+    }
+    .toast {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      color: #333;
+      white-space: nowrap;
+      animation: toastIn 0.3s ease forwards, toastOut 0.3s ease 1.7s forwards;
+    }
+    .toast-icon {
+      width: 20px;
+      height: 20px;
+      background: #52c41a;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .toast-icon svg { width: 12px; height: 12px; color: #fff; }
+    @keyframes toastIn { from{opacity:0;transform:translateY(-10px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes toastOut { from{opacity:1} to{opacity:0;transform:translateY(-6px)} }
+  </style>
+</head>
+<body class="min-h-screen">
+
+  <!-- ==================== 主布局 ==================== -->
+  <div class="flex min-h-screen">
+
+    <!-- 左侧导航栏 -->
+    <aside class="w-[180px] bg-sidebar text-white flex-shrink-0 flex flex-col">
+      <div class="h-14 flex items-center px-4 text-base font-semibold border-b border-white/10">商城模式</div>
+      <nav class="flex-1 py-3 text-sm">
+        <div class="px-4 py-2 text-white/50 text-xs uppercase tracking-wider">营销活动</div>
+        <a href="#" class="block px-4 py-2.5 hover:bg-sidebar-hover hover:text-white text-white/70 transition-colors">在营活动库</a>
+        <a href="#" class="block px-4 py-2.5 bg-sidebar-hover text-white font-medium">📦 品类管理</a>
+        <a href="#" class="block px-4 py-2.5 hover:bg-sidebar-hover hover:text-white text-white/70 transition-colors">批量管理</a>
+        <a href="#" class="block px-4 py-2.5 hover:bg-sidebar-hover hover:text-white text-white/70 transition-colors">特殊选品</a>
+        <a href="#" class="block px-4 py-2.5 hover:bg-sidebar-hover hover:text-white text-white/70 transition-colors">商品分类</a>
+        <a href="#" class="block px-4 py-2.5 hover:bg-sidebar-hover hover:text-white text-white/70 transition-colors">商城装修</a>
+        <a href="#" class="block px-4 py-2.5 hover:bg-sidebar-hover hover:text-white text-white/70 transition-colors">商品模版</a>
+        <a href="#" class="block px-4 py-2.5 hover:bg-sidebar-hover hover:text-white text-white/70 transition-colors">运费规则</a>
+        <a href="#" class="block px-4 py-2.5 hover:bg-sidebar-hover hover:text-white text-white/70 transition-colors">智能运营</a>
+      </nav>
+    </aside>
+
+    <!-- 右侧内容区 -->
+    <main class="flex-1 flex flex-col min-w-0">
+      <header class="h-14 bg-white border-b border-border flex items-center px-6 flex-shrink-0">
+        <div class="flex gap-6 text-sm">
+          <button class="pb-3.5 border-b-2 border-primary text-primary font-medium">平台资源</button>
+          <button class="pb-3.5 border-b-2 border-transparent text-text-secondary hover:text-primary transition-colors">自有资源</button>
+        </div>
+        <div class="ml-auto flex items-center gap-3">
+          <span class="text-xs text-text-muted">资源标签：</span>
+          <input type="text" placeholder="请选择资源组" class="w-40 h-8 px-3 text-xs border border-border rounded focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30">
+        </div>
+      </header>
+
+      <div class="flex-1 p-6 overflow-auto">
+        <div class="mb-4 flex items-center gap-3">
+          <label class="text-sm text-text-secondary whitespace-nowrap">资源名称：</label>
+          <input type="text" value="淘宝闪购" readonly class="h-9 px-3 text-sm border border-border rounded bg-white w-64">
+        </div>
+
+        <div class="flex gap-1 mb-4 border-b border-border">
+          <button class="px-4 py-2 text-sm text-primary border-b-2 border-primary font-medium -mb-px">已选资源(1)</button>
+          <button class="px-4 py-2 text-sm text-text-secondary hover:text-primary transition-colors">未选服务费(0)</button>
+          <button class="ml-auto px-4 py-2 text-sm text-text-secondary">已选择 0 个资源</button>
+          <button class="px-4 py-2 text-sm text-text-secondary hover:text-primary transition-colors">清除筛选</button>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-sm border border-border overflow-hidden">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="bg-bg-gray text-text-secondary text-left">
+                <th class="p-4 font-medium"><input type="checkbox"></th>
+                <th class="p-4 font-medium">资源信息</th>
+                <th class="p-4 font-medium">资源ID</th>
+                <th class="p-4 font-medium">标签</th>
+                <th class="p-4 font-medium">定价类型</th>
+                <th class="p-4 font-medium">定价方式</th>
+                <th class="p-4 font-medium">用户H5服务费</th>
+                <th class="p-4 font-medium">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="border-t border-border hover:bg-blue-50/50 transition-colors">
+                <td class="p-4"><input type="checkbox"></td>
+                <td class="p-4"><div class="flex items-center gap-3"><img src="https://via.placeholder.com/48x48/FF6A00/ffffff?text=淘宝" alt="" class="w-12 h-12 rounded-lg"><span class="font-medium">淘宝闪购H5</span></div></td>
+                <td class="p-4 text-text-secondary font-mono text-xs">@022</td>
+                <td class="p-4">
+                  <div class="flex gap-1.5 flex-wrap"><span class="px-2 py-0.5 rounded text-xs bg-green-50 text-green-600 border border-green-200">有税点</span><span class="px-2 py-0.5 rounded text-xs bg-cyan-50 text-cyan-600 border border-cyan-200">全利润</span></div>
+                  <div class="mt-1"><span class="px-2 py-0.5 rounded text-xs bg-red-50 text-red-500 border border-red-200">门店后</span></div>
+                </td>
+                <td class="p-4 text-text-secondary">商品底价阶</td>
+                <td class="p-4 text-text-secondary">公式定价</td>
+                <td class="p-4 text-primary">平台成本1%+1.11元</td>
+                <td class="p-4">
+                  <div class="flex gap-2 text-xs">
+                    <a href="#modal-service" onclick="openModal('service')" class="text-primary hover:text-primary-dark cursor-pointer transition-colors">修改服务费与店铺过滤</a>
+                    <span class="text-border">|</span>
+                    <a href="#" class="text-primary hover:text-primary-dark transition-colors">详情</a>
+                    <span class="text-border">|</span>
+                    <a href="#" class="text-danger hover:text-red-700 transition-colors">移除</a>
+                  </div>
+                </td>
+              </tr>
+              <tr class="border-t border-border hover:bg-blue-50/50 transition-colors">
+                <td class="p-4"><input type="checkbox"></td>
+                <td class="p-4"><div class="flex items-center gap-3"><img src="https://via.placeholder.com/48x48/FF6A00/ffffff?text=淘宝" alt="" class="w-12 h-12 rounded-lg"><span class="font-medium">淘宝闪购H5</span></div></td>
+                <td class="p-4 text-text-secondary font-mono text-xs">@023</td>
+                <td class="p-4">
+                  <div class="flex gap-1.5 flex-wrap"><span class="px-2 py-0.5 rounded text-xs bg-green-50 text-green-600 border border-green-200">有税点</span><span class="px-2 py-0.5 rounded text-xs bg-cyan-50 text-cyan-600 border border-cyan-200">全利润</span></div>
+                  <div class="mt-1"><span class="px-2 py-0.5 rounded text-xs bg-orange-50 text-orange-500 border border-orange-200">门店前</span></div>
+                </td>
+                <td class="p-4 text-text-secondary">商品底价阶</td>
+                <td class="p-4 text-text-secondary">公式定价</td>
+                <td class="p-4 text-primary">平台成本1%+1.11元</td>
+                <td class="p-4">
+                  <div class="flex gap-2 text-xs">
+                    <a href="#modal-service" onclick="openModal('service')" class="text-primary hover:text-primary-dark cursor-pointer transition-colors">修改服务费与店铺过滤</a>
+                    <span class="text-border">|</span>
+                    <a href="#" class="text-primary hover:text-primary-dark transition-colors">详情</a>
+                    <span class="text-border">|</span>
+                    <a href="#" class="text-danger hover:text-red-700 transition-colors">移除</a>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- ========== 修改服务费与店铺过滤 弹窗 ========== -->
+  <!-- ============================================================ -->
+  <div id="service-modal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50" onclick="if(event.target===this)closeModal()">
+    <div class="bg-white rounded-xl shadow-2xl w-[640px] overflow-hidden animate-in max-h-[90vh] flex flex-col">
+      <div class="px-6 py-4 border-b border-border flex items-center justify-between flex-shrink-0">
+        <h3 class="font-semibold text-base">修改服务费与店铺过滤</h3>
+        <button onclick="closeModal()" class="w-7 h-7 flex items-center justify-center rounded-full hover:bg-bg-gray transition-colors cursor-pointer">
+          <svg class="w-4 h-4 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-4 overflow-y-auto custom-scroll" style="overflow-x:visible;overflow-y:auto;">
+
+        <!-- ===== 定价类型 ===== -->
+        <div class="flex items-center gap-4">
+          <label class="text-sm text-text-secondary w-20 shrink-0">定价类型：</label>
+          <label class="flex items-center gap-1.5 cursor-pointer text-sm">
+            <input type="radio" name="priceType" checked class="accent-primary"> 使用商品库价格
+          </label>
+          <label class="flex items-center gap-1.5 cursor-pointer text-sm ml-4">
+            <input type="radio" name="priceType" class="accent-primary"> 商城单独定价
+          </label>
+        </div>
+        <p class="text-xs text-text-muted leading-relaxed pl-20">说明：使用商品库价格统一进行价格管理。后续商品库价格调整后，商城销售价格也会同步变化</p>
+
+        <!-- 虚线分隔线 -->
+        <div class="modal-divider"></div>
+
+        <!-- ===== 品类过滤配置区域 ===== -->
+
+        <!-- ---------- 门店品类白名单 ---------- -->
+        <div class="space-y-3">
+          <div class="flex items-center gap-4">
+            <label class="text-sm text-text-secondary whitespace-nowrap shrink-0">
+              店铺过滤<span class="tooltip-icon ml-1">?
+                <span class="tooltip-bubble">配置后仅展示勾选的店铺品类，不配置默认全部展示</span>
+              </span>：
+            </label>
+            <label class="flex items-center gap-1.5 cursor-pointer select-none text-sm whitespace-nowrap">
+              <input type="radio" name="shopFlavorEnabled" value="no" checked onchange="toggleShopFlavor()" class="accent-primary"> 否
+            </label>
+            <label class="flex items-center gap-1.5 cursor-pointer select-none text-sm whitespace-nowrap">
+              <input type="radio" name="shopFlavorEnabled" value="yes" onchange="toggleShopFlavor()" class="accent-primary"> 是
+            </label>
+          </div>
+          <div id="shopFlavorPanel" style="display:none;" class="pl-[calc(5rem+1rem)]">
+            <div class="dropdown-wrap">
+              <div id="shopFlavorTrigger" class="dropdown-trigger" onclick="toggleDropdown('shopFlavor')">
+                <span class="placeholder">请选择品类</span>
+                <span class="dropdown-arrow">▾</span>
+              </div>
+              <div id="shopFlavorDropdown" class="dropdown-panel custom-scroll"></div>
+            </div>
+            <div id="shopFlavorTags" class="flex flex-wrap gap-1.5 mt-2 min-h-[24px]"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 底部按钮 -->
+      <div class="px-6 py-4 border-t border-border flex justify-end gap-3 flex-shrink-0">
+        <button onclick="closeModal()" class="px-5 py-2 text-sm border border-border rounded hover:border-primary hover:text-primary transition-colors cursor-pointer">取消</button>
+        <button onclick="saveConfig()" class="px-5 py-2 text-sm bg-primary text-white rounded hover:bg-primary-dark transition-colors shadow-sm cursor-pointer">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== JavaScript ===================== -->
+  <script>
+    // ================================================================
+    //  数据定义：一二级树形结构
+    // ================================================================
+    const shopFlavorTreeData = [
+      { id:"cat_canyin", name:"餐饮", children:[
+        {id:"209",name:"正餐"},{id:"212",name:"快餐"},{id:"215",name:"饮品"},
+        {id:"218",name:"面包甜点"},{id:"290",name:"火锅"},{id:"293",name:"烧烤"},
+        {id:"296",name:"自助餐"},{id:"299",name:"西餐"},{id:"302",name:"日韩料理"},
+        {id:"305",name:"东南亚菜"},{id:"308",name:"地方菜系"},{id:"311",name:"小吃"},
+        {id:"314",name:"咖啡厅"},{id:"317",name:"茶馆"}
+      ]},
+      { id:"cat_lingshou", name:"零售", children:[
+        {id:"221",name:"超市/便利店"},{id:"224",name:"生鲜水果"},
+        {id:"3232",name:"大型商超"},{id:"3240",name:"社区便利店"},
+        {id:"326",name:"会员制超市"},{id:"329",name:"折扣店"},
+        {id:"332",name:"药店"},{id:"335",name:"眼镜店"},
+        {id:"338",name:"花店"},{id:"272",name:"数码家电"},{id:"275",name:"服饰箱包"}
+      ]}
+    ];
+
+    // 状态管理：selected 存储选中的子节点ID
+    const state = {
+      shopFlavor: { selected:new Set(), enabled:false, dropdownOpen:false, expanded:new Set(), searchQuery:"" }
+    };
+
+    function init() {
+      renderTree("shopFlavor");
+      document.querySelectorAll('.cb-square-inline').forEach(el=>el.classList.remove('cb-square-inline'));
+    }
+    init();
+
+    // ================================================================
+    //  工具函数
+    // ================================================================
+    function getData(type) { return shopFlavorTreeData; }
+    function findParent(data, parentId) { return data.find(n => n.id === parentId); }
+    function findNode(nodes, id) {
+      for(const n of nodes){ if(n.id===id) return n; if(n.children){const r=findNode(n.children,id);if(r)return r;} }
+      return null;
+    }
+
+    /**
+     * 获取某个父节点下子节点的选中状态：
+     *   - "none": 全未选中
+     *   - "all":  全部选中（全选）
+     *   - "part": 部分选中（半选）
+     */
+    function getParentState(type, parentId) {
+      const parent = findParent(getData(type), parentId);
+      if(!parent || !parent.children) return "none";
+      const sel = state[type].selected;
+      const selectedCount = parent.children.filter(c => sel.has(c.id)).length;
+      if(selectedCount === 0) return "none";
+      if(selectedCount === parent.children.length) return "all";
+      return "part";
+    }
+
+    /**
+     * 获取所有有选中项的父节点列表（用于显示在trigger中）
+     * 返回：[{parentId, state, childNames}]
+     *   - state="all" 时，childNames为空（显示父级名）
+     *   - state="part"/独立子节点时，childNames包含具体子级名
+     */
+    function getSelectedDisplayInfo(type) {
+      const data = getData(type);
+      const sel = state[type].selected;
+      const result = [];
+      const processedParents = new Set();
+
+      // 先检查每个父节点的整体状态
+      for(const parent of data){
+        if(!parent.children) continue;
+        const selectedCount = parent.children.filter(c => sel.has(c.id)).length;
+        if(selectedCount === 0) continue;
+
+        if(selectedCount === parent.children.length){
+          // 全选 → 显示一级类名
+          result.push({ parentId: parent.id, state:"all", displayName: parent.name, childNames:[] });
+          processedParents.add(parent.id);
+        } else {
+          // 部分选中或单独选 → 显示具体二级类名
+          const childNames = parent.children.filter(c => sel.has(c.id)).map(c => c.name);
+          result.push({ parentId: parent.id, state:"part", displayName: null, childNames });
+          processedParents.add(parent.id);
+        }
+      }
+      return result;
+    }
+
+    // ================================================================
+    //  Checkbox 开关
+    // ================================================================
+    function toggleShopFlavor() {
+      const val = document.querySelector('input[name="shopFlavorEnabled"]:checked').value;
+      state.shopFlavor.enabled = (val === "yes");
+      document.getElementById("shopFlavorPanel").style.display = state.shopFlavor.enabled ? "block" : "none";
+      if(state.shopFlavor.enabled){ renderTree("shopFlavor"); updateTrigger("shopFlavor"); }
+    }
+
+    // ================================================================
+    //  Dropdown 下拉控制
+    // ================================================================
+    function toggleDropdown(type) {
+      const trigger = document.getElementById("shopFlavorTrigger");
+      const panel = document.getElementById("shopFlavorDropdown");
+
+      if(state[type].dropdownOpen) {
+        closeDropdown(type);
+      } else {
+        trigger.classList.add("open");
+        panel.classList.add("show");
+        state[type].dropdownOpen = true;
+        const rect = trigger.getBoundingClientRect();
+        panel.style.top = (rect.bottom + 4) + "px";
+        panel.style.left = rect.left + "px";
+        panel.style.width = rect.width + "px";
+        renderTree(type);
+
+        setTimeout(()=>{
+          document.addEventListener("click", function handler(e){
+            const wrap = document.getElementById("shopFlavorPanel");
+            if(!wrap.contains(e.target)){
+              closeDropdown(type);
+              document.removeEventListener("click",handler);
+            }
+          });
+        },0);
+      }
+    }
+
+    function closeDropdown(type) {
+      const trigger = document.getElementById("shopFlavorTrigger");
+      const panel = document.getElementById("shopFlavorDropdown");
+      trigger.classList.remove("open");
+      panel.classList.remove("show");
+      state[type].dropdownOpen = false;
+    }
+
+    // ================================================================
+    //  渲染树状选择器
+    // ================================================================
+    function renderTree(type, filterText) {
+      const data = getData(type);
+      const container = document.getElementById("shopFlavorDropdown");
+      const exp = state[type].expanded;
+      const query = (filterText !== undefined ? filterText : (state[type].searchQuery || "")).toLowerCase().trim();
+
+      function buildNodeHTML(node) {
+        if(!node.children) return buildLeafHTML(node);
+
+        const isExpanded = exp.has(node.id);
+        const pState = getParentState(type, node.id);
+
+        let childHTML = "";
+        if(query){
+          const matchedChildren = node.children.filter(c => c.name.toLowerCase().includes(query));
+          childHTML = matchedChildren.map(c => buildLeafHTML(c)).join("");
+          if(!childHTML && !node.name.toLowerCase().includes(query)) return "";
+        } else {
+          childHTML = node.children.map(c => buildLeafHTML(c)).join("");
+        }
+
+        // 根据全选/半选/未选 设置checkbox样式
+        let cbClass = "", cbStyle = "";
+        if(pState === "all"){
+          cbClass = "checked"; cbStyle = "background:#1890ff;border-color:#1890ff;";
+        } else if(pState === "part"){
+          cbClass = "indeterminate"; cbStyle = "background:#1890ff;border-color:#1890ff;";
+        } else {
+          cbClass = ""; cbStyle = "border-color:#d9d9d9;";
+        }
+
+        return `
+          <div class="tree-node">
+            <div class="tree-row" onclick="event.stopPropagation();toggleTreeNode('${type}','${node.id}')">
+              <span class="tree-toggle ${isExpanded?'expanded':''}">▶</span>
+              <span class="cb-square ${cbClass}" style="${cbStyle}"
+                    onclick="event.stopPropagation();toggleParentClick('${type}','${node.id}')">
+                <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 6l3 3 5-5"/></svg>
+              </span>
+              <span>${escapeHtml(node.name)}</span>
+            </div>
+            <div class="tree-children ${isExpanded?'expanded':''}">
+              ${childHTML || '<div class="py-1 px-6 text-xs text-text-muted">无匹配项</div>'}
+            </div>
+          </div>`;
+      }
+
+      function buildLeafHTML(node) {
+        if(query && !node.name.toLowerCase().includes(query)) return "";
+        const isChecked = state[type].selected.has(node.id);
+        return `
+          <div class="tree-node">
+            <div class="tree-row" onclick="event.stopPropagation();toggleLeaf('${type}','${node.id}','${escapeHtml(node.name)}')">
+              <span class="tree-toggle-placeholder"></span>
+              <span class="cb-square ${isChecked?'checked':''}" style="${isChecked?'background:#1890ff;border-color:#1890ff;':'border-color:#d9d9d9;'}"
+                    onclick="event.stopPropagation();toggleLeaf('${type}','${node.id}','${escapeHtml(node.name)}')">
+                <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 6l3 3 5-5"/></svg>
+              </span>
+              <span>${escapeHtml(node.name)}</span>
+            </div>
+          </div>`;
+      }
+
+      container.innerHTML = data.map(n => buildNodeHTML(n)).join("") || '<div class="py-6 text-center text-sm text-text-muted">无匹配结果</div>';
+    }
+
+    function toggleTreeNode(type, nodeId) {
+      const set = state[type].expanded;
+      if(set.has(nodeId)) set.delete(nodeId); else set.add(nodeId);
+      renderTree(type);
+    }
+
+    /**
+     * 点击一级父节点checkbox：
+     *   - 未选/部分选中 → 全选该父下所有子节点
+     *   - 全选 → 取消该父下所有子节点
+     */
+    function toggleParentClick(type, parentId) {
+      const parent = findParent(getData(type), parentId);
+      if(!parent || !parent.children) return;
+      const sel = state[type].selected;
+      const pState = getParentState(type, parentId);
+
+      if(pState === "all"){
+        // 已全选 → 取消全部
+        parent.children.forEach(c => sel.delete(c.id));
+      } else {
+        // 未选或部分选中 → 全选所有子节点
+        parent.children.forEach(c => sel.add(c.id));
+      }
+
+      renderTree(type);
+      updateTrigger(type);
+      renderTags(type);
+    }
+
+    /** 点击叶子节点（二级类目） */
+    function toggleLeaf(type, id, name) {
+      const sel = state[type].selected;
+      if(sel.has(id)) sel.delete(id); else sel.add(id);
+      renderTree(type);
+      updateTrigger(type);
+      renderTags(type);
+    }
+
+    // ================================================================
+    //  更新搜索框文本（核心逻辑）
+    //  规则：
+    //    - 某个父节点全部子节点被选中 → 显示一级类名Tag
+    //    - 部分选中或单独选 → 显示具体二级类名Tag
+    // ================================================================
+    function updateTrigger(type) {
+      const trigger = document.getElementById("shopFlavorTrigger");
+      const infoList = getSelectedDisplayInfo(type);
+
+      if(infoList.length === 0){
+        trigger.innerHTML = `<span class="placeholder">请选择品类或搜索<span class="dropdown-arrow" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);color:#999;font-size:10px;pointer-events:none;">▾</span></span>`;
+        return;
+      }
+
+      // 构建所有tag HTML
+      let tagsHTML = "";
+      for(const info of infoList){
+        if(info.state === "all"){
+          // 全选：显示一级类名
+          tagsHTML += `<span class="tag-item bg-primary-light text-primary border border-primary/30">${escapeHtml(info.displayName)}<span class="tag-close text-primary" onclick="event.stopPropagation();clearParent('${type}','${info.parentId}')">&times;</span></span>`;
+        } else {
+          // 部分/独立：显示具体二级类名
+          for(const cname of info.childNames){
+            tagsHTML += `<span class="tag-item bg-primary-light text-primary border border-primary/30">${escapeHtml(cname)}<span class="tag-close text-primary" onclick="event.stopPropagation();removeChildByName('${type}','${escapeHtml(cname)}')">&times;</span></span>`;
+          }
+        }
+      }
+
+      trigger.innerHTML = tagsHTML + `<span class="dropdown-arrow" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);color:#999;font-size:10px;pointer-events:none;">▾</span>`;
+    }
+
+    // ================================================================
+    //  Tags区域（trigger下方）
+    // ================================================================
+    function renderTags(type) {
+      // Tags区域和trigger内容保持同步，这里复用同一逻辑即可
+      // 如果需要独立的tags区域展示，可以在此添加
+    }
+
+    /** 清除某父级全选 */
+    function clearParent(type, parentId) {
+      const parent = findParent(getData(type), parentId);
+      if(parent && parent.children) parent.children.forEach(c => state[type].selected.delete(c.id));
+      renderTree(type);
+      updateTrigger(type);
+      renderTags(type);
+    }
+
+    /** 移除某个具体的二级类名 */
+    function removeChildByName(type, childName) {
+      const data = getData(type);
+      for(const p of data){
+        if(p.children){
+          const found = p.children.find(c => c.name === childName);
+          if(found) { state[type].selected.delete(found.id); break; }
+        }
+      }
+      renderTree(type);
+      updateTrigger(type);
+      renderTags(type);
+    }
+
+    // ================================================================
+    //  保存
+    // ================================================================
+    function saveConfig(){
+      closeModal();
+      showToast("已设置特色资源，正在同步相关商品，预计会有几分钟的延迟");
+    }
+
+    function showToast(msg) {
+      const container = document.createElement("div");
+      container.className = "toast-container";
+      container.innerHTML = `<div class="toast"><span class="toast-icon"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 6l3 3 5-5"/></svg></span><span>${escapeHtml(msg)}</span></div>`;
+      document.body.appendChild(container);
+      setTimeout(() => container.remove(), 2000);
+    }
+
+    function openModal(t){if(t==="service"){document.getElementById("service-modal").classList.remove("hidden");document.getElementById("service-modal").classList.add("flex");}}
+    function closeModal(){document.getElementById("service-modal").classList.add("hidden");document.getElementById("service-modal").classList.remove("flex");}
+    function escapeHtml(str){const d=document.createElement("div");d.textContent=str;return d.innerHTML;}
+  </script>
+</body>
+</html>
