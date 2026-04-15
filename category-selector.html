@@ -231,27 +231,26 @@
       display: none;
       position: absolute;
       bottom: calc(100% + 6px);
-      left: 50%;
-      transform: translateX(-50%);
+      left: -70px;
+      transform: translateX(0);
       background: #333;
       color: #fff;
       font-size: 12px;
-      white-space: nowrap;
-      padding: 6px 10px;
+      padding: 10px 14px;
       border-radius: 4px;
-      z-index: 100;
-      line-height: 1.5;
+      z-index: 1000;
+      line-height: 2;
       box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      min-width: 200px;
-      max-width: 280px;
-      white-space: normal;
+      min-width: 300px;
+      max-width: 360px;
+      white-space: nowrap;
     }
     .tooltip-bubble::after {
       content: "";
       position: absolute;
       top: 100%;
-      left: 50%;
-      transform: translateX(-50%);
+      left: 78px;
+      transform: translateX(0);
       border: 5px solid transparent;
       border-top-color: #333;
     }
@@ -442,7 +441,7 @@
           <div class="flex items-center gap-4">
             <label class="text-sm text-text-secondary whitespace-nowrap shrink-0">
               店铺过滤<span class="tooltip-icon ml-1">?
-                <span class="tooltip-bubble">配置后仅展示勾选的店铺品类，不配置默认全部展示</span>
+                <span class="tooltip-bubble"><div>1.配置后仅展示勾选的店铺品类，不配置默认全部展示</div><div>2.品类名称由淘宝闪购提供，与商城类目无关</div></span>
               </span>：
             </label>
             <label class="flex items-center gap-1.5 cursor-pointer select-none text-sm whitespace-nowrap">
