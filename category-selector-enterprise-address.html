@@ -611,13 +611,13 @@
           <label class="addr-label-inline"><span class="addr-form-required">*</span> 所属区域：</label>
           <div class="region-selects">
             <select id="addrSelectProv" class="detail-input region-sel" onchange="onProvChange(this.value)">
-              <option value="">省</option>
+              <option value="" disabled selected hidden>请选择</option>
             </select>
             <select id="addrSelectCity" class="detail-input region-sel" disabled onchange="onCityChange(this.value)">
-              <option value="">市</option>
+              <option value="" disabled selected hidden>请选择</option>
             </select>
             <select id="addrSelectDist" class="detail-input region-sel" disabled onchange="onDistChange(this.value)">
-              <option value="">区</option>
+              <option value="" disabled selected hidden>请选择</option>
             </select>
           </div>
         </div>
@@ -894,8 +894,8 @@
     function onProvChange(code) {
       const citySel = document.getElementById("addrSelectCity");
       const distSel = document.getElementById("addrSelectDist");
-      citySel.innerHTML = '<option value="">市</option>';
-      distSel.innerHTML = '<option value="">区</option>';
+      citySel.innerHTML = '<option value="" disabled selected hidden>请选择</option>';
+      distSel.innerHTML = '<option value="" disabled selected hidden>请选择</option>';
       distSel.disabled = true;
 
       if (!code) return;
@@ -919,7 +919,7 @@
     /** 城市变化 → 填充区县 */
     function onCityChange(code) {
       const distSel = document.getElementById("addrSelectDist");
-      distSel.innerHTML = '<option value="">区</option>';
+      distSel.innerHTML = '<option value="" disabled selected hidden>请选择</option>';
 
       if (!code) { distSel.disabled = true; return; }
       const fr = state.enterpriseAddr.formRegion;
@@ -951,6 +951,14 @@
       for (const p of REGION_DATA.provinces)
         for (const c of p.cities || [])
           if (c.code === code) return c.name;
+      return null;
+    }
+
+    /** 根据城市code获取城市对象（含districts数组） */
+    function getCityObject(code) {
+      for (const p of REGION_DATA.provinces)
+        for (const c of p.cities || [])
+          if (c.code === code) return c;
       return null;
     }
 
@@ -996,7 +1004,6 @@
         // 用户修改了根本内容，不再是原POI的延伸，才清空
         ea.selectedPoi = null;
       }
-      // 如果selectedP本来就是null则无需处理
 
       hidePoiBar();
 
@@ -1005,6 +1012,10 @@
       if (!value || value.trim().length < 2) {
         hidePoiSuggestions(); return;
       }
+
+      // ★ 未选择省份或城市时不允许联想
+      if (!ea.formRegion.prov) { return; }
+      if (!ea.formRegion.city) { return; }
 
       ea.poiSearchTimer = setTimeout(() => {
         searchPOI(value.trim());
@@ -1149,9 +1160,9 @@
 
       document.getElementById("addrSelectProv").value = "";
       const cs = document.getElementById("addrSelectCity");
-      cs.innerHTML = '<option value="">市</option>'; cs.disabled = true;
+      cs.innerHTML = '<option value="" disabled selected hidden>请选择</option>'; cs.disabled = true;
       const ds = document.getElementById("addrSelectDist");
-      ds.innerHTML = '<option value="">区</option>'; ds.disabled = true;
+      ds.innerHTML = '<option value="" disabled selected hidden>请选择</option>'; ds.disabled = true;
 
       document.getElementById("detailInput").value = "";
       hidePoiSuggestions(); hidePoiBar();
@@ -1174,8 +1185,8 @@
       // 从三个select获取省市区
       const provCode = document.getElementById("addrSelectProv").value;
       const cityCode = document.getElementById("addrSelectCity").value;
-      if (!provCode) { showToast("请选择省份"); return; }
-      if (!cityCode) { showToast("请选择城市"); return; }
+      if (!provCode) { showToast("请选择省份信息"); return; }
+      if (!cityCode) { showToast("请选择城市信息"); return; }
 
       const provName = provCode ? document.getElementById("addrSelectProv").options[document.getElementById("addrSelectProv").selectedIndex].text : "";
       const cityName = cityCode ? document.getElementById("addrSelectCity").options[document.getElementById("addrSelectCity").selectedIndex].text : "";
@@ -1204,7 +1215,7 @@
       if (ea.editingId) {
         const idx = ea.addresses.findIndex(a => a.addressId === ea.editingId);
         if (idx >= 0) ea.addresses[idx] = addrData;
-        showToast("地址更新成功");
+        showToast("编辑成功");
       } else {
         ea.addresses.push(addrData);
         showToast("地址添加成功");
@@ -1260,7 +1271,7 @@
         const addr = state.enterpriseAddr.addresses[idx];
         state.enterpriseAddr.addresses.splice(idx, 1);
         renderAddressList();
-        showToast(`已删除地址：${addr.address}`);
+        showToast("删除成功");
       }
     }
 
@@ -1322,7 +1333,7 @@
       console.log(buildEnterpriseAddressConfigJson());
 
       closeModal();
-      showToast("已设置特色资源，正在同步相关商品，预计会有几分钟的延迟");
+      showToast("配置成功");
     }
 
     function showToast(msg) {
