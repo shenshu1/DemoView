@@ -1,0 +1,1342 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>淘宝闪购 - 品类过滤配置（企业地址配送版）</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- 高德地图 JS API -->
+  <script type="text/javascript">
+    window._AMapSecurityConfig = { securityJsCode: "" };
+    // 注意：实际使用需要申请高德 key，这里用示例 key（有每日配额限制）
+    window.AMAP_KEY = "04a8e8b0b9b1c5d6e7f8a9b0c1d2e3f4";
+  </script>
+  <script src="https://webapi.amap.com/maps?v=2.0&key=04a8e8b0b9b1c5d6e7f8a9b0c1d2e3f4"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#1890ff',
+            'primary-dark': '#096dd9',
+            'primary-light': '#e6f7ff',
+            sidebar: '#001529',
+            'sidebar-hover': '#1890ff',
+            border: '#d9d9d9',
+            'text-primary': '#333333',
+            'text-secondary': '#666666',
+            'text-muted': '#999999',
+            'bg-gray': '#f0f2f5'
+          },
+          fontFamily: {
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: #f0f2f5; color: #333; }
+
+    /* 自定义滚动条 */
+    .custom-scroll::-webkit-scrollbar { width: 6px; }
+    .custom-scroll::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 3px; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 3px; }
+    .custom-scroll::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+
+    /* ========== Dropdown 下拉选择器 ========== */
+    .dropdown-wrap { position: relative; overflow: visible; }
+    .dropdown-trigger {
+      width: 100%;
+      height: 32px;
+      padding-left: 10px;
+      padding-right: 28px;
+      border: 1px solid #d9d9d9;
+      border-radius: 4px;
+      font-size: 13px;
+      color: #333;
+      background: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 4px;
+      transition: all 0.15s ease;
+      line-height: 1;
+      min-height: 32px;
+    }
+    .dropdown-trigger:hover { border-color: #1890ff; }
+    .dropdown-trigger.open { border-color: #1890ff; box-shadow: 0 0 0 2px rgba(24,144,255,0.15); }
+    .dropdown-trigger .placeholder { color: #bbb; }
+    .dropdown-arrow {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #999;
+      font-size: 10px;
+      pointer-events: none;
+      transition: transform 0.2s ease;
+    }
+    .dropdown-trigger.open ~ .dropdown-arrow { transform: translateY(-50%) rotate(180deg); }
+
+    /* 下拉面板 */
+    .dropdown-panel {
+      position: fixed;
+      background: #fff;
+      border: 1px solid #d9d9d9;
+      border-radius: 4px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+      z-index: 99999;
+      display: none;
+      max-height: 260px;
+      width: 0;
+      overflow-y: auto;
+    }
+    .dropdown-panel.show { display: block; }
+
+    /* 树状选择器 */
+    .tree-node { user-select: none; }
+    .tree-row {
+      display: flex;
+      align-items: center;
+      padding: 5px 10px;
+      cursor: pointer;
+      border-radius: 2px;
+      font-size: 13px;
+      transition: background-color 0.15s ease;
+      line-height: 22px;
+    }
+    .tree-row:hover { background-color: #f5f5f5; }
+    .tree-toggle {
+      width: 18px; height: 18px;
+      display: inline-flex; align-items: center; justify-content: center;
+      flex-shrink: 0; cursor: pointer; color: #666; font-size: 12px;
+      transition: transform 0.2s ease;
+    }
+    .tree-toggle.expanded { transform: rotate(90deg); }
+    .tree-toggle-placeholder { width: 18px; flex-shrink: 0; display: inline-block; }
+    .cb-square {
+      width: 15px; height: 15px;
+      border: 1.5px solid #d9d9d9; border-radius: 2px;
+      display: inline-flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-right: 6px; cursor: pointer;
+      background: #fff; transition: all 0.15s ease;
+    }
+    .cb-square:hover { border-color: #1890ff; }
+    .cb-square.checked { background: #1890ff; border-color: #1890ff; }
+    .cb-square.checked svg { opacity: 1; }
+    .cb-square.indeterminate { background: #1890ff; border-color: #1890ff; }
+    .cb-square.indeterminate svg { display: none; }
+    .cb-square.indeterminate::after {
+      content: ""; width: 7px; height: 7px;
+      background: #fff; border-radius: 1px; display: block;
+    }
+    .cb-square svg { opacity: 0; width: 11px; height: 11px; color: white; pointer-events: none; }
+    .tree-children { padding-left: 24px; display: none; }
+    .tree-children.expanded { display: block; }
+
+    /* Tag标签 */
+    .tag-item {
+      display: inline-flex; align-items: center; gap: 3px;
+      padding: 1px 7px; border-radius: 3px; font-size: 12px;
+      cursor: default; transition: all 0.15s ease;
+    }
+    .tag-close {
+      cursor: pointer; width: 14px; height: 14px;
+      display: inline-flex; align-items: center; justify-content: center;
+      border-radius: 50%; font-size: 12px; line-height: 1;
+      transition: background 0.15s ease; margin-left: 2px;
+    }
+    .tag-close:hover { background: rgba(0,0,0,0.12); color: #fff !important; }
+
+    /* 分隔线 */
+    .modal-divider { border-top: 1px dashed #e8e8e8; margin: 16px 0; }
+
+    /* tooltip */
+    .tooltip-icon {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 15px; height: 15px; border-radius: 50%;
+      border: 1px solid #d9d9d9; font-size: 10px; color: #999;
+      cursor: help; position: relative; vertical-align: middle;
+      margin-left: 3px; transition: all 0.15s ease;
+    }
+    .tooltip-icon:hover { border-color: #1890ff; color: #1890ff; }
+    .tooltip-bubble {
+      display: none; position: absolute;
+      bottom: calc(100% + 6px); left: -70px;
+      background: #333; color: #fff; font-size: 12px;
+      padding: 10px 14px; border-radius: 4px; z-index: 1000;
+      line-height: 2; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      min-width: 300px; max-width: 360px; white-space: nowrap;
+    }
+    .tooltip-bubble::after {
+      content: ""; position: absolute; top: 100%; left: 78px;
+      border: 5px solid transparent; border-top-color: #333;
+    }
+    .tooltip-icon:hover .tooltip-bubble { display: block; }
+
+    /* Toast */
+    .toast-container {
+      position: fixed; top: 15%; left: 50%; transform: translateX(-50%);
+      z-index: 999999; pointer-events: none;
+    }
+    .toast {
+      background: #fff; border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+      padding: 14px 24px; display: flex; align-items: center; gap: 10px;
+      font-size: 14px; color: #333; white-space: nowrap;
+      animation: toastIn 0.3s ease forwards, toastOut 0.3s ease 1.7s forwards;
+    }
+    .toast-icon {
+      width: 20px; height: 20px; background: #52c41a;
+      border-radius: 50%; display: flex; align-items: center;
+      justify-content: center; flex-shrink: 0;
+    }
+    .toast-icon svg { width: 12px; height: 12px; color: #fff; }
+    @keyframes toastIn { from{opacity:0;transform:translateY(-10px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes toastOut { from{opacity:1} to{opacity:0;transform:translateY(-6px)} }
+
+    /* ============================================================ */
+    /* ========== 企业地址相关样式 ========== */
+    /* ============================================================ */
+
+    /* 地址列表 - 极简一行文案 */
+    .addr-simple-list { display: flex; flex-direction: column; gap: 4px; }
+    .addr-row {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-size: 13px; color: #333;
+      cursor: default; transition: background 0.12s ease;
+    }
+    .addr-row:hover { background: #f0f7ff; }
+    .addr-row-text {
+      flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      line-height: 1.5;
+    }
+    .addr-row-actions {
+      display: flex; gap: 4px;
+      opacity: 0; transition: opacity 0.15s;
+      flex-shrink: 0;
+    }
+    .addr-row:hover .addr-row-actions { opacity: 1; }
+    .addr-row-btn {
+      width: 24px; height: 24px; border-radius: 4px;
+      display: inline-flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 13px; transition: all 0.12s;
+      border: none; background: transparent;
+    }
+    .addr-row-btn.edit { color: #1890ff; }
+    .addr-row-btn.edit:hover { background: #e6f7ff; }
+    .addr-row-btn.delete { color: #ff4d4f; }
+    .addr-row-btn.delete:hover { background: #fff1f0; }
+
+    /* ============================================================ */
+    /* ========== 添加/编辑地址 弹窗样式 ========== */
+    /* ============================================================ */
+    .addr-modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+      z-index: 100000; display: flex; align-items: center; justify-content: center;
+    }
+    .addr-modal {
+      background: #fff; border-radius: 10px; width: 520px;
+      box-shadow: 0 16px 48px rgba(0,0,0,0.18); overflow: hidden;
+      animation: modalIn 0.25s ease;
+    }
+    @keyframes modalIn { from{opacity:0;transform:scale(0.95) translateY(10px)} to{opacity:1;transform:scale(1) translateY(0)} }
+    .addr-modal-header {
+      padding: 16px 20px; border-bottom: 1px solid #f0f0f0;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .addr-modal-title { font-size: 15px; font-weight: 600; color: #222; }
+    .addr-modal-close {
+      width: 28px; height: 28px; border-radius: 50%;
+      display: inline-flex; align-items: center; justify-content: center;
+      cursor: pointer; color: #999; transition: all 0.15s; border: none; background: transparent;
+    }
+    .addr-modal-close:hover { background: #f5f5f5; color: #555; }
+    .addr-modal-body { padding: 24px 28px; }
+
+    /* 行式布局：label + 控件横向排列 */
+    .addr-form-row {
+      display: flex; align-items: flex-start;
+      gap: 12px; margin-bottom: 20px;
+    }
+    .addr-label-inline {
+      white-space: nowrap; font-size: 13px; color: #333;
+      line-height: 34px; flex-shrink: 0; font-weight: 400;
+    }
+
+    /* 所属区域：三个下拉框一行 */
+    .region-selects {
+      display: flex; gap: 10px; flex: 1;
+    }
+    .region-sel {
+      flex: 1; min-width: 0; height: 34px;
+      padding: 0 8px; border-radius: 4px;
+      appearance: auto; -webkit-appearance: menulist;
+    }
+    .addr-form-required { color: #ff4d4f; }
+    .addr-form-hint { font-size: 11px; color: #bbb; font-weight: normal; }
+
+
+    /* 详细地址输入框 + 高德联想 */
+    /* 详细地址输入框 + 高德联想 */
+    .detail-input-wrap { position: relative; }
+    .detail-input {
+      width: 100%; height: 38px; padding: 0 10px;
+      border: 1px solid #d9d9d9; border-radius: 4px;
+      font-size: 13px; outline: none; transition: all 0.15s;
+    }
+    .detail-input:focus { border-color: #1890ff; box-shadow: 0 0 0 2px rgba(24,144,255,0.1); }
+    .detail-input::placeholder { color: #bbb; }
+
+    /* 高德联想下拉 */
+    .poi-suggest-list {
+      position: absolute; top: 100%; left: 0; right: 0;
+      background: #fff; border: 1px solid #d9d9d9;
+      border-top: none; border-radius: 0 0 4px 4px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      z-index: 100001; max-height: 220px; overflow-y: auto;
+      display: none;
+    }
+    .poi-suggest-list.show { display: block; }
+    .poi-item {
+      padding: 9px 14px; font-size: 13px; cursor: pointer;
+      border-bottom: 1px solid #f5f5f5; display: flex; align-items: flex-start; gap: 8px;
+    }
+    .poi-item:last-child { border-bottom: none; }
+    .poi-item:hover { background: #f5fcff; }
+    .poi-icon {
+      width: 20px; height: 20px; flex-shrink: 0; margin-top: 1px;
+      display: inline-flex; align-items: center; justify-content: center;
+      background: #e6f7ff; color: #1890ff; border-radius: 3px; font-size: 11px;
+    }
+    .poi-info-name { font-size: 13px; color: #333; line-height: 1.4; }
+    .poi-info-addr { font-size: 11px; color: #999; margin-top: 2px; line-height: 1.3; }
+    .poi-info-dist { font-size: 11px; color: #1890ff; margin-left: auto; white-space: nowrap; flex-shrink: 0; }
+
+    /* 已选中POI信息展示 */
+    .poi-selected-bar {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 12px; background: #f6ffed;
+      border: 1px solid #b7eb8f; border-radius: 4px;
+      margin-top: 8px; font-size: 12px;
+    }
+    .poi-selected-bar svg { color: #52c41a; flex-shrink: 0; }
+
+
+    /* 底部按钮 */
+    .addr-modal-footer {
+      padding: 14px 20px; border-top: 1px solid #f0f0f0;
+      display: flex; justify-content: flex-end; gap: 10px;
+    }
+    .addr-btn {
+      height: 32px; padding: 0 18px; font-size: 13px; border-radius: 4px;
+      cursor: pointer; transition: all 0.15s; border: 1px solid;
+      display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+    }
+    .addr-btn-primary {
+      background: #1890ff; border-color: #1890ff; color: #fff;
+    }
+    .addr-btn-primary:hover { background: #096dd9; }
+    .addr-btn-default {
+      background: #fff; border-color: #d9d9d9; color: #555;
+    }
+    .addr-btn-default:hover { border-color: #1890ff; color: #1890ff; }
+
+    /* 统计+添加区域 */
+    .addr-toolbar { display: flex; align-items: center; justify-content: space-between; }
+    .addr-summary {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 12px; color: #999; padding: 3px 10px;
+      background: #fafafa; border-radius: 10px;
+    }
+    .addr-summary-count { color: #1890ff; font-weight: 600; }
+    .addr-add-btn {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 6px 14px; border: 1px dashed #bfbfbf;
+      border-radius: 4px; font-size: 13px; color: #888;
+      cursor: pointer; background: transparent; transition: all 0.15s;
+    }
+    .addr-add-btn:hover { border-color: #1890ff; color: #1890ff; background: #e6f7ff; }
+
+    /* 地址表格列表 - 模仿图片风格 */
+    .addr-table-wrap { border: 1px solid #e8e8e8; border-radius: 2px; overflow: hidden; }
+    .addr-table { width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed; }
+    .addr-table th {
+      background: #fafafa; padding: 10px 14px; text-align: left;
+      font-weight: 500; color: #333; font-size: 13px;
+      border-bottom: 1px solid #e8e8e8; border-right: 1px solid #f0f0f0;
+      white-space: nowrap;
+    }
+    .addr-table th:last-child { border-right: none; text-align: center; width: 25%; }
+    .addr-table td {
+      padding: 11px 14px; color: #333; vertical-align: middle;
+      border-bottom: 1px solid #f5f5f5; border-right: 1px solid #f5f5f5;
+    }
+    .addr-table td:last-child { border-right: none; white-space: nowrap; }
+    .addr-table tr:last-child td { border-bottom: none; }
+    .addr-table tbody tr:hover { background: #f5fcff; }
+    .addr-action-link { color: #1890ff; cursor: pointer; font-size: 13px; padding: 0 4px; }
+    .addr-action-link:hover { color: #096dd9; text-decoration: underline; }
+    .addr-action-del { color: #ff4d4f; cursor: pointer; font-size: 13px; padding: 0 4px; }
+    .addr-action-del:hover { color: #d9363e; text-decoration: underline; }
+
+    .addr-empty-row { text-align: center; padding: 48px 0; }
+    .addr-empty-icon { 
+      width: 56px; height: 42px; margin: 0 auto 12px;
+      stroke: #d9d9d9; fill: none; stroke-width: 1.2; display: block;
+    }
+    .addr-empty-text { color: #999; font-size: 13px; }
+
+    /* 空状态 */
+    .addr-empty {
+      text-align: center; padding: 28px 0;
+      color: #bbb; font-size: 13px;
+    }
+  </style>
+</head>
+<body class="min-h-screen">
+
+  <!-- ==================== 主布局 ==================== -->
+  <div class="flex min-h-screen">
+    <!-- 左侧导航栏 -->
+    <aside class="w-[180px] bg-sidebar text-white flex-shrink-0 flex flex-col">
+      <div class="h-14 flex items-center px-4 text-base font-semibold border-b border-white/10">商城模式</div>
+      <nav class="flex-1 py-3 text-sm">
+        <div class="px-4 py-2 text-white/50 text-xs uppercase tracking-wider">营销活动</div>
+        <a href="#" class="block px-4 py-2.5 hover:bg-sidebar-hover hover:text-white text-white/70 transition-colors">在营活动库</a>
+        <a href="#" class="block px-4 py-2.5 bg-sidebar-hover text-white font-medium">📦 品类管理</a>
+        <a href="#" class="block px-4 py-2.5 hover:bg-sidebar-hover hover:text-white text-white/70 transition-colors">批量管理</a>
+        <a href="#" class="block px-4 py-2.5 hover:bg-sidebar-hover hover:text-white text-white/70 transition-colors">特殊选品</a>
+        <a href="#" class="block px-4 py-2.5 hover:bg-sidebar-hover hover:text-white text-white/70 transition-colors">商品分类</a>
+        <a href="#" class="block px-4 py-2.5 hover:bg-sidebar-hover hover:text-white text-white/70 transition-colors">商城装修</a>
+        <a href="#" class="block px-4 py-2.5 hover:bg-sidebar-hover hover:text-white text-white/70 transition-colors">商品模版</a>
+        <a href="#" class="block px-4 py-2.5 hover:bg-sidebar-hover hover:text-white text-white/70 transition-colors">运费规则</a>
+        <a href="#" class="block px-4 py-2.5 hover:bg-sidebar-hover hover:text-white text-white/70 transition-colors">智能运营</a>
+      </nav>
+    </aside>
+
+    <!-- 右侧内容区 -->
+    <main class="flex-1 flex flex-col min-w-0">
+      <header class="h-14 bg-white border-b border-border flex items-center px-6 flex-shrink-0">
+        <div class="flex gap-6 text-sm">
+          <button class="pb-3.5 border-b-2 border-primary text-primary font-medium">平台资源</button>
+          <button class="pb-3.5 border-b-2 border-transparent text-text-secondary hover:text-primary transition-colors">自有资源</button>
+        </div>
+        <div class="ml-auto flex items-center gap-3">
+          <span class="text-xs text-text-muted">资源标签：</span>
+          <input type="text" placeholder="请选择资源组" class="w-40 h-8 px-3 text-xs border border-border rounded focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30">
+        </div>
+      </header>
+
+      <div class="flex-1 p-6 overflow-auto">
+        <div class="mb-4 flex items-center gap-3">
+          <label class="text-sm text-text-secondary whitespace-nowrap">资源名称：</label>
+          <input type="text" value="淘宝闪购" readonly class="h-9 px-3 text-sm border border-border rounded bg-white w-64">
+        </div>
+
+        <div class="flex gap-1 mb-4 border-b border-border">
+          <button class="px-4 py-2 text-sm text-primary border-b-2 border-primary font-medium -mb-px">已选资源(1)</button>
+          <button class="px-4 py-2 text-sm text-text-secondary hover:text-primary transition-colors">未选服务费(0)</button>
+          <button class="ml-auto px-4 py-2 text-sm text-text-secondary">已选择 0 个资源</button>
+          <button class="px-4 py-2 text-sm text-text-secondary hover:text-primary transition-colors">清除筛选</button>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-sm border border-border overflow-hidden">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="bg-bg-gray text-text-secondary text-left">
+                <th class="p-4 font-medium"><input type="checkbox"></th>
+                <th class="p-4 font-medium">资源信息</th>
+                <th class="p-4 font-medium">资源ID</th>
+                <th class="p-4 font-medium">标签</th>
+                <th class="p-4 font-medium">定价类型</th>
+                <th class="p-4 font-medium">定价方式</th>
+                <th class="p-4 font-medium">用户H5服务费</th>
+                <th class="p-4 font-medium">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="border-t border-border hover:bg-blue-50/50 transition-colors">
+                <td class="p-4"><input type="checkbox"></td>
+                <td class="p-4"><div class="flex items-center gap-3"><img src="https://via.placeholder.com/48x48/FF6A00/ffffff?text=淘宝" alt="" class="w-12 h-12 rounded-lg"><span class="font-medium">淘宝闪购H5</span></div></td>
+                <td class="p-4 text-text-secondary font-mono text-xs">@022</td>
+                <td class="p-4">
+                  <div class="flex gap-1.5 flex-wrap"><span class="px-2 py-0.5 rounded text-xs bg-green-50 text-green-600 border border-green-200">有税点</span><span class="px-2 py-0.5 rounded text-xs bg-cyan-50 text-cyan-600 border border-cyan-200">全利润</span></div>
+                  <div class="mt-1"><span class="px-2 py-0.5 rounded text-xs bg-red-50 text-red-500 border border-red-200">门店后</span></div>
+                </td>
+                <td class="p-4 text-text-secondary">商品底价阶</td>
+                <td class="p-4 text-text-secondary">公式定价</td>
+                <td class="p-4 text-primary">平台成本1%+1.11元</td>
+                <td class="p-4">
+                  <div class="flex gap-2 text-xs">
+                    <a href="#modal-service" onclick="openModal('service');return false;" class="text-primary hover:text-primary-dark cursor-pointer transition-colors">修改服务费与限制规则</a>
+                    <span class="text-border">|</span>
+                    <a href="#" class="text-primary hover:text-primary-dark transition-colors">详情</a>
+                    <span class="text-border">|</span>
+                    <a href="#" class="text-danger hover:text-red-700 transition-colors">移除</a>
+                  </div>
+                </td>
+              </tr>
+              <tr class="border-t border-border hover:bg-blue-50/50 transition-colors">
+                <td class="p-4"><input type="checkbox"></td>
+                <td class="p-4"><div class="flex items-center gap-3"><img src="https://via.placeholder.com/48x48/FF6A00/ffffff?text=淘宝" alt="" class="w-12 h-12 rounded-lg"><span class="font-medium">淘宝闪购H5</span></div></td>
+                <td class="p-4 text-text-secondary font-mono text-xs">@023</td>
+                <td class="p-4">
+                  <div class="flex gap-1.5 flex-wrap"><span class="px-2 py-0.5 rounded text-xs bg-green-50 text-green-600 border border-green-200">有税点</span><span class="px-2 py-0.5 rounded text-xs bg-cyan-50 text-cyan-600 border border-cyan-200">全利润</span></div>
+                  <div class="mt-1"><span class="px-2 py-0.5 rounded text-xs bg-orange-50 text-orange-500 border border-orange-200">门店前</span></div>
+                </td>
+                <td class="p-4 text-text-secondary">商品底价阶</td>
+                <td class="p-4 text-text-secondary">公式定价</td>
+                <td class="p-4 text-primary">平台成本1%+1.11元</td>
+                <td class="p-4">
+                  <div class="flex gap-2 text-xs">
+                    <a href="#modal-service" onclick="openModal('service');return false;" class="text-primary hover:text-primary-dark cursor-pointer transition-colors">修改服务费与限制规则</a>
+                    <span class="text-border">|</span>
+                    <a href="#" class="text-primary hover:text-primary-dark transition-colors">详情</a>
+                    <span class="text-border">|</span>
+                    <a href="#" class="text-danger hover:text-red-700 transition-colors">移除</a>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- ========== 主弹窗：修改服务费与限制规则 ========== -->
+  <!-- ============================================================ -->
+  <div id="service-modal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50" onclick="onServiceModalOverlay(event)">
+    <div class="bg-white rounded-xl shadow-2xl w-[720px] overflow-hidden animate-in max-h-[90vh] flex flex-col" onclick="event.stopPropagation()">
+      <div class="px-6 py-4 border-b border-border flex items-center justify-between flex-shrink-0">
+        <h3 class="font-semibold text-base">修改服务费与限制规则</h3>
+        <button onclick="closeModal()" class="w-7 h-7 flex items-center justify-center rounded-full hover:bg-bg-gray transition-colors cursor-pointer">
+          <svg class="w-4 h-4 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-4 overflow-y-auto custom-scroll">
+
+        <!-- ===== 定价类型 ===== -->
+        <div class="flex items-center gap-4">
+          <label class="text-sm text-text-secondary w-20 shrink-0">定价类型：</label>
+          <label class="flex items-center gap-1.5 cursor-pointer text-sm">
+            <input type="radio" name="priceType" checked class="accent-primary"> 使用商品库价格
+          </label>
+          <label class="flex items-center gap-1.5 cursor-pointer text-sm ml-4">
+            <input type="radio" name="priceType" class="accent-primary"> 商城单独定价
+          </label>
+        </div>
+        <p class="text-xs text-text-muted leading-relaxed pl-20">说明：使用商品库价格统一进行价格管理。后续商品库价格调整后，商城销售价格也会同步变化</p>
+
+        <div class="modal-divider"></div>
+
+        <!-- ===== 店铺过滤 ===== -->
+        <div class="space-y-3">
+          <div class="flex items-center gap-4">
+            <label class="text-sm text-text-secondary whitespace-nowrap shrink-0">
+              店铺过滤<span class="tooltip-icon ml-1">?
+                <span class="tooltip-bubble"><div>1.配置后仅展示勾选的店铺品类，不配置默认全部展示</div><div>2.品类名称由淘宝闪购提供，与商城类目无关</div></span>
+              </span>：
+            </label>
+            <label class="flex items-center gap-1.5 cursor-pointer select-none text-sm whitespace-nowrap">
+              <input type="radio" name="shopFlavorEnabled" value="no" checked onchange="toggleShopFlavor()" class="accent-primary"> 否
+            </label>
+            <label class="flex items-center gap-1.5 cursor-pointer select-none text-sm whitespace-nowrap">
+              <input type="radio" name="shopFlavorEnabled" value="yes" onchange="toggleShopFlavor()" class="accent-primary"> 是
+            </label>
+          </div>
+          <div id="shopFlavorPanel" style="display:none;" class="pl-[calc(5rem+1rem)]">
+            <div class="dropdown-wrap">
+              <div id="shopFlavorTrigger" class="dropdown-trigger" onclick="toggleDropdown('shopFlavor')">
+                <span class="placeholder">请选择品类</span>
+                <span class="dropdown-arrow">▾</span>
+              </div>
+              <div id="shopFlavorDropdown" class="dropdown-panel custom-scroll"></div>
+            </div>
+            <div id="shopFlavorTags" class="flex flex-wrap gap-1.5 mt-2 min-h-[24px]"></div>
+          </div>
+        </div>
+
+        <div class="modal-divider"></div>
+
+        <!-- ===== ★ 指定配送地址配置 ===== -->
+        <div class="space-y-3">
+          <div class="flex items-center gap-4">
+            <label class="text-sm text-text-secondary whitespace-nowrap shrink-0">
+              指定配送地址<span class="tooltip-icon ml-1">?
+                <span class="tooltip-bubble"><div>1.配置后用户配送地址仅支持选择指定地址</div><div>2.不配置则用户可自定义配送地址</div></span>
+              </span>：
+            </label>
+            <label class="flex items-center gap-1.5 cursor-pointer select-none text-sm whitespace-nowrap">
+              <input type="radio" name="deliveryAddressType" value="personal" checked onchange="toggleDeliveryAddress()" class="accent-primary"> 否
+            </label>
+            <label class="flex items-center gap-1.5 cursor-pointer select-none text-sm whitespace-nowrap">
+              <input type="radio" name="deliveryAddressType" value="enterprise" onchange="toggleDeliveryAddress()" class="accent-primary"> 是
+            </label>
+            <!-- 添加地址按钮：与是/否同行，靠右 -->
+            <button id="btnAddAddrInline" class="hidden inline-flex items-center justify-center gap-1 px-4 h-[28px] bg-primary text-white rounded text-xs font-medium hover:bg-primary-dark transition-colors cursor-pointer whitespace-nowrap shrink-0 ml-auto" onclick="openAddrModal()">
+              <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M6 1v10M1 6h10"/></svg>
+              添加地址
+            </button>
+          </div>
+
+          <!-- 企业地址表格列表 -->
+          <div id="enterpriseAddrPanel" style="display:none;" class="pl-[calc(5rem+1rem)]">
+            <div id="addressTableContainer"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="px-6 py-4 border-t border-border flex justify-end gap-3 flex-shrink-0">
+        <button onclick="closeModal()" class="px-5 py-2 text-sm border border-border rounded hover:border-primary hover:text-primary transition-colors cursor-pointer">取消</button>
+        <button onclick="saveConfig()" class="px-5 py-2 text-sm bg-primary text-white rounded hover:bg-primary-dark transition-colors shadow-sm cursor-pointer">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- ========== 添加/编辑地址 弹窗 ========== -->
+  <!-- ============================================================ -->
+  <div id="addr-modal-overlay" class="addr-modal-overlay" style="display:none;" onclick="onAddrModalOverlay(event)">
+    <div class="addr-modal" onclick="event.stopPropagation()">
+      <div class="addr-modal-header">
+        <span class="addr-modal-title" id="addrModalTitle">添加地址</span>
+        <button class="addr-modal-close" onclick="closeAddrModal()" title="关闭">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l8 8M11 3l-8 8"/></svg>
+        </button>
+      </div>
+
+      <div class="addr-modal-body">
+
+        <!-- * 所属区域：省 市 区 一行三个下拉框 -->
+        <div class="addr-form-row">
+          <label class="addr-label-inline"><span class="addr-form-required">*</span> 所属区域：</label>
+          <div class="region-selects">
+            <select id="addrSelectProv" class="detail-input region-sel" onchange="onProvChange(this.value)">
+              <option value="">省</option>
+            </select>
+            <select id="addrSelectCity" class="detail-input region-sel" disabled onchange="onCityChange(this.value)">
+              <option value="">市</option>
+            </select>
+            <select id="addrSelectDist" class="detail-input region-sel" disabled onchange="onDistChange(this.value)">
+              <option value="">区</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- * 详细地址：一行输入框 -->
+        <div class="addr-form-row">
+          <label class="addr-label-inline"><span class="addr-form-required">*</span> 详细地址：</label>
+          <div class="detail-input-wrap" style="flex:1;">
+            <input type="text" class="detail-input" id="detailInput"
+                   placeholder=""
+                   oninput="onDetailInputChange(this.value)"
+                   onfocus="onDetailInputFocus()"
+                   onblur="onDetailInputBlur()">
+            <div id="poiSuggestList" class="poi-suggest-list"></div>
+          </div>
+        </div>
+
+        <!-- 已选中POI的确认条（已移除） -->
+      </div>
+
+      <div class="addr-modal-footer">
+        <button class="addr-btn addr-btn-default" onclick="closeAddrModal()">取消</button>
+        <button class="addr-btn addr-btn-primary" onclick="saveAddressFromModal()">保存</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ===================== JavaScript ===================== -->
+  <script>
+    // ================================================================
+    //  数据定义：一二级树形结构（原有）
+    // ================================================================
+    const shopFlavorTreeData = [
+      { id:"cat_canyin", name:"餐饮", children:[
+        {id:"209",name:"正餐"},{id:"212",name:"快餐"},{id:"215",name:"饮品"},
+        {id:"218",name:"面包甜点"},{id:"290",name:"火锅"},{id:"293",name:"烧烤"},
+        {id:"296",name:"自助餐"},{id:"299",name:"西餐"},{id:"302",name:"日韩料理"},
+        {id:"305",name:"东南亚菜"},{id:"308",name:"地方菜系"},{id:"311",name:"小吃"},
+        {id:"314",name:"咖啡厅"},{id:"317",name:"茶馆"}
+      ]},
+      { id:"cat_lingshou", name:"零售", children:[
+        {id:"221",name:"超市/便利店"},{id:"224",name:"生鲜水果"},
+        {id:"3232",name:"大型商超"},{id:"3240",name:"社区便利店"},
+        {id:"326",name:"会员制超市"},{id:"329",name:"折扣店"},
+        {id:"332",name:"药店"},{id:"335",name:"眼镜店"},
+        {id:"338",name:"花店"},{id:"272",name:"数码家电"},{id:"275",name:"服饰箱包"}
+      ]}
+    ];
+
+    // ================================================================
+    //  全局状态管理
+    // ================================================================
+    const state = {
+      shopFlavor: { selected:new Set(), enabled:false, dropdownOpen:false, expanded:new Set(), searchQuery:"" },
+      enterpriseAddr: {
+        addressType: "personal",
+        addresses: [],
+        editingId: null,
+        nextId: 1,
+
+        // ---- 地址表单临时数据 ----
+        formRegion: { prov:"", city:"", dist:"", provName:"", cityName:"", distName:"" },
+        formDetail: "",           // 详细地址文本
+        selectedPoi: null,         // 选中的高德POI对象 {name, address, location:{lng,lat}, id}
+        formNotice: "",            // 安全提示文案
+
+        // ---- 省市区级联状态 ----
+        cascadeLevel: "prov",      // 当前激活的级联级别 prov/city/dist
+        cascadeOpen: false,
+        poiSearchTimer: null       // 防抖定时器
+      }
+    };
+
+    // ============================================================
+    //  ★ 省市区三级联动数据（提前定义，避免 TDZ 错误）
+    // ============================================================
+    const REGION_DATA = {
+      provinces: [
+        {code:"110000",name:"北京市",cities:[
+          {code:"110100",name:"北京市",districts:["东城区","西城区","朝阳区","丰台区","石景山区","海淀区","门头沟区","房山区","通州区","顺义区","昌平区","大兴区","怀柔区","平谷区","密云区","延庆区"]}
+        ]},
+        {code:"310000",name:"上海市",cities:[
+          {code:"310100",name:"上海市",districts:["黄浦区","徐汇区","长宁区","静安区","普陀区","虹口区","杨浦区","闵行区","宝山区","嘉定区","浦东新区","金山区","松江区","青浦区","奉贤区","崇明区"]}
+        ]},
+        {code:"440000",name:"广东省",cities:[
+          {code:"440300",name:"深圳市",districts:["罗湖区","福田区","南山区","宝安区","龙岗区","盐田区","龙华区","坪山区","光明区"]},
+          {code:"440100",name:"广州市",districts:["荔湾区","越秀区","海珠区","天河区","白云区","黄埔区","番禺区","花都区","南沙区","从化区","增城区"]},
+          {code:"440600",name:"佛山市",districts:["禅城区","南海区","顺德区","三水区","高明区"]},
+          {code:"441900",name:"东莞市",districts:[]}
+        ]},
+        {code:"330000",name:"浙江省",cities:[
+          {code:"330100",name:"杭州市",districts:["上城区","下城区","江干区","拱墅区","西湖区","滨江区","萧山区","余杭区","富阳区","临安区"]},
+          {code:"330200",name:"宁波市",districts:["海曙区","江北区","北仑区","镇海区","鄞州区","奉化区"]},
+          {code:"330300",name:"温州市",districts:["鹿城区","龙湾区","瓯海区","洞头区"]}
+        ]},
+        {code:"320000",name:"江苏省",cities:[
+          {code:"320100",name:"南京市",districts:["玄武区","秦淮区","建邺区","鼓楼区","浦口区","栖霞区","雨花台区","江宁区","六合区","溧水区"]},
+          {code:"320500",name:"苏州市",districts:["虎丘区","吴中区","相城区","姑苏区","吴江区"]},
+          {code:"320200",name:"无锡市",districts:["锡山区","惠山区","滨湖区","梁溪区","新吴区","江阴市"]}
+        ]},
+        {code:"370000",name:"山东省",cities:[
+          {code:"370200",name:"青岛市",districts:["市南区","市北区","李沧区","城阳区","崂山区","黄岛区","即墨区"]},
+          {code:"370100",name:"济南市",districts:["历下区","市中区","槐荫区","天桥区","历城区","长清区","章丘区"]}
+        ]},
+        {code:"420000",name:"湖北省",cities:[{code:"420100",name:"武汉市",districts:["江岸区","江汉区","硚口区","汉阳区","武昌区","青山区","洪山区","东西湖区"]}]},
+        {code:"510000",name:"四川省",cities:[{code:"510100",name:"成都市",districts:["锦江区","青羊区","金牛区","武侯区","成华区","龙泉驿区","新都区","双流区"]}]},
+        {code:"820000",name:"澳门特别行政区",cities:[{code:"820000",name:"澳门特别行政区",districts:[]}]}
+      ]
+    };
+
+    function init() {
+      renderTree("shopFlavor");
+      renderAddressList();
+      // 初始化省份下拉数据（预加载）
+      if (document.getElementById("addrSelectProv") && document.getElementById("addrSelectProv").children.length <= 1) {
+        initRegionSelects();
+      }
+    }
+    init();
+
+    function escapeHtml(str){
+      if(!str) return "";
+      const d=document.createElement("div"); d.textContent=str; return d.innerHTML;
+    }
+
+
+    // ================================================================
+    //  原有：店铺过滤逻辑（保持不变）
+    // ================================================================
+    function getData(type) { return shopFlavorTreeData; }
+    function findParent(data, parentId) { return data.find(n => n.id === parentId); }
+    function findNode(nodes, id) {
+      for(const n of nodes){ if(n.id===id) return n; if(n.children){const r=findNode(n.children,id);if(r)return r;} } return null;
+    }
+    function getParentState(type, parentId) {
+      const parent = findParent(getData(type), parentId);
+      if(!parent || !parent.children) return "none";
+      const sel = state[type].selected;
+      const c = parent.children.filter(c => sel.has(c.id)).length;
+      if(c===0) return "none"; if(c===parent.children.length) return "all"; return "part";
+    }
+    function getSelectedDisplayInfo(type) {
+      const data = getData(type); const sel = state[type].selected; const result=[];
+      for(const p of data){ if(!p.children) continue;
+        const c = p.children.filter(c=>sel.has(c.id)).length;
+        if(c===0) continue;
+        if(c===p.children.length){ result.push({parentId:p.id,state:"all",displayName:p.name,childNames:[]}); }
+        else{ result.push({parentId:p.id,state:"part",displayName:null,childNames:p.children.filter(c=>sel.has(c.id)).map(c=>c.name)}); }
+      } return result;
+    }
+    function toggleShopFlavor() {
+      const v = document.querySelector('input[name="shopFlavorEnabled"]:checked').value;
+      state.shopFlavor.enabled = v==="yes";
+      document.getElementById("shopFlavorPanel").style.display = state.shopFlavor.enabled ? "block":"none";
+      if(state.shopFlavor.enabled){renderTree("shopFlavor");updateTrigger("shopFlavor");}
+    }
+    function toggleDropdown(type) {
+      const trigger=document.getElementById("shopFlavorTrigger"), panel=document.getElementById("shopFlavorDropdown");
+      if(state[type].dropdownOpen){ closeDropdown(type); } else{
+        trigger.classList.add("open"); panel.classList.add("show");
+        state[type].dropdownOpen=true;
+        const rect=trigger.getBoundingClientRect();
+        panel.style.top=(rect.bottom+4)+"px"; panel.style.left=rect.left+"px"; panel.style.width=rect.width+"px";
+        renderTree(type);
+        setTimeout(()=>document.addEventListener("click",function h(e){
+          if(!document.getElementById("shopFlavorPanel").contains(e.target)){closeDropdown(type); document.removeEventListener("click",h);}
+        }),0);
+      }
+    }
+    function closeDropdown(type){
+      document.getElementById("shopFlavorTrigger").classList.remove("open");
+      document.getElementById("shopFlavorDropdown").classList.remove("show");
+      state[type].dropdownOpen=false;
+    }
+    function renderTree(type, filterText){
+      const data=getData(type), container=document.getElementById("shopFlavorDropdown"),
+            exp=state[type].expanded, query=(filterText!==undefined?filterText:(state[type].searchQuery||"")).toLowerCase().trim();
+      function buildNodeHTML(node){
+        if(!node.children) return buildLeafHTML(node);
+        const isExp=exp.has(node.id), ps=getParentState(type,node.id);
+        let childHTML="";
+        if(query){const m=node.children.filter(c=>c.name.toLowerCase().includes(query));childHTML=m.map(c=>buildLeafHTML(c)).join("");
+          if(!childHTML&&!node.name.toLowerCase().includes(query)) return "";
+        }else{childHTML=node.children.map(c=>buildLeafHTML(c)).join("");}
+        let cbClass="", cbStyle="";
+        if(ps==="all"){cbClass="checked";cbStyle="background:#1890ff;border-color:#1890ff";}
+        else if(ps==="part"){cbClass="indeterminate";cbStyle="background:#1890ff;border-color:#1890ff";}
+        else{cbClass="";cbStyle="border-color:#d9d9d9";}
+        return `<div class="tree-node"><div class="tree-row" onclick="event.stopPropagation();toggleTreeNode('${type}','${node.id}')">
+          <span class="tree-toggle ${isExp?'expanded':''}">&#9654;</span>
+          <span class="cb-square ${cbClass}" style="${cbStyle}" onclick="event.stopPropagation();toggleParentClick('${type}','${node.id}')">
+          <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 6l3 3 5-5"/></svg></span>
+          <span>${escapeHtml(node.name)}</span></div>
+          <div class="tree-children ${isExp?'expanded':''}">${childHTML||'<div class="py-1 px-6 text-xs text-text-muted">无匹配项</div>'}</div></div>`;
+      }
+      function buildLeafHTML(node){
+        if(query&&!node.name.toLowerCase().includes(query)) return "";
+        const chk=state[type].selected.has(node.id);
+        return `<div class="tree-node"><div class="tree-row" onclick="event.stopPropagation();toggleLeaf('${type}','${node.id}','${escapeHtml(node.name)}')">
+          <span class="tree-toggle-placeholder"></span>
+          <span class="cb-square ${chk?'checked':''}" style="${chk?'background:#1890ff;border-color:#1890ff;':'border-color:#d9d9d9;'}"
+          onclick="event.stopPropagation();toggleLeaf('${type}','${node.id}','${escapeHtml(node.name)}')">
+          <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 6l3 3 5-5"/></svg></span>
+          <span>${escapeHtml(node.name)}</span></div></div>`;
+      }
+      container.innerHTML=data.map(n=>buildNodeHTML(n)).join("")||'<div class="py-6 text-center text-sm text-text-muted">无匹配结果</div>';
+    }
+    function toggleTreeNode(type,nid){const s=state[type].expanded;s.has(nid)?s.delete(nid):s.add(nid);renderTree(type);}
+    function toggleParentClick(type,pid){
+      const p=findParent(getData(type),pid);if(!p||!p.children)return;
+      const s=state[type].selected,st=getParentState(type,pid);
+      if(st==="all")p.children.forEach(c=>s.delete(c.id));else p.children.forEach(c=>s.add(c.id));
+      renderTree(type);updateTrigger(type);renderTags(type);
+    }
+    function toggleLeaf(type,id,name){const s=state[type].selected;s.has(id)?s.delete(id):s.add(id);renderTree(type);updateTrigger(type);renderTags(type);}
+    function updateTrigger(type){
+      const trigger=document.getElementById("shopFlavorTrigger"), infoList=getSelectedDisplayInfo(type);
+      if(infoList.length===0){trigger.innerHTML=`<span class="placeholder">请选择品类<span class="dropdown-arrow" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);color:#999;font-size:10px;pointer-events:none;">&#9662;</span></span>`;return;}
+      let html="";for(const i of infoList){
+        if(i.state==="all")html+=`<span class="tag-item bg-primary-light text-primary border border-primary/30">${escapeHtml(i.displayName)}<span class="tag-close text-primary" onclick="event.stopPropagation();clearParent('${type}','${i.parentId}')">&times;</span></span>`;
+        else for(const cn of i.childNames) html+=`<span class="tag-item bg-primary-light text-primary border border-primary/30">${escapeHtml(cn)}<span class="tag-close text-primary" onclick="event.stopPropagation();removeChildByName('${type}','${escapeHtml(cn)}')">&times;</span></span>`;
+      }
+      trigger.innerHTML=html+`<span class="dropdown-arrow" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);color:#999;font-size:10px;pointer-events:none;">&#9662;</span>`;
+    }
+    function renderTags(type){}
+    function clearParent(type,pid){const p=findParent(getData(type),pid);if(p&&p.children)p.children.forEach(c=>state[type].selected.delete(c.id));renderTree(type);updateTrigger(type);renderTags(type);}
+    function removeChildByName(type,cn){for(const p of getData(type)){if(p.children){const f=p.children.find(c=>c.name===cn);if(f){state[type].selected.delete(f.id);break;}}}renderTree(type);updateTrigger(type);renderTags(type);}
+
+    // ================================================================
+    //  主弹窗控制
+    // ================================================================
+    function openModal(t){if(t==="service"){const el=document.getElementById("service-modal");el.classList.remove("hidden");el.classList.add("flex");}}
+    function closeModal(){const el=document.getElementById("service-modal");el.classList.add("hidden");el.classList.remove("flex");}
+    function onServiceModalOverlay(e){if(e.currentTarget===e.target)closeModal();}
+
+
+    // ================================================================
+    //  ★ 企业地址配送功能 ★
+    // ================================================================
+
+    /** 切换配送地址类型 */
+    function toggleDeliveryAddress(){
+      const t = document.querySelector('input[name="deliveryAddressType"]:checked').value;
+      state.enterpriseAddr.addressType = t;
+      const panel = document.getElementById("enterpriseAddrPanel");
+      const btn = document.getElementById("btnAddAddrInline");
+      if(t==="enterprise"){
+        panel.style.display = "block";
+        btn.classList.remove("hidden"); btn.classList.add("inline-flex");
+      }else{
+        panel.style.display = "none";
+        btn.classList.add("hidden"); btn.classList.remove("inline-flex");
+      }
+      if(t!=="enterprise") closeAddrModal();
+    }
+
+
+    // ============================================================
+    //  ★ 省市区三个独立下拉框
+    // ============================================================
+
+    /** 初始化省份下拉 */
+    function initRegionSelects() {
+      const provSel = document.getElementById("addrSelectProv");
+      REGION_DATA.provinces.forEach(p => {
+        const opt = document.createElement("option");
+        opt.value = p.code; opt.textContent = p.name;
+        provSel.appendChild(opt);
+      });
+    }
+
+    /** 省份变化 → 填充城市 */
+    function onProvChange(code) {
+      const citySel = document.getElementById("addrSelectCity");
+      const distSel = document.getElementById("addrSelectDist");
+      citySel.innerHTML = '<option value="">市</option>';
+      distSel.innerHTML = '<option value="">区</option>';
+      distSel.disabled = true;
+
+      if (!code) return;
+      const fr = state.enterpriseAddr.formRegion;
+      fr.prov = code;
+      fr.provName = REGION_DATA.provinces.find(p=>p.code===code)?.name || "";
+      fr.city = ""; fr.cityName = "";
+      fr.dist = ""; fr.distName = "";
+
+      const prov = REGION_DATA.provinces.find(p => p.code === code);
+      if (prov && prov.cities) {
+        citySel.disabled = false;
+        prov.cities.forEach(c => {
+          const opt = document.createElement("option");
+          opt.value = c.code; opt.textContent = c.name;
+          citySel.appendChild(opt);
+        });
+      }
+    }
+
+    /** 城市变化 → 填充区县 */
+    function onCityChange(code) {
+      const distSel = document.getElementById("addrSelectDist");
+      distSel.innerHTML = '<option value="">区</option>';
+
+      if (!code) { distSel.disabled = true; return; }
+      const fr = state.enterpriseAddr.formRegion;
+      fr.city = code;
+      fr.cityName = getCityNameByCode(code) || "";
+      fr.dist = ""; fr.distName = "";
+
+      const cityObj = getCityObject(code);
+      if (cityObj && cityObj.districts && cityObj.districts.length > 0) {
+        distSel.disabled = false;
+        cityObj.districts.forEach(d => {
+          const opt = document.createElement("option");
+          opt.value = d; opt.textContent = d;
+          distSel.appendChild(opt);
+        });
+      } else {
+        distSel.disabled = true;
+      }
+    }
+
+    /** 区县变化 */
+    function onDistChange(val) {
+      const fr = state.enterpriseAddr.formRegion;
+      fr.dist = val;
+      fr.distName = val || "";
+    }
+
+    function getCityNameByCode(code) {
+      for (const p of REGION_DATA.provinces)
+        for (const c of p.cities || [])
+          if (c.code === code) return c.name;
+      return null;
+    }
+
+
+    // ============================================================
+    //  ★ 高德地图 POI 搜索联想
+    // ============================================================
+
+    let amapPlaceSearch = null;
+
+    /** 初始化高德搜索（延迟到首次使用时初始化） */
+    function ensureAMapReady() {
+      if (amapPlaceSearch) return true;
+      try {
+        if (typeof AMap === "undefined") {
+          console.warn("高德地图API未加载，将使用模拟模式");
+          return false;
+        }
+        AMap.plugin(["AMap.PlaceSearch"], () => {
+          amapPlaceSearch = new AMap.PlaceSearch({
+            city: state.enterpriseAddr.formRegion.cityName || "全国",
+            pageSize: 8,
+            pageIndex: 1
+          });
+        });
+        return true;
+      } catch (e) {
+        console.warn("高德初始化失败:", e);
+        return false;
+      }
+    }
+
+    /** 详细地址输入框内容变化 → 触发搜索联想 */
+    function onDetailInputChange(value) {
+      state.enterpriseAddr.formDetail = value;
+      // 清除之前的选中状态
+      state.enterpriseAddr.selectedPoi = null;
+      hidePoiBar();
+
+      // 防抖
+      clearTimeout(state.enterpriseAddr.poiSearchTimer);
+      if (!value || value.trim().length < 2) {
+        hidePoiSuggestions(); return;
+      }
+
+      state.enterpriseAddr.poiSearchTimer = setTimeout(() => {
+        searchPOI(value.trim());
+      }, 350);
+    }
+
+    function onDetailInputFocus() {
+      // 如果已有值且联想列表非空，重新显示
+      const list = document.getElementById("poiSuggestList");
+      if (list.innerHTML.trim()) list.classList.add("show");
+    }
+
+    function onDetailInputBlur() {
+      // 延迟隐藏，以便点击联想项时能触发
+      setTimeout(() => { hidePoiSuggestions(); }, 200);
+    }
+
+    /** 执行高德POI搜索 */
+    function searchPOI(keyword) {
+      ensureAMapReady();
+
+      if (amapPlaceSearch && keyword) {
+        // 设置搜索城市为当前选中的城市
+        const cityName = state.enterpriseAddr.formRegion.cityName || "全国";
+        amapPlaceSearch.setCity(cityName);
+
+        amapPlaceSearch.search(keyword, (status, result) => {
+          if (status === "complete" && result.poiList && result.poiList.pois) {
+            renderPOISuggestions(result.poiList.pois);
+          } else {
+            // 搜索无结果或出错，显示模拟数据作为fallback
+            renderMockPOISuggestions(keyword);
+          }
+        });
+      } else {
+        // 高德未就绪，使用模拟数据
+        renderMockPOISuggestions(keyword);
+      }
+    }
+
+    /** 渲染高德POI联想列表 */
+    function renderPOISuggestions(pois) {
+      const list = document.getElementById("poiSuggestList");
+      if (!pois || pois.length === 0) {
+        list.innerHTML = '<div class="poi-item" style="cursor:default;color:#999;padding:14px;text-align:center;">无匹配的地址</div>';
+        list.classList.add("show");
+        return;
+      }
+
+      list.innerHTML = pois.map((poi, idx) => `
+        <div class="poi-item" data-index="${idx}"
+             onclick="selectPOI(${JSON.stringify(poi).replace(/"/g, '&quot;')})">
+          <span class="poi-icon">地</span>
+          <div style="flex:1;min-width:0;">
+            <div class="poi-info-name">${escapeHtml(poi.name)}</div>
+            <div class="poi-info-addr">${escapeHtml((poi.address||"") + (poi.cityname?" · "+poi.cityname:""))}</div>
+          </div>
+          ${poi.distance !== undefined ? `<span class="poi-info-dist">${Math.round(poi.distance)}m</span>` : ''}
+        </div>
+      `).join("");
+
+      list.classList.add("show");
+    }
+
+    /** 模拟POI数据（当高德不可用时使用） */
+    function renderMockPOISuggestions(keyword) {
+      const mockData = [
+        { name: keyword + "科技园", address: state.enterpriseAddr.formRegion.provName + state.enterpriseAddr.formRegion.cityName, location: { lng: 114.05, lat: 22.54 }, id: "mock_1" },
+        { name: keyword + "大厦", address: state.enterpriseAddr.formRegion.provName + state.enterpriseAddr.formRegion.cityName, location: { lng: 114.06, lat: 22.55 }, id: "mock_2" },
+        { name: keyword + "广场", address: state.enterpriseAddr.formRegion.provName + state.enterpriseAddr.formRegion.cityName, location: { lng: 114.07, lat: 22.53 }, id: "mock_3" }
+      ];
+      renderPOISuggestions(mockData);
+    }
+
+    /** 用户选中了一个POI联想结果 */
+    function selectPOI(poi) {
+      state.enterpriseAddr.selectedPoi = poi;
+      // 将POI名称填入详细地址输入框
+      const detailInput = document.getElementById("detailInput");
+      detailInput.value = poi.name;
+      state.enterpriseAddr.formDetail = poi.name;
+
+      // 隐藏联想列表（不再显示"已关联"提示条）
+      hidePoiSuggestions();
+    }
+
+    function hidePoiBar() {
+      // 已移除"已关联"提示条，保留函数避免调用报错
+    }
+
+    function hidePoiSuggestions() {
+      document.getElementById("poiSuggestList").classList.remove("show");
+    }
+
+
+    // ============================================================
+    //  ★ 地址表单弹窗控制（基于select下拉框）
+    // ============================================================
+
+    function openAddrModal(editingId) {
+      const ea = state.enterpriseAddr;
+      ea.editingId = editingId || null;
+
+      // 初始化下拉框数据（只做一次）
+      if (document.getElementById("addrSelectProv").children.length <= 1) {
+        initRegionSelects();
+      }
+      resetAddrForm();
+
+      // 如果是编辑模式，回填数据
+      if (editingId) {
+        const addr = ea.addresses.find(a => a.addressId === editingId);
+        if (addr) {
+          document.getElementById("addrModalTitle").textContent = "编辑地址";
+
+          // 回填省份
+          if (addr.adCode_prov) document.getElementById("addrSelectProv").value = addr.adCode_prov;
+          onProvChange(addr.adCode_prov);
+          // 回填城市
+          if (addr.adCode_city) { document.getElementById("addrSelectCity").value = addr.adCode_city; onCityChange(addr.adCode_city); }
+          // 回填区县
+          if (addr.adCode_dist && !document.getElementById("addrSelectDist").disabled)
+            document.getElementById("addrSelectDist").value = addr.adCode_dist;
+
+          ea.formDetail = addr.addressDetail || "";
+          document.getElementById("detailInput").value = ea.formDetail;
+
+          if (addr.poiId && addr.latitude && addr.longitude) {
+            ea.selectedPoi = { name: addr.addressDetail, id: addr.poiId, location: {lng: addr.longitude, lat: addr.latitude} };
+          }
+        }
+      } else {
+        document.getElementById("addrModalTitle").textContent = "添加地址";
+      }
+
+      document.getElementById("addr-modal-overlay").style.display = "flex";
+    }
+
+    function resetAddrForm() {
+      const ea = state.enterpriseAddr;
+      ea.formRegion = { prov:"", provName:"", city:"", cityName:"", dist:"", distName:"" };
+      ea.formDetail = ""; ea.selectedPoi = null; ea.formNotice = "";
+
+      document.getElementById("addrSelectProv").value = "";
+      const cs = document.getElementById("addrSelectCity");
+      cs.innerHTML = '<option value="">市</option>'; cs.disabled = true;
+      const ds = document.getElementById("addrSelectDist");
+      ds.innerHTML = '<option value="">区</option>'; ds.disabled = true;
+
+      document.getElementById("detailInput").value = "";
+      hidePoiSuggestions(); hidePoiBar();
+    }
+
+    function closeAddrModal() {
+      document.getElementById("addr-modal-overlay").style.display = "none";
+      state.enterpriseAddr.editingId = null;
+      resetAddrForm();
+    }
+
+    function onAddrModalOverlay(e) {
+      if (e.currentTarget === e.target) closeAddrModal();
+    }
+
+    /** 从弹窗保存地址 */
+    function saveAddressFromModal() {
+      const ea = state.enterpriseAddr;
+
+      // 从三个select获取省市区
+      const provCode = document.getElementById("addrSelectProv").value;
+      const cityCode = document.getElementById("addrSelectCity").value;
+      if (!provCode) { showToast("请选择省份"); return; }
+      if (!cityCode) { showToast("请选择城市"); return; }
+
+      const provName = provCode ? document.getElementById("addrSelectProv").options[document.getElementById("addrSelectProv").selectedIndex].text : "";
+      const cityName = cityCode ? document.getElementById("addrSelectCity").options[document.getElementById("addrSelectCity").selectedIndex].text : "";
+      const distSel = document.getElementById("addrSelectDist");
+      const distName = !distSel.disabled && distSel.value ? distSel.options[distSel.selectedIndex].text : "";
+
+      const fullRegion = [provName, cityName, distName].filter(Boolean).join("");
+
+      const detail = ea.formDetail.trim() || (ea.selectedPoi ? ea.selectedPoi.name : "");
+      if (!detail) { showToast("请填写或选择详细地址"); document.getElementById("detailInput").focus(); return; }
+
+      const poi = ea.selectedPoi;
+      const addrData = {
+        addressId: ea.editingId || genAddressId(),
+        address: fullRegion,
+        addressDetail: detail,
+        status: "1",
+        adCode_prov: provCode, adCode_city: cityCode,
+        adCode_dist: !distSel.disabled ? distSel.value : "",
+        cityName: cityName, districtName: distName,
+        poiId: poi ? (poi.id || "") : "",
+        latitude: poi && poi.location ? String(poi.location.lat) : "",
+        longitude: poi && poi.location ? String(poi.location.lng) : ""
+      };
+
+      if (ea.editingId) {
+        const idx = ea.addresses.findIndex(a => a.addressId === ea.editingId);
+        if (idx >= 0) ea.addresses[idx] = addrData;
+        showToast("地址更新成功");
+      } else {
+        ea.addresses.push(addrData);
+        showToast("地址添加成功");
+      }
+      closeAddrModal();
+      renderAddressList();
+    }
+
+
+    // ============================================================
+    //  ★ 地址列表渲染
+    // ============================================================
+
+    function renderAddressList() {
+      const container = document.getElementById("addressTableContainer");
+      const addresses = state.enterpriseAddr.addresses;
+
+      let rowsHtml = "";
+      if (addresses.length === 0) {
+        rowsHtml = `<tr>
+          <td colspan="2" class="addr-empty-row">
+            <svg class="addr-empty-icon" viewBox="0 0 64 48">
+              <path d="M8 10h48v32H8z" rx="2"/>
+              <path d="M18 22h28M26 30h12" stroke-width="2"/>
+            </svg>
+            <div class="addr-empty-text">暂无数据，点击"添加地址"开始配置</div>
+          </td>
+        </tr>`;
+      } else {
+        rowsHtml = addresses.map(addr => `
+          <tr>
+            <td title="${escapeHtml(addr.address + ' ' + addr.addressDetail)}">${escapeHtml(addr.address)}${escapeHtml(addr.addressDetail)}</td>
+            <td style="text-align:center">
+              <span class="addr-action-link" onclick="openAddrModal('${addr.addressId}')">编辑</span>
+              <span class="addr-action-del" onclick="deleteAddress('${addr.addressId}')">删除</span>
+            </td>
+          </tr>`).join("");
+      }
+
+      container.innerHTML = `
+        <div class="addr-table-wrap">
+          <table class="addr-table">
+            <thead><tr><th style="text-align:center;">地址</th><th>操作</th></tr></thead>
+            <tbody>${rowsHtml}</tbody>
+          </table>
+        </div>`;
+    }
+
+    /** 删除地址 */
+    function deleteAddress(addressId) {
+      const idx = state.enterpriseAddr.addresses.findIndex(a => a.addressId === addressId);
+      if (idx > -1) {
+        const addr = state.enterpriseAddr.addresses[idx];
+        state.enterpriseAddr.addresses.splice(idx, 1);
+        renderAddressList();
+        showToast(`已删除地址：${addr.address}`);
+      }
+    }
+
+    function genAddressId() { return String(state.enterpriseAddr.nextId++); }
+
+
+    // ============================================================
+    //  构建最终配置JSON
+    // ============================================================
+
+    function buildEnterpriseAddressConfigJson() {
+      const ea = state.enterpriseAddr;
+      if (ea.addressType !== "enterprise") {
+        return JSON.stringify({
+          functionCode: "useEnterpriseAddress",
+          config: { type: "personal" }
+        });
+      }
+
+      const addressList = ea.addresses.map(addr => ({
+        addressId: addr.addressId,
+        address: addr.address,
+        addressDetail: addr.addressDetail,
+        latitude: addr.latitude,
+        longitude: addr.longitude,
+        poiId: addr.poiId,
+        status: addr.status || "1",
+        addressTag: "3",
+        addressCheckNotice: addr.addressCheckNotice || ""
+      }));
+
+      return JSON.stringify({
+        useEnterpriseAddress: {
+          functionCode: "useEnterpriseAddress",
+          config: { type: "enterprise" }
+        },
+        enterpriseAddressDetail: {
+          functionCode: "enterpriseAddressDetail",
+          config: { addressList: addressList }
+        }
+      }, null, 2);
+    }
+
+
+    // ============================================================
+    //  保存
+    // ============================================================
+    function saveConfig(){
+      const priceType = document.querySelector('input[name="priceType"]:checked')?.value;
+      const shopFlavorEnabled = document.querySelector('input[name="shopFlavorEnabled"]:checked')?.value;
+      const deliveryAddressType = document.querySelector('input[name="deliveryAddressType"]:checked')?.value;
+
+      console.log("===== 保存的配置 =====");
+      console.log("定价类型:", priceType);
+      console.log("店铺过滤:", shopFlavorEnabled, "选中品类:", Array.from(state.shopFlavor.selected));
+      console.log("配送地址类型:", deliveryAddressType);
+      console.log("企业地址列表:", JSON.stringify(state.enterpriseAddr.addresses, null, 2));
+      console.log("\n生成的飞书配置JSON:");
+      console.log(buildEnterpriseAddressConfigJson());
+
+      closeModal();
+      showToast("已设置特色资源，正在同步相关商品，预计会有几分钟的延迟");
+    }
+
+    function showToast(msg) {
+      const container = document.createElement("div");
+      container.className = "toast-container";
+      container.innerHTML = `<div class="toast"><span class="toast-icon"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 6l3 3 5-5"/></svg></span><span>${escapeHtml(msg)}</span></div>`;
+      document.body.appendChild(container);
+      setTimeout(() => container.remove(), 2000);
+    }
+
+    // (省市区使用select，无需额外点击外部关闭逻辑)
+  </script>
+</body>
+</html>
