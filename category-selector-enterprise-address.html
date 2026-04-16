@@ -611,13 +611,13 @@
           <label class="addr-label-inline"><span class="addr-form-required">*</span> 所属区域：</label>
           <div class="region-selects">
             <select id="addrSelectProv" class="detail-input region-sel" onchange="onProvChange(this.value)">
-              <option value="" disabled selected hidden>请选择</option>
+              <option value="" disabled selected hidden>省</option>
             </select>
             <select id="addrSelectCity" class="detail-input region-sel" disabled onchange="onCityChange(this.value)">
-              <option value="" disabled selected hidden>请选择</option>
+              <option value="" disabled selected hidden>市</option>
             </select>
             <select id="addrSelectDist" class="detail-input region-sel" disabled onchange="onDistChange(this.value)">
-              <option value="" disabled selected hidden>请选择</option>
+              <option value="" disabled selected hidden>区</option>
             </select>
           </div>
         </div>
@@ -894,8 +894,8 @@
     function onProvChange(code) {
       const citySel = document.getElementById("addrSelectCity");
       const distSel = document.getElementById("addrSelectDist");
-      citySel.innerHTML = '<option value="" disabled selected hidden>请选择</option>';
-      distSel.innerHTML = '<option value="" disabled selected hidden>请选择</option>';
+      citySel.innerHTML = '<option value="" disabled selected hidden>市</option>';
+      distSel.innerHTML = '<option value="" disabled selected hidden>区</option>';
       distSel.disabled = true;
 
       if (!code) return;
@@ -919,7 +919,7 @@
     /** 城市变化 → 填充区县 */
     function onCityChange(code) {
       const distSel = document.getElementById("addrSelectDist");
-      distSel.innerHTML = '<option value="" disabled selected hidden>请选择</option>';
+      distSel.innerHTML = '<option value="" disabled selected hidden>区</option>';
 
       if (!code) { distSel.disabled = true; return; }
       const fr = state.enterpriseAddr.formRegion;
@@ -1160,9 +1160,9 @@
 
       document.getElementById("addrSelectProv").value = "";
       const cs = document.getElementById("addrSelectCity");
-      cs.innerHTML = '<option value="" disabled selected hidden>请选择</option>'; cs.disabled = true;
+      cs.innerHTML = '<option value="" disabled selected hidden>市</option>'; cs.disabled = true;
       const ds = document.getElementById("addrSelectDist");
-      ds.innerHTML = '<option value="" disabled selected hidden>请选择</option>'; ds.disabled = true;
+      ds.innerHTML = '<option value="" disabled selected hidden>区</option>'; ds.disabled = true;
 
       document.getElementById("detailInput").value = "";
       hidePoiSuggestions(); hidePoiBar();
@@ -1185,18 +1185,21 @@
       // 从三个select获取省市区
       const provCode = document.getElementById("addrSelectProv").value;
       const cityCode = document.getElementById("addrSelectCity").value;
-      if (!provCode) { showToast("请选择省份信息"); return; }
-      if (!cityCode) { showToast("请选择城市信息"); return; }
+      if (!provCode) { showToast("请填写省份信息", "error"); return; }
+      if (!cityCode) { showToast("请填写城市信息", "error"); return; }
+
+      // 区：如果区下拉框可用（有区县数据）但未选，则报错
+      const distSel = document.getElementById("addrSelectDist");
+      if (!distSel.disabled && !distSel.value) { showToast("请填写区信息", "error"); return; }
+
+      // 详细地址
+      const detail = ea.formDetail.trim() || (ea.selectedPoi ? ea.selectedPoi.name : "");
+      if (!detail) { showToast("请填写详细地址信息", "error"); document.getElementById("detailInput").focus(); return; }
 
       const provName = provCode ? document.getElementById("addrSelectProv").options[document.getElementById("addrSelectProv").selectedIndex].text : "";
       const cityName = cityCode ? document.getElementById("addrSelectCity").options[document.getElementById("addrSelectCity").selectedIndex].text : "";
-      const distSel = document.getElementById("addrSelectDist");
       const distName = !distSel.disabled && distSel.value ? distSel.options[distSel.selectedIndex].text : "";
-
       const fullRegion = [provName, cityName, distName].filter(Boolean).join("");
-
-      const detail = ea.formDetail.trim() || (ea.selectedPoi ? ea.selectedPoi.name : "");
-      if (!detail) { showToast("请填写或选择详细地址"); document.getElementById("detailInput").focus(); return; }
 
       const poi = ea.selectedPoi;
       const addrData = {
@@ -1324,6 +1327,11 @@
       const shopFlavorEnabled = document.querySelector('input[name="shopFlavorEnabled"]:checked')?.value;
       const deliveryAddressType = document.querySelector('input[name="deliveryAddressType"]:checked')?.value;
 
+      // 勾选了"是"但未配置任何地址
+      if (deliveryAddressType === "enterprise" && state.enterpriseAddr.addresses.length === 0) {
+        showToast("请填写地址信息", "error"); return;
+      }
+
       console.log("===== 保存的配置 =====");
       console.log("定价类型:", priceType);
       console.log("店铺过滤:", shopFlavorEnabled, "选中品类:", Array.from(state.shopFlavor.selected));
@@ -1336,10 +1344,15 @@
       showToast("配置成功");
     }
 
-    function showToast(msg) {
+    function showToast(msg, type) {
+      const isError = type === "error";
+      const bg = isError ? "#ff4d4f" : "#52c41a";
+      const icon = isError
+        ? '<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l6 6M9 3l-6 6"/></svg>'
+        : '<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 6l3 3 5-5"/></svg>';
       const container = document.createElement("div");
       container.className = "toast-container";
-      container.innerHTML = `<div class="toast"><span class="toast-icon"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 6l3 3 5-5"/></svg></span><span>${escapeHtml(msg)}</span></div>`;
+      container.innerHTML = `<div class="toast"><span class="toast-icon" style="background:${bg};">${icon}</span><span>${escapeHtml(msg)}</span></div>`;
       document.body.appendChild(container);
       setTimeout(() => container.remove(), 2000);
     }
