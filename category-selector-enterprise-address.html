@@ -475,7 +475,9 @@
                 <td class="p-4 text-primary">平台成本1%+1.11元</td>
                 <td class="p-4">
                   <div class="flex gap-2 text-xs">
-                    <a href="#modal-service" onclick="openModal('service');return false;" class="text-primary hover:text-primary-dark cursor-pointer transition-colors">修改服务费与限制规则</a>
+                    <a href="#" class="text-primary hover:text-primary-dark cursor-pointer transition-colors">修改服务费</a>
+                    <span class="text-border">|</span>
+                    <a href="#modal-service" onclick="openModal('service');return false;" class="text-primary hover:text-primary-dark cursor-pointer transition-colors">限制规则</a>
                     <span class="text-border">|</span>
                     <a href="#" class="text-primary hover:text-primary-dark transition-colors">详情</a>
                     <span class="text-border">|</span>
@@ -496,7 +498,9 @@
                 <td class="p-4 text-primary">平台成本1%+1.11元</td>
                 <td class="p-4">
                   <div class="flex gap-2 text-xs">
-                    <a href="#modal-service" onclick="openModal('service');return false;" class="text-primary hover:text-primary-dark cursor-pointer transition-colors">修改服务费与限制规则</a>
+                    <a href="#" class="text-primary hover:text-primary-dark cursor-pointer transition-colors">修改服务费</a>
+                    <span class="text-border">|</span>
+                    <a href="#modal-service" onclick="openModal('service');return false;" class="text-primary hover:text-primary-dark cursor-pointer transition-colors">限制规则</a>
                     <span class="text-border">|</span>
                     <a href="#" class="text-primary hover:text-primary-dark transition-colors">详情</a>
                     <span class="text-border">|</span>
@@ -517,27 +521,13 @@
   <div id="service-modal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50" onclick="onServiceModalOverlay(event)">
     <div class="bg-white rounded-xl shadow-2xl w-[720px] overflow-hidden animate-in max-h-[90vh] flex flex-col" onclick="event.stopPropagation()">
       <div class="px-6 py-4 border-b border-border flex items-center justify-between flex-shrink-0">
-        <h3 class="font-semibold text-base">修改服务费与限制规则</h3>
+        <h3 class="font-semibold text-base">限制规则</h3>
         <button onclick="closeModal()" class="w-7 h-7 flex items-center justify-center rounded-full hover:bg-bg-gray transition-colors cursor-pointer">
           <svg class="w-4 h-4 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
       </div>
 
       <div class="p-6 space-y-4 overflow-y-auto custom-scroll">
-
-        <!-- ===== 定价类型 ===== -->
-        <div class="flex items-center gap-4">
-          <label class="text-sm text-text-secondary w-20 shrink-0">定价类型：</label>
-          <label class="flex items-center gap-1.5 cursor-pointer text-sm">
-            <input type="radio" name="priceType" checked class="accent-primary"> 使用商品库价格
-          </label>
-          <label class="flex items-center gap-1.5 cursor-pointer text-sm ml-4">
-            <input type="radio" name="priceType" class="accent-primary"> 商城单独定价
-          </label>
-        </div>
-        <p class="text-xs text-text-muted leading-relaxed pl-20">说明：使用商品库价格统一进行价格管理。后续商品库价格调整后，商城销售价格也会同步变化</p>
-
-        <div class="modal-divider"></div>
 
         <!-- ===== 店铺过滤 ===== -->
         <div class="space-y-3">
@@ -565,8 +555,6 @@
             <div id="shopFlavorTags" class="flex flex-wrap gap-1.5 mt-2 min-h-[24px]"></div>
           </div>
         </div>
-
-        <div class="modal-divider"></div>
 
         <!-- ===== ★ 指定配送地址配置 ===== -->
         <div class="space-y-3">
@@ -997,18 +985,28 @@
 
     /** 详细地址输入框内容变化 → 触发搜索联想 */
     function onDetailInputChange(value) {
-      state.enterpriseAddr.formDetail = value;
-      // 清除之前的选中状态
-      state.enterpriseAddr.selectedPoi = null;
+      const ea = state.enterpriseAddr;
+      ea.formDetail = value;
+
+      // 如果已选中过POI，且新内容是以POI名称开头（用户只是追加补充文字），
+      // 则保留POI的经纬度/poiId，不清空
+      if (ea.selectedPoi && value && value.startsWith(ea.selectedPoi.name)) {
+        // 用户在POI名称后面追加内容（如"近铁广场5楼502室"），保留地理信息
+      } else if (ea.selectedPoi && value && !value.startsWith(ea.selectedPoi.name)) {
+        // 用户修改了根本内容，不再是原POI的延伸，才清空
+        ea.selectedPoi = null;
+      }
+      // 如果selectedP本来就是null则无需处理
+
       hidePoiBar();
 
       // 防抖
-      clearTimeout(state.enterpriseAddr.poiSearchTimer);
+      clearTimeout(ea.poiSearchTimer);
       if (!value || value.trim().length < 2) {
         hidePoiSuggestions(); return;
       }
 
-      state.enterpriseAddr.poiSearchTimer = setTimeout(() => {
+      ea.poiSearchTimer = setTimeout(() => {
         searchPOI(value.trim());
       }, 350);
     }
@@ -1059,7 +1057,6 @@
       list.innerHTML = pois.map((poi, idx) => `
         <div class="poi-item" data-index="${idx}"
              onclick="selectPOI(${JSON.stringify(poi).replace(/"/g, '&quot;')})">
-          <span class="poi-icon">地</span>
           <div style="flex:1;min-width:0;">
             <div class="poi-info-name">${escapeHtml(poi.name)}</div>
             <div class="poi-info-addr">${escapeHtml((poi.address||"") + (poi.cityname?" · "+poi.cityname:""))}</div>
