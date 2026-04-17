@@ -607,25 +607,22 @@
 
       <div class="addr-modal-body">
 
-        <!-- * 所属区域：省 市 区 一行三个下拉框 -->
+        <!-- * 所属区域：省 市两个下拉框 -->
         <div class="addr-form-row">
           <label class="addr-label-inline"><span class="addr-form-required">*</span> 所属区域：</label>
           <div class="region-selects">
-            <select id="addrSelectProv" class="detail-input region-sel" onchange="onProvChange(this.value)">
+            <select id="addrSelectProv" class="detail-input region-sel" style="flex:1;min-width:0;" onchange="onProvChange(this.value)">
               <option value="" disabled selected hidden>省</option>
             </select>
-            <select id="addrSelectCity" class="detail-input region-sel" disabled onchange="onCityChange(this.value)">
+            <select id="addrSelectCity" class="detail-input region-sel" style="flex:1;min-width:0;" disabled onchange="onCityChange(this.value)">
               <option value="" disabled selected hidden>市</option>
-            </select>
-            <select id="addrSelectDist" class="detail-input region-sel" disabled onchange="onDistChange(this.value)">
-              <option value="" disabled selected hidden>区</option>
             </select>
           </div>
         </div>
 
-        <!-- * 详细地址：一行输入框 -->
+        <!-- * 地址：一行输入框 + 高德联想 -->
         <div class="addr-form-row">
-          <label class="addr-label-inline"><span class="addr-form-required">*</span> 详细地址：</label>
+          <label class="addr-label-inline"><span class="addr-form-required">*</span> 地址：</label>
           <div class="detail-input-wrap" style="flex:1;">
             <input type="text" class="detail-input" id="detailInput"
                    placeholder=""
@@ -634,6 +631,15 @@
                    onblur="onDetailInputBlur()">
             <div id="poiSuggestList" class="poi-suggest-list"></div>
           </div>
+        </div>
+
+        <!-- 门牌号 -->
+        <div class="addr-form-row">
+          <label class="addr-label-inline">门牌号：</label>
+          <input type="text" class="detail-input" id="doorNumberInput"
+                 placeholder="请填写门牌号，如A座6楼602室"
+                 style="flex:1;"
+                 oninput="state.enterpriseAddr.formDoorNumber=this.value">
         </div>
 
         <!-- 已选中POI的确认条（已移除） -->
@@ -682,7 +688,8 @@
 
         // ---- 地址表单临时数据 ----
         formRegion: { prov:"", city:"", dist:"", provName:"", cityName:"", distName:"" },
-        formDetail: "",           // 详细地址文本
+        formDetail: "",           // 详细地址文本（地址联想）
+        formDoorNumber: "",      // 门牌号
         selectedPoi: null,         // 选中的高德POI对象 {name, address, location:{lng,lat}, id}
         formNotice: "",            // 安全提示文案
 
@@ -931,10 +938,7 @@
     /** 省份变化 → 填充城市 */
     function onProvChange(code) {
       const citySel = document.getElementById("addrSelectCity");
-      const distSel = document.getElementById("addrSelectDist");
       citySel.innerHTML = '<option value="" disabled selected hidden>市</option>';
-      distSel.innerHTML = '<option value="" disabled selected hidden>区</option>';
-      distSel.disabled = true;
 
       if (!code) return;
       const fr = state.enterpriseAddr.formRegion;
@@ -954,35 +958,12 @@
       }
     }
 
-    /** 城市变化 → 填充区县 */
+    /** 城市变化 */
     function onCityChange(code) {
-      const distSel = document.getElementById("addrSelectDist");
-      distSel.innerHTML = '<option value="" disabled selected hidden>区</option>';
-
-      if (!code) { distSel.disabled = true; return; }
+      if (!code) return;
       const fr = state.enterpriseAddr.formRegion;
       fr.city = code;
       fr.cityName = getCityNameByCode(code) || "";
-      fr.dist = ""; fr.distName = "";
-
-      const cityObj = getCityObject(code);
-      if (cityObj && cityObj.districts && cityObj.districts.length > 0) {
-        distSel.disabled = false;
-        cityObj.districts.forEach(d => {
-          const opt = document.createElement("option");
-          opt.value = d; opt.textContent = d;
-          distSel.appendChild(opt);
-        });
-      } else {
-        distSel.disabled = true;
-      }
-    }
-
-    /** 区县变化 */
-    function onDistChange(val) {
-      const fr = state.enterpriseAddr.formRegion;
-      fr.dist = val;
-      fr.distName = val || "";
     }
 
     function getCityNameByCode(code) {
@@ -1031,18 +1012,11 @@
 
     /** 详细地址输入框内容变化 → 触发搜索联想 */
     function onDetailInputChange(value) {
+      // 已选POI后输入框只读，不响应
+      if (document.getElementById("detailInput").readOnly) return;
+
       const ea = state.enterpriseAddr;
       ea.formDetail = value;
-
-      // 如果已选中过POI，且新内容是以POI名称开头（用户只是追加补充文字），
-      // 则保留POI的经纬度/poiId，不清空
-      if (ea.selectedPoi && value && value.startsWith(ea.selectedPoi.name)) {
-        // 用户在POI名称后面追加内容（如"近铁广场5楼502室"），保留地理信息
-      } else if (ea.selectedPoi && value && !value.startsWith(ea.selectedPoi.name)) {
-        // 用户修改了根本内容，不再是原POI的延伸，才清空
-        ea.selectedPoi = null;
-      }
-
       hidePoiBar();
 
       // 防抖
@@ -1051,13 +1025,11 @@
         hidePoiSuggestions(); return;
       }
 
-      // ★ 未选择省份或城市时不允许联想
-      if (!ea.formRegion.prov) { return; }
-      if (!ea.formRegion.city) { return; }
+      // 未选择省份或城市时不允许联想
+      if (!ea.formRegion.prov) return;
+      if (!ea.formRegion.city) return;
 
-      ea.poiSearchTimer = setTimeout(() => {
-        searchPOI(value.trim());
-      }, 350);
+      ea.poiSearchTimer = setTimeout(() => searchPOI(value.trim()), 350);
     }
 
     function onDetailInputFocus() {
@@ -1127,15 +1099,14 @@
       renderPOISuggestions(mockData);
     }
 
-    /** 用户选中了一个POI联想结果 */
+    /** 用户选中了一个POI联想结果 → 地址锁定为只读 */
     function selectPOI(poi) {
       state.enterpriseAddr.selectedPoi = poi;
-      // 将POI名称填入详细地址输入框
       const detailInput = document.getElementById("detailInput");
       detailInput.value = poi.name;
+      detailInput.readOnly = true;
       state.enterpriseAddr.formDetail = poi.name;
 
-      // 隐藏联想列表（不再显示"已关联"提示条）
       hidePoiSuggestions();
     }
 
@@ -1173,12 +1144,19 @@
           onProvChange(addr.adCode_prov);
           // 回填城市
           if (addr.adCode_city) { document.getElementById("addrSelectCity").value = addr.adCode_city; onCityChange(addr.adCode_city); }
-          // 回填区县
-          if (addr.adCode_dist && !document.getElementById("addrSelectDist").disabled)
-            document.getElementById("addrSelectDist").value = addr.adCode_dist;
 
           ea.formDetail = addr.addressDetail || "";
-          document.getElementById("detailInput").value = ea.formDetail;
+          const detailInput = document.getElementById("detailInput");
+          detailInput.value = ea.formDetail;
+          // 如果有POI，锁定输入框
+          if (addr.poiId && addr.latitude && addr.longitude) {
+            detailInput.readOnly = true;
+            ea.selectedPoi = { name: addr.addressDetail, id: addr.poiId, location: {lng: addr.longitude, lat: addr.latitude} };
+          }
+
+          // 回填门牌号
+          ea.formDoorNumber = addr.doorNumber || "";
+          document.getElementById("doorNumberInput").value = ea.formDoorNumber;
 
           if (addr.poiId && addr.latitude && addr.longitude) {
             ea.selectedPoi = { name: addr.addressDetail, id: addr.poiId, location: {lng: addr.longitude, lat: addr.latitude} };
@@ -1195,14 +1173,15 @@
       const ea = state.enterpriseAddr;
       ea.formRegion = { prov:"", provName:"", city:"", cityName:"", dist:"", distName:"" };
       ea.formDetail = ""; ea.selectedPoi = null; ea.formNotice = "";
+      ea.formDoorNumber = "";
 
       document.getElementById("addrSelectProv").value = "";
       const cs = document.getElementById("addrSelectCity");
       cs.innerHTML = '<option value="" disabled selected hidden>市</option>'; cs.disabled = true;
-      const ds = document.getElementById("addrSelectDist");
-      ds.innerHTML = '<option value="" disabled selected hidden>区</option>'; ds.disabled = true;
 
-      document.getElementById("detailInput").value = "";
+      const detailInput = document.getElementById("detailInput");
+      detailInput.value = ""; detailInput.readOnly = false;
+      document.getElementById("doorNumberInput").value = "";
       hidePoiSuggestions(); hidePoiBar();
     }
 
@@ -1226,28 +1205,29 @@
       if (!provCode) { showToast("请填写省份信息", "error"); return; }
       if (!cityCode) { showToast("请填写城市信息", "error"); return; }
 
-      // 区：如果区下拉框可用（有区县数据）但未选，则报错
-      const distSel = document.getElementById("addrSelectDist");
-      if (!distSel.disabled && !distSel.value) { showToast("请填写区信息", "error"); return; }
-
-      // 详细地址
+      // 地址
       const detail = ea.formDetail.trim() || (ea.selectedPoi ? ea.selectedPoi.name : "");
-      if (!detail) { showToast("请填写详细地址信息", "error"); document.getElementById("detailInput").focus(); return; }
+      if (!detail) { showToast("请填写地址信息", "error"); document.getElementById("detailInput").focus(); return; }
+
+      // 门牌号
+      const doorNumber = (ea.formDoorNumber || "").trim();
 
       const provName = provCode ? document.getElementById("addrSelectProv").options[document.getElementById("addrSelectProv").selectedIndex].text : "";
       const cityName = cityCode ? document.getElementById("addrSelectCity").options[document.getElementById("addrSelectCity").selectedIndex].text : "";
-      const distName = !distSel.disabled && distSel.value ? distSel.options[distSel.selectedIndex].text : "";
-      const fullRegion = [provName, cityName, distName].filter(Boolean).join("");
+      const fullRegion = [provName, cityName].filter(Boolean).join("");
 
       const poi = ea.selectedPoi;
+      // 组合地址：地址(POI) + 门牌号
+      const finalDetail = [detail, doorNumber].filter(Boolean).join("");
       const addrData = {
         addressId: ea.editingId || genAddressId(),
         address: fullRegion,
-        addressDetail: detail,
+        addressDetail: finalDetail,
         status: "1",
         adCode_prov: provCode, adCode_city: cityCode,
-        adCode_dist: !distSel.disabled ? distSel.value : "",
-        cityName: cityName, districtName: distName,
+        adCode_dist: "",
+        cityName: cityName, districtName: "",
+        doorNumber: doorNumber,
         poiId: poi ? (poi.id || "") : "",
         latitude: poi && poi.location ? String(poi.location.lat) : "",
         longitude: poi && poi.location ? String(poi.location.lng) : ""
@@ -1286,14 +1266,16 @@
           </td>
         </tr>`;
       } else {
-        rowsHtml = addresses.map(addr => `
-          <tr>
-            <td title="${escapeHtml(addr.address + ' ' + addr.addressDetail)}">${escapeHtml(addr.address)}${escapeHtml(addr.addressDetail)}</td>
+        rowsHtml = addresses.map(addr => {
+          const fullAddr = [addr.address, addr.addressDetail].filter(Boolean).join("");
+          return `<tr>
+            <td title="${escapeHtml(fullAddr)}">${escapeHtml(fullAddr)}</td>
             <td style="text-align:center">
               <span class="addr-action-link" onclick="openAddrModal('${addr.addressId}')">编辑</span>
               <span class="addr-action-del" onclick="deleteAddress('${addr.addressId}')">删除</span>
             </td>
-          </tr>`).join("");
+          </tr>`;
+        }).join("");
       }
 
       container.innerHTML = `
