@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>5.2.3 健步走活动详情 - 淘福客</title>
+<style>
+  :root {
+    --primary-red: #e64340;
+    --primary-red-light: #fdf5f5;
+    --bg-color: #F7F8FA;
+    --card-bg: #FFFFFF;
+    --text-main: #1D1E20;
+    --text-sub: #5C6268;
+    --border-color: #EBEDF0;
+    --safe-area-top: 44px;
+    --safe-area-bottom: 34px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background-color: #e0e0e0; display: flex; justify-content: center;
+    align-items: center; min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, "PingFang SC", sans-serif;
+  }
+  
+  .iphone-mockup {
+    width: 393px; height: 852px; background: var(--card-bg);
+    border-radius: 55px; box-shadow: 0 0 0 12px #000, 0 0 0 13px #333, 0 20px 40px rgba(0,0,0,0.2);
+    position: relative; overflow: hidden; display: flex; flex-direction: column;
+  }
+  
+  .dynamic-island {
+    position: absolute; top: 11px; left: 50%; transform: translateX(-50%);
+    width: 120px; height: 35px; background: #000; border-radius: 20px; z-index: 100;
+  }
+
+  .mini-program-header {
+    padding-top: var(--safe-area-top); height: calc(44px + var(--safe-area-top));
+    background: rgba(255,255,255,0.95); backdrop-filter: blur(10px);
+    display: flex; align-items: center; justify-content: center;
+    position: absolute; top: 0; left: 0; width: 100%; z-index: 10;
+    border-bottom: 0.5px solid var(--border-color);
+  }
+  .header-back {
+    position: absolute; left: 15px; top: calc(var(--safe-area-top) + 6px);
+    width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer;
+  }
+  .header-back::after {
+    content: ''; width: 10px; height: 10px; border-left: 2px solid var(--text-main); border-bottom: 2px solid var(--text-main); transform: rotate(45deg);
+  }
+  .mini-program-title { font-size: 16px; font-weight: 600; color: var(--text-main); }
+  .mini-program-capsule {
+    position: absolute; right: 15px; top: calc(var(--safe-area-top) + 6px);
+    width: 87px; height: 32px; border-radius: 16px; background: rgba(0,0,0,0.05); border: 0.5px solid rgba(0,0,0,0.1);
+  }
+
+  .content-scroll {
+    flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
+    padding: calc(44px + var(--safe-area-top) + 24px) 24px calc(40px + var(--safe-area-bottom));
+  }
+
+  .activity-header { margin-bottom: 32px; }
+  .activity-title { font-size: 24px; font-weight: 800; color: var(--text-main); line-height: 1.4; margin-bottom: 12px; }
+  .activity-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+  .tag { background: var(--primary-red-light); color: var(--primary-red); font-size: 12px; font-weight: 500; padding: 4px 10px; border-radius: 6px; }
+
+  .detail-section { margin-bottom: 28px; }
+  .section-title { font-size: 16px; font-weight: bold; color: var(--text-main); margin-bottom: 12px; display: flex; align-items: center; }
+  .section-title::before { content: ''; width: 4px; height: 16px; background: var(--primary-red); border-radius: 2px; margin-right: 8px; }
+  .section-content { font-size: 14px; color: var(--text-sub); line-height: 1.7; }
+  .section-content p { margin-bottom: 8px; }
+  .section-content ul { padding-left: 20px; margin-bottom: 8px; }
+  .section-content li { margin-bottom: 6px; }
+
+  .highlight-box {
+    background: #F7F8FA; border-radius: 12px; padding: 16px; margin-top: 12px;
+    border: 1px solid #EBEDF0;
+  }
+  .highlight-item { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; }
+  .highlight-item:last-child { margin-bottom: 0; }
+  .hl-label { color: #8A8F99; }
+  .hl-value { color: var(--text-main); font-weight: 500; }
+
+  .home-indicator {
+    position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
+    width: 134px; height: 5px; background: #000; border-radius: 100px; z-index: 101;
+  }
+</style>
+</head>
+<body>
+  <div class="iphone-mockup">
+    <div class="dynamic-island"></div>
+    
+    <div class="mini-program-header">
+      <div class="header-back" id="btnBack"></div>
+      <div class="mini-program-title">活动详情</div>
+      <div class="mini-program-capsule"></div>
+    </div>
+
+    <div class="content-scroll">
+      
+      <div class="detail-section">
+        <div class="section-title">活动时间</div>
+        <div class="section-content">
+          <p>开始时间：2024年05月01日 00:00:00</p>
+          <p>结束时间：2024年05月05日 23:59:59</p>
+        </div>
+      </div>
+
+      <div class="detail-section">
+        <div class="section-title">活动介绍</div>
+        <div class="section-content">
+          <p>生命在于运动！为鼓励广大职工在五一假期期间走出家门，锻炼身体，淘福客工会特举办本次健步走挑战活动。</p>
+          <p>进入活动页面后，点击“同步微信步数”，系统将自动获取您的当日运动数据并计入活动总里程。快来和同事们比拼，争夺步数达人称号吧！</p>
+        </div>
+      </div>
+
+      <div class="detail-section">
+        <div class="section-title">活动规则</div>
+        <div class="section-content">
+          <ul>
+            <li>活动期间，需每日进入小程序并点击<strong>【同步步数】</strong>按钮，方可有效记录成绩。</li>
+            <li>系统每日步数同步上限为 <strong>30,000步</strong>，超出部分不计入活动总成绩。</li>
+            <li>排行榜实时更新，最终成绩以活动结束时的总累计步数为准。</li>
+          </ul>
+          
+          <div class="highlight-box">
+            <div class="highlight-item">
+              <span class="hl-label">每日达标步数</span>
+              <span class="hl-value">10,000 步</span>
+            </div>
+            <div class="highlight-item">
+              <span class="hl-label">计分规则</span>
+              <span class="hl-value">按活动期总累计步数排序</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="detail-section">
+        <div class="section-title">奖励说明</div>
+        <div class="section-content">
+          <p>活动结束后，系统将根据大家的**“累计总步数”**进行全局排名。</p>
+          <ul>
+            <li><strong>一等奖（第 1-3 名）：</strong> 筋膜枪 1 个</li>
+            <li><strong>二等奖（第 4-10 名）：</strong> 运动水壶 1 个</li>
+            <li><strong>达标奖：</strong> 累计达到 30,000 步，即可获得精美伴手礼一份。</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="detail-section">
+        <div class="section-title">注意事项</div>
+        <div class="section-content">
+          <p>请确保已在微信中授权淘福客获取微信运动数据。严禁使用物理外挂或第三方刷步软件，一经发现将清空活动成绩。活动最终解释权归淘福客工会所有。</p>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="home-indicator"></div>
+  </div>
+
+  <script>
+    // 动态返回逻辑：从哪来回哪去
+    document.getElementById('btnBack').addEventListener('click', () => {
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        window.location.href = '5.2.1-activity-entrance.html'; // 兜底路由
+      }
+    });
+  </script>
+</body>
+</html>

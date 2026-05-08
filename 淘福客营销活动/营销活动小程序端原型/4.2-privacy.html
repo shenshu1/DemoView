@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>隐私政策页 - 淘福客</title>
+<style>
+  :root {
+    --primary-red: #e64340;
+    --bg-color: #ffffff;
+    --text-main: #333333;
+    --text-sub: #666666;
+    --safe-area-top: 44px;
+    --safe-area-bottom: 34px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background-color: #e0e0e0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, "PingFang SC", sans-serif;
+  }
+  
+  .iphone-mockup {
+    width: 393px;
+    height: 852px;
+    background: var(--bg-color);
+    border-radius: 55px;
+    box-shadow: 0 0 0 12px #000, 0 0 0 13px #333, 0 20px 40px rgba(0,0,0,0.2);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .dynamic-island {
+    position: absolute;
+    top: 11px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 35px;
+    background: #000;
+    border-radius: 20px;
+    z-index: 100;
+  }
+  
+  .mini-program-header {
+    padding-top: var(--safe-area-top);
+    height: calc(44px + var(--safe-area-top));
+    background: #fff;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    align-items: center;
+    position: relative;
+    z-index: 99;
+  }
+  
+  .header-back {
+    position: absolute;
+    left: 10px;
+    top: calc(var(--safe-area-top) + 6px);
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  .header-back::after {
+    content: '';
+    width: 12px;
+    height: 12px;
+    border-left: 2px solid #000;
+    border-bottom: 2px solid #000;
+    transform: rotate(45deg);
+  }
+  
+  .mini-program-title {
+    width: 100%;
+    text-align: center;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--text-main);
+  }
+
+  .mini-program-capsule {
+    position: absolute;
+    right: 15px;
+    top: calc(var(--safe-area-top) + 6px);
+    width: 87px;
+    height: 32px;
+    border-radius: 16px;
+    background: rgba(0,0,0,0.1);
+    border: 1px solid rgba(0,0,0,0.05);
+  }
+
+  .content-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 15px;
+    -webkit-overflow-scrolling: touch;
+    color: var(--text-sub);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  
+  .policy-h1 { color: var(--text-main); font-size: 18px; font-weight: bold; margin-bottom: 15px; text-align: center; }
+  .policy-h2 { color: var(--text-main); font-size: 15px; font-weight: 600; margin-top: 20px; margin-bottom: 8px; }
+  .policy-p { margin-bottom: 12px; }
+
+  .home-indicator-wrap {
+    height: var(--safe-area-bottom); width: 100%; background: #fff;
+    display: flex; justify-content: center; align-items: center;
+    position: relative; border-top: 1px solid #eee;
+  }
+  .home-indicator {
+    width: 134px; height: 5px; background: #000;
+    border-radius: 100px; margin-bottom: 8px;
+  }
+</style>
+</head>
+<body>
+  <div class="iphone-mockup">
+    <div class="dynamic-island"></div>
+    <div class="mini-program-header">
+      <div class="header-back" id="backBtn"></div>
+      <div class="mini-program-title">隐私政策</div>
+      <div class="mini-program-capsule"></div>
+    </div>
+    
+    <div class="content-scroll">
+      <h1 class="policy-h1">淘福客平台隐私政策</h1>
+      <p class="policy-p">更新日期：2023年10月27日</p>
+      <p class="policy-p">生效日期：2023年11月01日</p>
+      
+      <p class="policy-p">淘福客平台（以下简称“我们”）非常重视用户的隐私和个人信息保护。您在使用我们的服务时，我们可能会收集和使用您的相关信息。本《隐私政策》旨在向您说明我们如何收集、使用、储存和分享这些信息，以及我们为您提供的访问、更新、控制和保护这些信息的方式。</p>
+      
+      <h2 class="policy-h2">一、我们收集的信息</h2>
+      <p class="policy-p">为实现本平台的核心功能（包括活动参与、工会福利发放等），我们需要收集您的特定个人信息。如果您拒绝提供，可能无法使用对应的服务。</p>
+      <p class="policy-p">1. **微信手机号信息**：在您首次登录时，我们需要获取您的**微信手机号**用于唯一用户身份标识、发放活动奖励和工会身份验证。这是为了确保活动的安全性和奖励发放的准确性。</p>
+      <p class="policy-p">2. **微信OpenID**：用于在微信生态内标识您的身份，便于您参加各类交互活动。</p>
+      <p class="policy-p">3. **活动数据**：当您参加“健步走”活动时，我们会收集您的**步数数据**（来源于微信运动授权）；当您参加“问卷答题”活动时，我们会收集您的答题记录。</p>
+
+      <h2 class="policy-h2">二、信息的使用</h2>
+      <p class="policy-p">我们收集的信息将用于以下用途：</p>
+      <p class="policy-p">1. **身份验证**：验证您的工会会员身份，确保福利发放给正确的对象。</p>
+      <p class="policy-p">2. **服务提供**：实现健步走步数同步、题目展示、积分累计和实物奖励的发放。</p>
+      <p class="policy-p">3. **安全保障**：用于防范刷单、欺诈等违规行为，保障平台运营安全。</p>
+
+      <div style="height: 30px;"></div>
+    </div>
+
+    <div class="home-indicator-wrap">
+      <div class="home-indicator"></div>
+    </div>
+  </div>
+
+  <script>
+    // 【核心逻辑更新】根据传入的参数判断要返回到哪个页面
+    const backBtn = document.getElementById('backBtn');
+    backBtn.addEventListener('click', () => {
+      // 解析 URL 中的查询参数
+      const urlParams = new URLSearchParams(window.location.search);
+      const fromPage = urlParams.get('from');
+
+      if (fromPage === 'my') {
+        // 如果是从“我的”页面点击过来的，就原路返回“我的”页面
+        window.location.href = '4.4-my.html';
+      } else {
+        // 如果没有参数或者其他来源，默认返回最新的登录页面
+        window.location.href = '4.1-login-v2.4.html';
+      }
+    });
+  </script>
+</body>
+</html>

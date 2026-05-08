@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>活动中心 - 活动列表原型</title>
+  <style>
+    :root{--bg:#f5f7fb;--panel:#fff;--line:#edf1f7;--line2:#dfe6ef;--text:#27364a;--muted:#8b98ab;--brand:#2a95f5;--brand-bg:#eaf5ff;--danger:#e45454}
+    *{box-sizing:border-box}body{margin:0;font:14px "Microsoft YaHei","PingFang SC",sans-serif;background:var(--bg);color:var(--text)}
+    .app{min-height:100vh;display:grid;grid-template-columns:188px 1fr}.sidebar,.topbar,.panel{background:#fff}.sidebar{border-right:1px solid var(--line)}
+    .logo{height:72px;display:flex;align-items:center;gap:10px;padding:0 16px 0 12px;border-bottom:1px solid #f1f4f8}.logo-mark{font-size:27px;font-weight:900;color:#2295f4;letter-spacing:1px;transform:skew(-12deg)}.logo-text{font-size:18px;font-weight:700;color:#2295f4}
+    .nav{padding:18px 0}.nav-item,.nav-subitem{display:flex;align-items:center;gap:10px;padding:0 20px;font-size:15px}.nav-item{height:52px;color:var(--brand);cursor:pointer}.nav-item:hover{background:#eef7ff}.nav-item.active{background:var(--brand-bg);color:var(--brand);position:relative}.nav-item.active:after{content:"";position:absolute;right:0;top:0;width:3px;height:100%;background:var(--brand)}.nav-subtree{background:linear-gradient(180deg,#fbfdff 0%,#f7fbff 100%)}.nav-subitem{height:42px;padding-left:38px;color:var(--brand);background:var(--brand-bg);position:relative;cursor:pointer;transition:all 0.2s}.nav-subitem:hover{background:#dbeeff}.nav-subitem.active{background:var(--brand);color:#fff}.nav-subitem.active:after{display:none}
+    .content{min-width:0}.topbar{height:72px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 28px}.crumbs{font-size:15px;color:#66758b}.crumbs strong{color:#39485d;font-weight:500}.topbar-actions{display:flex;align-items:center;gap:22px;color:#4d5b70}.user{display:flex;align-items:center;gap:10px}.avatar{width:30px;height:30px;border-radius:50%;background:#cfe9ff;display:grid;place-items:center;color:#2a95f5;font-weight:700}
+    .page{padding:16px}.panel{border:1px solid #f0f3f8;border-radius:8px;box-shadow:0 8px 24px rgba(31,56,88,.05)}.filter-panel{padding:22px 24px 20px;position:relative;margin-bottom:16px}
+    .filters{display:grid;grid-template-columns:1.1fr 1.1fr 1fr 1fr;gap:18px 22px;align-items:center}.field{display:flex;align-items:center;gap:12px;min-width:0;position:relative}.field.wide{grid-column:span 2}.field label{min-width:72px;font-weight:600}
+    .control,.select{flex:1;min-width:0;height:34px;border:1px solid var(--line2);border-radius:2px;padding:0 14px;background:#fff;outline:none;color:#39485d}.control::placeholder,.range-part::placeholder{color:#b5c0cf}
+    .range-box{flex:1;position:relative}.range-trigger{height:34px;border:1px solid var(--line2);border-radius:2px;background:#fff;display:grid;grid-template-columns:1fr 34px 1fr 34px;align-items:center;overflow:hidden;cursor:pointer}.range-part{height:100%;border:none;outline:none;padding:0 14px;font-size:14px;background:transparent;border-bottom:2px solid transparent}.range-part.active{border-bottom-color:var(--brand)}.range-split,.range-icon{text-align:center;color:#a5afbf}.range-split{font-size:16px}.range-icon{font-size:15px}.range-icon.clearable{cursor:pointer}
+    .date-panel{position:absolute;top:calc(100% + 10px);left:84px;width:900px;background:#fff;border:1px solid #eef2f7;border-radius:4px;box-shadow:0 20px 42px rgba(25,42,70,.14);display:none;z-index:10}.date-panel.open{display:block}.date-panel:before{content:"";position:absolute;top:-8px;left:34px;width:14px;height:14px;background:#fff;border-top:1px solid #eef2f7;border-left:1px solid #eef2f7;transform:rotate(45deg)}
+    .calendar-shell{display:grid;grid-template-columns:1fr 1fr}.calendar{padding:20px 26px 18px}.calendar+.calendar{border-left:1px solid #f1f4f8}.calendar-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;font-size:17px;font-weight:700;color:#1f2b3d}.calendar-nav{display:flex;gap:10px;color:#b1bac8;font-size:24px;user-select:none}.weekday-row,.days-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;text-align:center}.weekday-row{margin-bottom:14px;font-size:16px;color:#404c60}.day{width:36px;height:36px;margin:0 auto;border-radius:4px;display:grid;place-items:center;font-size:16px;color:#404c60;border:1px solid transparent;cursor:pointer}.day.muted{color:#c5ccd7}.day.in-range{background:#eef7ff}.day.selected{border-color:var(--brand)}
+    .actions-row{display:flex;justify-content:flex-end;gap:10px;margin-top:18px}button{min-width:78px;height:34px;border:1px solid #d8e0eb;border-radius:4px;background:#fff;color:#314055;cursor:pointer}
+    .list-panel{padding:22px 16px 14px}.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:6px}table{width:100%;min-width:1086px;border-collapse:collapse;table-layout:fixed}thead th{height:56px;padding:0 14px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);text-align:left;font-weight:700;white-space:nowrap}tbody td{padding:12px 14px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);vertical-align:middle;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#405066}thead th:last-child,tbody td:last-child{border-right:none}tbody tr:hover,tbody tr.selected-row{background:#dff3ff}.time-cell{white-space:normal;line-height:1.45;word-break:break-word}.table-actions{display:flex;flex-direction:column;gap:4px}.table-link{color:var(--brand);text-decoration:none}.delete{color:var(--danger)}.disabled{color:#b2bccb;cursor:not-allowed}
+    .footer-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 4px 6px;color:#5b6b81;flex-wrap:wrap}.pager{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.page-btn,.page-select{height:34px;border:1px solid #dce4ef;border-radius:2px;background:#fff;color:#526178}.page-btn{min-width:36px;display:inline-flex;align-items:center;justify-content:center;padding:0 10px;cursor:pointer}.page-btn.active{background:var(--brand);border-color:var(--brand);color:#fff}.page-select,.page-input{padding:0 10px;outline:none}.page-input{width:48px;height:34px;border:1px solid #dce4ef;border-radius:2px;text-align:center}.empty{display:none;padding:54px 20px 60px;text-align:center;color:#94a2b6;font-size:15px}
+    @media (max-width:1440px){.filters{grid-template-columns:1fr 1fr}.date-panel{width:760px}}@media (max-width:1100px){.app{grid-template-columns:1fr}.sidebar{display:none}.topbar{padding:0 16px}.page{padding:12px}.filters{grid-template-columns:1fr}.field,.actions-row{flex-wrap:wrap}.field{flex-direction:column;align-items:stretch;gap:8px}.field label{min-width:auto}.field.wide{grid-column:auto}.date-panel{left:0;width:100%}.calendar-shell{grid-template-columns:1fr}.calendar+.calendar{border-left:none;border-top:1px solid #f1f4f8}}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="logo"><div class="logo-mark">TFK</div><div class="logo-text">淘福客</div></div>
+      <nav class="nav">
+        <div class="nav-item active"><span>◻</span><span>活动管理</span></div>
+        <div class="nav-subtree">
+          <div class="nav-subitem active" onclick="location.href='6.1.1-activity-management-list.html'">
+            <span>·</span><span>活动列表</span>
+          </div>
+          <div class="nav-subitem" onclick="location.href='6.2-activity-statistics.html'">
+            <span>·</span><span>统计分析</span>
+          </div>
+        </div>
+      </nav>
+    </aside>
+    <main class="content">
+      <header class="topbar">
+        <div class="crumbs"><strong>活动管理</strong> / 活动列表</div>
+        <div class="topbar-actions"><span>⌂ 访问商城</span><span>⊙ 帮助中心</span><div class="user"><div class="avatar">刘</div><span>刘瑞辰</span></div></div>
+      </header>
+      <section class="page">
+        <div class="panel filter-panel">
+          <div class="filters">
+            <div class="field"><label for="activityCode">活动编号：</label><input id="activityCode" class="control" placeholder="请输入活动编号，支持模糊搜索"></div>
+            <div class="field"><label for="activityTitle">活动标题：</label><input id="activityTitle" class="control" placeholder="请输入活动标题，支持模糊搜索"></div>
+            <div class="field"><label for="activityType">活动类型：</label><select id="activityType" class="select"><option value="all">全部</option><option value="健步走">健步走</option><option value="问卷答题">问卷答题</option></select></div>
+            <div class="field"><label for="status">活动状态：</label><select id="status" class="select"><option value="all">全部</option><option value="进行中">进行中</option><option value="未开始">未开始</option><option value="已结束">已结束</option></select></div>
+            <div class="field wide">
+              <label>创建日期：</label>
+              <div class="range-box">
+                <div class="range-trigger" id="rangeTrigger">
+                  <input id="startDate" class="range-part active" placeholder="2026-03-05" readonly>
+                  <div class="range-split">→</div>
+                  <input id="endDate" class="range-part" placeholder="结束日期" readonly>
+                  <div class="range-icon" id="rangeIcon">🗓</div>
+                </div>
+                <div class="date-panel" id="datePanel">
+                  <div class="calendar-shell"><div class="calendar" id="leftCalendar"></div><div class="calendar" id="rightCalendar"></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="actions-row"><button id="queryBtn">查询</button><button id="createBtn">＋ 新建</button><button>⤓ 导出</button></div>
+        </div>
+        <div class="panel list-panel">
+          <div class="table-wrap" id="tableWrap">
+            <table>
+              <thead><tr><th style="width:216px">活动编号</th><th style="width:232px">活动标题</th><th style="width:246px">活动时间</th><th style="width:118px">活动类型</th><th style="width:98px">活动状态</th><th style="width:176px">创建日期</th><th style="width:148px">操作</th></tr></thead>
+              <tbody id="tableBody"></tbody>
+            </table>
+          </div>
+          <div class="empty" id="emptyState">当前没有符合条件的活动</div>
+          <div class="footer-bar">
+            <div id="summary">共 0 条</div>
+            <div class="pager">
+              <span class="page-btn" id="prevPage">&lt;</span>
+              <div id="pageNumbers" class="pager"></div>
+              <span class="page-btn" id="nextPage">&gt;</span>
+              <select id="pageSize" class="page-select"><option value="10">10 条/页</option><option value="50">50 条/页</option><option value="100">100 条/页</option></select>
+              <span>跳至</span><input id="pageJump" class="page-input"><span>页</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script>
+    // 高亮当前页面菜单项
+    const currentPage = window.location.pathname.split('/').pop();
+    document.querySelectorAll('.nav-subitem').forEach(item => {
+      if (item.getAttribute('onclick')?.includes(currentPage)) {
+        item.classList.add('active');
+      }
+    });
+    
+    const rows=[["HD20260330182255001","2026春季职工健步走挑战赛","2026-04-01 00:00 ~ 2026-04-15 23:59","健步走","进行中","2026-03-30 18:22:55"],["HD20260329174306002","劳动节工会答题活动第一期","2026-04-20 09:00 ~ 2026-05-05 22:00","问卷答题","未开始","2026-03-29 17:43:06"],["HD20260328174040003","女职工关怀知识问答","2026-03-12 08:30 ~ 2026-03-22 18:00","问卷答题","已结束","2026-03-28 17:40:40"],["HD20260327172654004","清明绿色出行步数打卡","2026-04-03 00:00 ~ 2026-04-06 23:59","健步走","未开始","2026-03-27 17:26:54"],["HD20260326104527005","安全生产月线上答题","2026-03-15 09:00 ~ 2026-04-15 20:00","问卷答题","进行中","2026-03-26 10:45:27"],["HD20260325124112006","企业职工健康步数榜","2026-03-01 00:00 ~ 2026-03-31 23:59","健步走","进行中","2026-03-25 12:41:12"],["HD20260323105733007","新员工入会知识普及答题","2026-02-25 09:00 ~ 2026-03-05 18:00","问卷答题","已结束","2026-03-23 10:57:33"],["HD20260317122309008","全员减脂月步数冲刺","2026-03-08 00:00 ~ 2026-03-28 23:59","健步走","已结束","2026-03-17 12:23:09"],["HD20260315092045009","工会知识闯关答题赛","2026-03-18 10:00 ~ 2026-04-20 18:00","问卷答题","进行中","2026-03-15 09:20:45"],["HD20260312083015010","春日城市低碳健走行动","2026-03-20 08:00 ~ 2026-04-10 21:00","健步走","进行中","2026-03-12 08:30:15"],["HD20260310143622011","安全教育周专项答题","2026-03-25 09:00 ~ 2026-04-08 18:00","问卷答题","进行中","2026-03-10 14:36:22"],["HD20260308110809012","三八节员工关爱步数赛","2026-03-08 00:00 ~ 2026-03-18 23:59","健步走","已结束","2026-03-08 11:08:09"]];
+    const monthDays=["一","二","三","四","五","六","日"],$=id=>document.getElementById(id),tableBody=$("tableBody"),tableWrap=$("tableWrap"),emptyState=$("emptyState"),summary=$("summary"),pageNumbers=$("pageNumbers"),activityCode=$("activityCode"),activityTitle=$("activityTitle"),activityType=$("activityType"),statusSel=$("status"),pageSizeSel=$("pageSize"),pageJump=$("pageJump"),rangeIcon=$("rangeIcon");
+    let filtered=[...rows],page=1,pageSize=10,selecting="start",start=null,end=null,pendingStart=null,base=new Date(2026,2,1),selectedCode=null;
+    const fmt=d=>d?`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`:"",parse=s=>new Date(`${s}T00:00:00`),viewStart=()=>pendingStart||start,same=(a,b)=>a&&b&&fmt(a)===fmt(b),inRange=d=>viewStart()&&end&&d>viewStart()&&d<end;
+    function syncRange(){$("startDate").value=fmt(start);$("endDate").value=fmt(end);$("startDate").classList.toggle("active",selecting==="start");$("endDate").classList.toggle("active",selecting==="end");rangeIcon.textContent="🗓";rangeIcon.classList.toggle("clearable",!!(start&&end))}
+    function renderCal(el,date,side){
+      const y=date.getFullYear(),m=date.getMonth(),first=new Date(y,m,1),offset=(first.getDay()+6)%7,grid=new Date(y,m,1-offset);
+      const left=side==="left"?'<div class="calendar-nav"><span id="prevYear">&laquo;</span><span id="prevMonth">&lsaquo;</span></div>':'<div class="calendar-nav"></div>';
+      const right=side==="right"?'<div class="calendar-nav"><span id="nextMonth">&rsaquo;</span><span id="nextYear">&raquo;</span></div>':'<div class="calendar-nav"></div>';
+      let html=`<div class="calendar-head">${left}<div>${y}年 ${m+1}月</div>${right}</div><div class="weekday-row">${monthDays.map(d=>`<div>${d}</div>`).join("")}</div><div class="days-grid">`;
+      for(let i=0;i<42;i++){const d=new Date(grid);d.setDate(grid.getDate()+i);const cls=["day"];if(d.getMonth()!==m)cls.push("muted");if(same(d,viewStart())||same(d,end))cls.push("selected");if(inRange(d))cls.push("in-range");html+=`<div class="${cls.join(" ")}" data-date="${fmt(d)}">${d.getDate()}</div>`}
+      el.innerHTML=html+"</div>";
+    }
+    function renderCals(){
+      renderCal($("leftCalendar"),base,"left");renderCal($("rightCalendar"),new Date(base.getFullYear(),base.getMonth()+1,1),"right");
+      [["prevYear",-12],["prevMonth",-1],["nextMonth",1],["nextYear",12]].forEach(([id,delta])=>{const n=$(id);if(n)n.onclick=()=>{base=new Date(base.getFullYear(),base.getMonth()+delta,1);renderCals()}});
+      document.querySelectorAll(".day").forEach(d=>d.onclick=()=>{const pick=parse(d.dataset.date);if(selecting==="start"){pendingStart=pick;selecting="end"}else{if(pendingStart&&pick<pendingStart){pendingStart=pick}else{start=pendingStart||pick;end=pick;pendingStart=null;selecting="start";$("datePanel").classList.remove("open")}}syncRange();renderCals()})
+    }
+    function pages(total){
+      if(total<=7)return Array.from({length:total},(_,i)=>i+1);if(page<=4)return[1,2,3,4,5,"...",total];if(page>=total-3)return[1,"...",total-4,total-3,total-2,total-1,total];return[1,"...",page-1,page,page+1,"...",total];
+    }
+    function getViewUrl(r){return r[3]==='问卷答题'?'6.1.4-activity-view-questionnaire.html':'6.1.4-activity-view.html'}
+        function getEditUrl(r){return r[3]==='问卷答题'?'6.1.5-activity-edit.html?type=questionnaire':'6.1.5-activity-edit.html'}
+        function actionCell(r){const viewUrl=getViewUrl(r),editUrl=getEditUrl(r);return`<div class="table-actions"><a class="table-link" href="${viewUrl}?code=${r[0]}&status=${encodeURIComponent(r[4])}">查看</a>${r[4]==="已结束"?'<span class="disabled">编辑</span>':`<a class="table-link" href="${editUrl}?code=${r[0]}&status=${encodeURIComponent(r[4])}">编辑</a>`}<a class="table-link" href="javascript:void(0)" onclick="downloadQRCode('${r[0]}','${r[1]}')">下载二维码</a></div>`}
+    function render(){
+      tableBody.innerHTML="";summary.textContent=`共 ${filtered.length} 条`;if(!filtered.length){emptyState.style.display="block";pageNumbers.innerHTML='<span class="page-btn active">1</span>';return}emptyState.style.display="none";
+      const total=Math.max(1,Math.ceil(filtered.length/pageSize));if(page>total)page=total;const list=filtered.slice((page-1)*pageSize,page*pageSize);
+      pageNumbers.innerHTML=pages(total).map(p=>p==="..."?'<span>…</span>':`<span class="page-btn${p===page?" active":""}" data-page="${p}">${p}</span>`).join("");
+      list.forEach(r=>{const tr=document.createElement("tr");if(selectedCode===r[0])tr.className="selected-row";tr.dataset.code=r[0];tr.innerHTML=`<td title="${r[0]}">${r[0]}</td><td title="${r[1]}">${r[1]}</td><td class="time-cell" title="${r[2]}">${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td><td title="${r[5]}">${r[5]}</td><td>${actionCell(r)}</td>`;tr.onclick=e=>{if(e.target.closest("a,span.disabled"))return;selectedCode=r[0];render()};tableBody.appendChild(tr)});
+      pageNumbers.querySelectorAll("[data-page]").forEach(n=>n.onclick=()=>{page=Number(n.dataset.page);render()});$("prevPage").style.opacity=page===1?.45:1;$("nextPage").style.opacity=page===total?.45:1;
+    }
+    function applyFilters(){
+      const code=activityCode.value.trim().toLowerCase(),title=activityTitle.value.trim().toLowerCase(),type=activityType.value,st=statusSel.value,startTs=start&&end?start.getTime():null,endTs=start&&end?new Date(`${fmt(end)}T23:59:59`).getTime():null;
+      filtered=rows.filter(r=>{const t=new Date(r[5].replace(" ","T")).getTime();return(!code||r[0].toLowerCase().includes(code))&&(!title||r[1].toLowerCase().includes(title))&&(type==="all"||r[3]===type)&&(st==="all"||r[4]===st)&&(!startTs||t>=startTs)&&(!endTs||t<=endTs)});
+      page=1;render();
+    }
+    $("rangeTrigger").onclick=()=>{$("datePanel").classList.toggle("open");renderCals()};
+    $("startDate").onclick=e=>{e.stopPropagation();pendingStart=null;selecting="start";syncRange();$("datePanel").classList.add("open");renderCals()};
+    $("endDate").onclick=e=>{e.stopPropagation();pendingStart=start;selecting="end";syncRange();$("datePanel").classList.add("open");renderCals()};
+    rangeIcon.onmouseenter=()=>{if(start&&end)rangeIcon.textContent="✕"};
+    rangeIcon.onmouseleave=()=>{if(start&&end)rangeIcon.textContent="🗓"};
+    rangeIcon.onclick=e=>{if(start&&end){e.stopPropagation();start=null;end=null;pendingStart=null;selecting="start";$("datePanel").classList.remove("open");syncRange();renderCals()}};
+    document.addEventListener("click",e=>{if(!$("datePanel").contains(e.target)&&!$("rangeTrigger").contains(e.target)){if(pendingStart&&selecting==="end"){pendingStart=null;selecting="start";renderCals()}$("datePanel").classList.remove("open")}if(!e.target.closest("#tableWrap")&&!e.target.closest(".pager")){selectedCode=null;render()}});
+    $("queryBtn").onclick=applyFilters;
+    $("createBtn").onclick=()=>{window.location.href="6.1.2-activity-create.html"};
+    $("prevPage").onclick=()=>{if(page>1){page--;render()}};
+    $("nextPage").onclick=()=>{const total=Math.max(1,Math.ceil(filtered.length/pageSize));if(page<total){page++;render()}};
+    pageSizeSel.onchange=()=>{pageSize=Number(pageSizeSel.value);page=1;render()};
+    pageJump.onkeydown=e=>{if(e.key==="Enter"){const total=Math.max(1,Math.ceil(filtered.length/pageSize)),target=Number(pageJump.value);if(target>=1&&target<=total){page=target;render()}}};
+    syncRange();renderCals();applyFilters();
+    
+    // 下载二维码功能
+    function downloadQRCode(activityCode, activityTitle) {
+      // 生成简单的二维码URL（示例使用草料二维码API）
+      const qrUrl = `https://qr.api.cli.im/qr?data=${encodeURIComponent('https://example.com/activity/' + activityCode)}&level=H&size=300&transparent=false`;
+      
+      // 创建下载链接
+      const link = document.createElement('a');
+      link.href = qrUrl;
+      link.download = `活动二维码_${activityTitle}_${activityCode}.png`;
+      link.target = '_blank';
+      
+      // 触发下载
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  </script>
+</body>
+</html>

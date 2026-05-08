@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>平台方系统 - 查看活动（问卷答题）</title>
+  <style>
+    :root{--bg:#f5f7fb;--panel:#fff;--line:#edf1f7;--line2:#dfe6ef;--text:#27364a;--muted:#8b98ab;--brand:#2a95f5;--brand-bg:#eaf5ff;--danger:#e45454;--success:#52c41a}
+    *{box-sizing:border-box;margin:0;padding:0}body{margin:0;font:14px "Microsoft YaHei","PingFang SC",sans-serif;background:var(--bg);color:var(--text)}
+    .app{min-height:100vh;display:grid;grid-template-columns:188px 1fr}.sidebar,.topbar,.panel{background:#fff}.sidebar{border-right:1px solid var(--line)}
+    .logo{height:72px;display:flex;align-items:center;gap:10px;padding:0 16px 0 12px;border-bottom:1px solid #f1f4f8}.logo-mark{font-size:27px;font-weight:900;color:#2295f4;letter-spacing:1px;transform:skew(-12deg)}.logo-text{font-size:18px;font-weight:700;color:#2295f4}
+    .nav{padding:18px 0}.nav-item,.nav-subitem{display:flex;align-items:center;gap:10px;padding:0 20px;font-size:15px}.nav-item{height:52px;color:var(--brand);cursor:pointer}.nav-item:hover{background:#eef7ff}.nav-item.active{background:var(--brand-bg);color:var(--brand);position:relative}.nav-item.active:after{content:"";position:absolute;right:0;top:0;width:3px;height:100%;background:var(--brand)}.nav-subtree{background:linear-gradient(180deg,#fbfdff 0%,#f7fbff 100%)}.nav-subitem{height:42px;padding-left:38px;color:var(--brand);background:var(--brand-bg);position:relative;cursor:pointer;transition:all 0.2s}.nav-subitem:hover{background:#dbeeff}.nav-subitem.active{background:var(--brand);color:#fff}.nav-subitem.active:after{display:none}
+    .content{min-width:0}.topbar{height:72px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 28px}.crumbs{font-size:15px;color:#66758b}.crumbs strong{color:#39485d;font-weight:500}.topbar-actions{display:flex;align-items:center;gap:22px;color:#4d5b70}.user{display:flex;align-items:center;gap:10px}.avatar{width:30px;height:30px;border-radius:50%;background:#cfe9ff;display:grid;place-items:center;color:#2a95f5;font-weight:700}
+    
+    .page{padding:20px 28px 80px}
+    
+    .config-card{background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(31,56,88,0.06);margin-bottom:16px;overflow:hidden}.config-card-header{padding:14px 20px;border-bottom:1px solid var(--line);background:#fafbfc;display:flex;align-items:center;justify-content:space-between}.config-card-title{font-size:14px;font-weight:600;color:#39485d}
+    .card-badge{font-size:11px;color:var(--muted);margin-left:8px;font-weight:400}
+    .config-card-body{padding:20px}
+    
+    .info-row{display:flex;padding:12px 0;border-bottom:1px solid var(--line);gap:16px}
+    .info-row:last-child{border-bottom:none}
+    .info-label{min-width:120px;color:var(--muted);font-size:13px;flex-shrink:0}
+    .info-value{flex:1;color:var(--text);font-size:13px;word-break:break-word}
+    .info-image{max-width:200px;max-height:120px;border-radius:6px;object-fit:cover}
+    
+    .detail-section{background:#f5f7fb;padding:14px;border-radius:6px;margin-bottom:12px}
+    .detail-section-title{font-size:13px;font-weight:600;color:#39485d;margin-bottom:8px}
+    .detail-section-content{font-size:13px;color:var(--text);line-height:1.6;white-space:pre-wrap}
+    
+    .edit-record{border:1px solid var(--line);border-radius:6px;margin-bottom:12px;overflow:hidden}
+    .edit-record-header{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:#fafbfc;border-bottom:1px solid var(--line);cursor:pointer}
+    .edit-record-title{font-size:13px;font-weight:600;color:#39485d}
+    .edit-record-meta{font-size:12px;color:var(--muted)}
+    .edit-record-content{padding:16px;display:none}
+    .edit-record-content.show{display:block}
+    .edit-record-item{display:flex;gap:16px;padding:8px 0;border-bottom:1px dashed var(--line)}
+    .edit-record-item:last-child{border-bottom:none}
+    .edit-field{min-width:120px;color:var(--muted);font-size:12px}
+    .edit-change{font-size:12px;color:var(--text);flex:1}
+    .edit-change .old{color:var(--danger);text-decoration:line-through}
+    .edit-change .new{color:var(--success)}
+    
+    .footer-bar{position:fixed;bottom:0;left:188px;right:0;height:64px;background:#fff;border-top:1px solid var(--line);display:flex;align-items:center;justify-content:center;gap:16px;z-index:100}
+    .btn{height:36px;padding:0 20px;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;border:1px solid #d8e0eb;background:#fff;color:#314055;display:inline-flex;align-items:center;gap:6px;transition:all 0.2s}
+    .btn:hover{border-color:var(--brand);color:var(--brand)}
+    
+    .question-badge{display:inline-block;padding:2px 8px;background:var(--brand-bg);color:var(--brand);border-radius:4px;font-size:11px;margin-right:8px}
+    
+    @media (max-width:1440px){.app{grid-template-columns:1fr}.sidebar{display:none}.topbar{padding:0 16px}.page{padding:16px}.footer-bar{left:0}}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="logo"><div class="logo-mark">TFK</div><div class="logo-text">淘福客</div></div>
+      <nav class="nav">
+        <div class="nav-item active"><span>◻</span><span>平台方系统</span></div>
+        <div class="nav-subtree">
+          <div class="nav-subitem active" onclick="location.href='7.1.1-platform-activity-management-list.html'">
+            <span>·</span><span>活动列表</span>
+          </div>
+          <div class="nav-subitem" onclick="location.href='7.2-platform-activity-statistics.html'">
+            <span>·</span><span>统计分析</span>
+          </div>
+        </div>
+      </nav>
+    </aside>
+    <main class="content">
+      <header class="topbar">
+        <div class="crumbs"><strong>平台方系统</strong> / <a href="7.1.1-platform-activity-management-list.html" style="color:inherit">活动列表</a> / <strong>查看活动</strong></div>
+        <div class="topbar-actions"><span>⌂ 访问商城</span><span>⊙ 帮助中心</span><div class="user"><div class="avatar">管</div><span>管理员</span></div></div>
+      </header>
+      
+      <div class="page">
+        <!-- 基本信息卡片 -->
+        <div class="config-card">
+          <div class="config-card-header">
+            <div class="config-card-title">基本信息</div>
+          </div>
+          <div class="config-card-body">
+            <div class="info-row">
+              <div class="info-label">运营商名称</div>
+              <div class="info-value">上海浦东工会</div>
+            </div>
+            <div class="info-row">
+              <div class="info-label">活动编号</div>
+              <div class="info-value">HD20260329174306002</div>
+            </div>
+            <div class="info-row">
+              <div class="info-label">活动类型</div>
+              <div class="info-value">问卷答题</div>
+            </div>
+            <div class="info-row">
+              <div class="info-label">活动名称</div>
+              <div class="info-value">劳动节工会答题活动第一期</div>
+            </div>
+            <div class="info-row">
+              <div class="info-label">活动时间</div>
+              <div class="info-value">2026-04-20 09:00 ~ 2026-05-05 22:00</div>
+            </div>
+            <div class="info-row">
+              <div class="info-label">前端活动标题</div>
+              <div class="info-value">劳动节知识大闯关</div>
+            </div>
+            <div class="info-row">
+              <div class="info-label">活动主图</div>
+              <div class="info-value">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='120' style='background:linear-gradient(135deg,%234a90e2,%2367b3ff)'%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='white' font-size='14'%3E活动主图%3C/text%3E%3C/svg%3E" alt="活动主图" class="info-image">
+              </div>
+            </div>
+            <div class="info-row">
+              <div class="info-label">活动介绍</div>
+              <div class="info-value">劳动节即将到来，为了普及劳动法律法规知识，增强职工权益保护意识，特举办此次知识答题活动。快来挑战吧！</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 参与配置 -->
+        <div class="config-card">
+          <div class="config-card-header">
+            <div class="config-card-title">参与配置</div>
+          </div>
+          <div class="config-card-body">
+            <div class="info-row">
+              <div class="info-label">参与方式</div>
+              <div class="info-value">开放活动（所有人可参与）</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 答题规则配置 -->
+        <div class="config-card">
+          <div class="config-card-header">
+            <div class="config-card-title">答题规则配置</div>
+          </div>
+          <div class="config-card-body">
+            <div class="info-row">
+              <div class="info-label">题库文件</div>
+              <div class="info-value">
+                <span class="question-badge">已上传</span>
+                问卷题库_劳动节_v1.xlsx
+                <span style="color:var(--muted);margin-left:12px">（共 50 题）</span>
+              </div>
+            </div>
+            <div class="info-row">
+              <div class="info-label">是否限时答题</div>
+              <div class="info-value">是</div>
+            </div>
+            <div class="info-row">
+              <div class="info-label">答题时限</div>
+              <div class="info-value">30 分钟</div>
+            </div>
+            <div class="info-row">
+              <div class="info-label">是否重复答题</div>
+              <div class="info-value">否</div>
+            </div>
+            <div class="info-row">
+              <div class="info-label">是否开启答题范围</div>
+              <div class="info-value">否</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 活动详情 -->
+        <div class="config-card">
+          <div class="config-card-header">
+            <div class="config-card-title">活动详情</div>
+          </div>
+          <div class="config-card-body">
+            <div class="detail-section">
+              <div class="detail-section-title">活动规则</div>
+              <div class="detail-section-content">1. 每套试卷共10道题目
+2. 题型包括单选题、多选题和判断题
+3. 答题时间30分钟，超时自动交卷
+4. 每题10分，满分100分
+5. 活动期间仅可答题1次</div>
+            </div>
+            <div class="detail-section">
+              <div class="detail-section-title">奖项设置</div>
+              <div class="detail-section-content">一等奖（1名）：500元购物卡
+二等奖（5名）：200元购物卡
+三等奖（10名）：100元购物卡</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 编辑记录 -->
+        <div class="config-card">
+          <div class="config-card-header">
+            <div class="config-card-title">编辑记录</div>
+            <span class="card-badge">共 <span>1</span> 次编辑</span>
+          </div>
+          <div class="config-card-body">
+            <div class="edit-record">
+              <div class="edit-record-header" onclick="toggleRecord(this)">
+                <div>
+                  <span class="edit-record-title">编辑记录 #1</span>
+                  <span class="edit-record-meta" style="margin-left:12px">编辑人：王芳</span>
+                </div>
+                <span>2026-03-29 17:50 <span style="margin-left:8px">▼</span></span>
+              </div>
+              <div class="edit-record-content">
+                <div class="edit-record-item">
+                  <div class="edit-field">前端活动标题</div>
+                  <div class="edit-change">
+                    <span class="old">"劳动节答题活动"</span> → <span class="new">"劳动节知识大闯关"</span>
+                  </div>
+                </div>
+                <div class="edit-record-item">
+                  <div class="edit-field">是否限时答题</div>
+                  <div class="edit-change">
+                    <span class="old">"否"</span> → <span class="new">"是"</span>
+                  </div>
+                </div>
+                <div class="edit-record-item">
+                  <div class="edit-field">答题时限</div>
+                  <div class="edit-change">
+                    <span class="new">"30 分钟"</span>
+                  </div>
+                </div>
+                <div class="edit-record-item">
+                  <div class="edit-field">题库文件</div>
+                  <div class="edit-change">
+                    <span class="new">上传 "问卷题库_劳动节_v1.xlsx"</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 底部按钮 -->
+      <div class="footer-bar">
+        <button class="btn" onclick="goBack()">返回</button>
+      </div>
+    </main>
+  </div>
+  
+  <script>
+    function toggleRecord(header) {
+      const content = header.nextElementSibling;
+      const arrow = header.querySelector('span:last-child span');
+      content.classList.toggle('show');
+      if (content.classList.contains('show')) {
+        arrow.textContent = '▲';
+      } else {
+        arrow.textContent = '▼';
+      }
+    }
+    
+    function goBack() {
+      window.location.href = '7.1.1-platform-activity-management-list.html';
+    }
+  </script>
+</body>
+</html>

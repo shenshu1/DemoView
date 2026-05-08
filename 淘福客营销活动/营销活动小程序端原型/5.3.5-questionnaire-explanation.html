@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>5.3.5 查看答案 - 淘福客</title>
+<style>
+  :root {
+    --primary-red: #e64340;
+    --primary-red-light: #fdf5f5;
+    --wechat-green: #07c160;
+    --wechat-green-light: #e6f9ed;
+    --error-red: #fa5151;
+    --error-red-light: #fef0f0;
+    --bg-color: #F7F8FA;
+    --card-bg: #FFFFFF;
+    --text-main: #1D1E20;
+    --text-sub: #8A8F99;
+    --border-color: #EBEDF0;
+    --safe-area-top: 44px;
+    --safe-area-bottom: 34px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background-color: #e0e0e0; display: flex; justify-content: center;
+    align-items: center; min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, "PingFang SC", sans-serif;
+  }
+  
+  .iphone-mockup {
+    width: 393px; height: 852px; background: var(--bg-color);
+    border-radius: 55px; box-shadow: 0 0 0 12px #000, 0 0 0 13px #333, 0 20px 40px rgba(0,0,0,0.2);
+    position: relative; overflow: hidden; display: flex; flex-direction: column;
+  }
+  
+  .dynamic-island {
+    position: absolute; top: 11px; left: 50%; transform: translateX(-50%);
+    width: 120px; height: 35px; background: #000; border-radius: 20px; z-index: 100;
+  }
+
+  .mini-program-header {
+    padding-top: var(--safe-area-top); height: calc(44px + var(--safe-area-top));
+    background: #fff; display: flex; align-items: center; justify-content: center;
+    position: relative; z-index: 10; border-bottom: 0.5px solid var(--border-color);
+  }
+  .header-back {
+    position: absolute; left: 15px; top: calc(var(--safe-area-top) + 6px);
+    width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer;
+  }
+  .header-back::after {
+    content: ''; width: 10px; height: 10px; border-left: 2px solid var(--text-main); border-bottom: 2px solid var(--text-main); transform: rotate(45deg);
+  }
+  .mini-program-title { font-size: 16px; font-weight: 600; color: var(--text-main); }
+  .mini-program-capsule {
+    position: absolute; right: 15px; top: calc(var(--safe-area-top) + 6px);
+    width: 87px; height: 32px; border-radius: 16px; background: rgba(0,0,0,0.05); border: 0.5px solid rgba(0,0,0,0.1);
+  }
+
+  /* 答题快照主滚动区 */
+  .content-scroll {
+    flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
+    padding: 16px 16px calc(100px + var(--safe-area-bottom)) 16px;
+  }
+
+  /* 题目卡片 */
+  .question-card {
+    background: var(--card-bg); border-radius: 16px; padding: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03); margin-bottom: 16px;
+  }
+
+  .q-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+  .q-meta { display: flex; align-items: center; gap: 8px; }
+  .q-type {
+    background: var(--primary-red-light); color: var(--primary-red);
+    font-size: 11px; font-weight: 600; padding: 2px 6px; border-radius: 4px;
+  }
+  .q-score {
+    background: #F2F3F5; color: var(--text-sub);
+    font-size: 11px; font-weight: 500; padding: 2px 6px; border-radius: 4px;
+  }
+  
+  .q-title { font-size: 16px; font-weight: bold; color: var(--text-main); line-height: 1.5; margin-bottom: 16px; }
+
+  /* 对错结果标识 */
+  .result-tag {
+    font-size: 13px; font-weight: bold; display: flex; align-items: center; gap: 4px;
+  }
+  .result-tag.correct { color: var(--wechat-green); }
+  .result-tag.wrong { color: var(--error-red); }
+
+  /* 选项列表 */
+  .options-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+  .option-item {
+    background: #F7F8FA; border: 1.5px solid transparent; border-radius: 10px;
+    padding: 12px 16px; display: flex; align-items: center; justify-content: space-between;
+  }
+  
+  .opt-content { display: flex; align-items: center; flex: 1; }
+  .opt-letter {
+    width: 22px; height: 22px; border-radius: 50%; background: #E5E6EB; color: #8A8F99;
+    display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;
+    margin-right: 12px; flex-shrink: 0; font-family: 'DIN Alternate', sans-serif;
+  }
+  .opt-text { font-size: 14px; color: var(--text-main); line-height: 1.4; }
+  
+  /* 选项颜色高亮 */
+  .option-item.is-correct { background: var(--wechat-green-light); border-color: var(--wechat-green); }
+  .option-item.is-correct .opt-letter { background: var(--wechat-green); color: #fff; }
+  .option-item.is-correct .opt-text { color: #06ad56; font-weight: 500; }
+  
+  .option-item.is-wrong { background: var(--error-red-light); border-color: var(--error-red); }
+  .option-item.is-wrong .opt-letter { background: var(--error-red); color: #fff; }
+  .option-item.is-wrong .opt-text { color: var(--error-red); font-weight: 500; }
+
+  /* 答案解析区块 */
+  .explanation-box {
+    background: #F8F9FA; border-radius: 10px; padding: 14px;
+    border-left: 3px solid var(--primary-red); margin-top: 16px;
+    display: none; 
+  }
+  .explanation-box.show { display: block; }
+  .exp-title { font-size: 13px; font-weight: bold; color: var(--text-main); margin-bottom: 6px; }
+  .exp-content { font-size: 13px; color: var(--text-sub); line-height: 1.5; }
+
+  /* 底部操作栏: 单按钮居中 */
+  .glass-bottom-bar {
+    position: absolute; bottom: 0; left: 0; width: 100%;
+    background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); 
+    padding: 12px 20px calc(12px + var(--safe-area-bottom));
+    display: flex; justify-content: center; border-top: 0.5px solid rgba(0,0,0,0.05); z-index: 90;
+  }
+  .btn-action {
+    width: 100%; height: 48px; border-radius: 24px; font-size: 16px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; transition: 0.2s;
+  }
+  .btn-action:active { transform: scale(0.98); }
+  .btn-primary { background: var(--primary-red); color: #fff; box-shadow: 0 4px 12px rgba(230, 67, 64, 0.2); }
+
+  .home-indicator {
+    position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
+    width: 134px; height: 5px; background: #000; border-radius: 100px; z-index: 101;
+  }
+
+  /* ====== TDD 面板 ====== */
+  .tdd-trigger { position: absolute; top: calc(var(--safe-area-top) + 60px); left: 0; background: rgba(0,0,0,0.6); color: #fff; padding: 6px 10px 6px 6px; border-radius: 0 16px 16px 0; font-size: 12px; cursor: pointer; z-index: 998; }
+  .tdd-panel { position: absolute; top: calc(var(--safe-area-top) + 60px); left: 10px; background: rgba(0,0,0,0.85); border-radius: 8px; padding: 12px; z-index: 999; color: #fff; font-size: 11px; width: 160px; display: none; }
+  .tdd-panel.show { display: block; }
+  .tdd-row { margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+  .tdd-row select { font-size: 10px; padding: 2px; border-radius: 4px; border: none; outline: none; background: #fff; width: 80px; }
+</style>
+</head>
+<body>
+  <div class="iphone-mockup">
+    
+    <div class="tdd-trigger" id="btnShowTdd">⚙️ 解析控制台</div>
+    <div class="tdd-panel" id="tddPanel">
+      <div style="display:flex; justify-content:space-between; margin-bottom:12px; border-bottom:1px solid #555; padding-bottom:4px;">
+        <span style="font-weight:bold; color:#ffeb3b;">动态配置模拟</span>
+        <span id="btnCloseTdd" style="cursor:pointer; font-size:16px; line-height:1;">×</span>
+      </div>
+      <div class="tdd-row">
+        <span>显示解析:</span>
+        <select id="mockShowExplanation">
+          <option value="true">开启显示</option>
+          <option value="false">关闭隐藏</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="dynamic-island"></div>
+    
+    <div class="mini-program-header">
+      <div class="header-back" id="btnBack"></div>
+      <div class="mini-program-title">查看答案</div>
+      <div class="mini-program-capsule"></div>
+    </div>
+
+    <div class="content-scroll">
+      
+      <div class="question-card">
+        <div class="q-header">
+          <div class="q-meta">
+            <div class="q-type">单选</div>
+            <div class="q-score">30分</div>
+          </div>
+          <div class="result-tag correct">✓ 回答正确</div>
+        </div>
+        <div class="q-title">1. 诈骗分子常常利用短信发送含有不明链接的信息。收到此类短信，正确的做法是？</div>
+        <div class="options-list">
+          <div class="option-item">
+            <div class="opt-content"><div class="opt-letter">A</div><div class="opt-text">好奇点击链接查看详情</div></div>
+          </div>
+          <div class="option-item">
+            <div class="opt-content"><div class="opt-letter">B</div><div class="opt-text">拨打短信中的“客服电话”核实</div></div>
+          </div>
+          <div class="option-item is-correct">
+            <div class="opt-content"><div class="opt-letter">C</div><div class="opt-text">立即删除，不点击不理会</div></div>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#07c160" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          </div>
+          <div class="option-item">
+            <div class="opt-content"><div class="opt-letter">D</div><div class="opt-text">转发给家人朋友看看</div></div>
+          </div>
+        </div>
+        <div class="explanation-box">
+          <div class="exp-title">💡 答案解析：</div>
+          <div class="exp-content">不明链接往往带有木马病毒或钓鱼网站，点击极易造成个人信息泄露或资金损失。最安全的做法是直接删除，切勿点击。</div>
+        </div>
+      </div>
+
+      <div class="question-card">
+        <div class="q-header">
+          <div class="q-meta">
+            <div class="q-type">多选</div>
+            <div class="q-score">40分</div>
+          </div>
+          <div class="result-tag wrong">✗ 回答错误</div>
+        </div>
+        <div class="q-title">2. 遇到所谓的“公检法”人员通过电话办案，并要求转移资金到“安全账户”时，哪些做法是正确的？</div>
+        <div class="options-list">
+          <div class="option-item is-correct">
+            <div class="opt-content"><div class="opt-letter">A</div><div class="opt-text">坚决不转账</div></div>
+          </div>
+          <div class="option-item is-correct">
+            <div class="opt-content"><div class="opt-letter">B</div><div class="opt-text">挂断电话，拨打110核实</div></div>
+          </div>
+          <div class="option-item is-wrong">
+            <div class="opt-content"><div class="opt-letter">C</div><div class="opt-text">按照对方要求下载屏幕共享软件</div></div>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fa5151" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </div>
+          <div class="option-item is-correct">
+            <div class="opt-content"><div class="opt-letter">D</div><div class="opt-text">向身边的亲友或同事求助咨询</div></div>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#07c160" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          </div>
+        </div>
+        <div class="explanation-box">
+          <div class="exp-title">💡 答案解析：</div>
+          <div class="exp-content">公检法机关绝不会通过电话、网络直接办案，更不存在所谓的“安全账户”。屏幕共享软件会让诈骗分子看到您的验证码和密码，极其危险！</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="home-indicator"></div>
+  </div>
+
+  <script>
+    // TDD 控制台
+    const btnShowTdd = document.getElementById('btnShowTdd');
+    const btnCloseTdd = document.getElementById('btnCloseTdd');
+    const tddPanel = document.getElementById('tddPanel');
+    const mockShowExplanation = document.getElementById('mockShowExplanation');
+
+    btnShowTdd.addEventListener('click', () => { tddPanel.classList.add('show'); btnShowTdd.style.display = 'none'; });
+    btnCloseTdd.addEventListener('click', () => { tddPanel.classList.remove('show'); btnShowTdd.style.display = 'block'; });
+
+    // 动态显隐答案解析
+    function updateExplanationVisibility() {
+      const expBoxes = document.querySelectorAll('.explanation-box');
+      if (mockShowExplanation.value === 'true') {
+        expBoxes.forEach(box => box.classList.add('show'));
+      } else {
+        expBoxes.forEach(box => box.classList.remove('show'));
+      }
+    }
+    mockShowExplanation.addEventListener('change', updateExplanationVisibility);
+    updateExplanationVisibility(); 
+
+    // 路由跳转
+    const goBackToRank = () => { window.location.href = '5.3.3-questionnaire-ranking.html'; };
+    document.getElementById('btnBack').addEventListener('click', goBackToRank);
+  </script>
+</body>
+</html>

@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>活动中心 - 统计分析</title>
+  <style>
+    :root{--bg:#f5f7fb;--panel:#fff;--line:#edf1f7;--line2:#dfe6ef;--text:#27364a;--muted:#8b98ab;--brand:#2a95f5;--brand-bg:#eaf5ff;--danger:#e45454;--success:#52c41a}
+    *{box-sizing:border-box}body{margin:0;font:14px "Microsoft YaHei","PingFang SC",sans-serif;background:var(--bg);color:var(--text)}
+    .app{min-height:100vh;display:grid;grid-template-columns:188px 1fr}.sidebar,.topbar,.panel{background:#fff}.sidebar{border-right:1px solid var(--line)}
+    .logo{height:72px;display:flex;align-items:center;gap:10px;padding:0 16px 0 12px;border-bottom:1px solid #f1f4f8}.logo-mark{font-size:27px;font-weight:900;color:#2295f4;letter-spacing:1px;transform:skew(-12deg)}.logo-text{font-size:18px;font-weight:700;color:#2295f4}
+    .nav{padding:18px 0}.nav-item,.nav-subitem{display:flex;align-items:center;gap:10px;padding:0 20px;font-size:15px}.nav-item{height:52px;color:var(--brand);cursor:pointer}.nav-item:hover{background:#eef7ff}.nav-item.active{background:var(--brand-bg);color:var(--brand);position:relative}.nav-item.active:after{content:"";position:absolute;right:0;top:0;width:3px;height:100%;background:var(--brand)}.nav-subtree{background:linear-gradient(180deg,#fbfdff 0%,#f7fbff 100%)}.nav-subitem{height:42px;padding-left:38px;color:var(--brand);background:var(--brand-bg);position:relative;cursor:pointer;transition:all 0.2s}.nav-subitem:hover{background:#dbeeff}.nav-subitem.active{background:var(--brand);color:#fff}.nav-subitem.active:after{display:none}
+    .content{min-width:0}.topbar{height:72px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 28px}.crumbs{font-size:15px;color:#66758b}.crumbs strong{color:#39485d;font-weight:500}.topbar-actions{display:flex;align-items:center;gap:22px;color:#4d5b70}.user{display:flex;align-items:center;gap:10px}.avatar{width:30px;height:30px;border-radius:50%;background:#cfe9ff;display:grid;place-items:center;color:#2a95f5;font-weight:700}
+    .page{padding:16px}
+    
+    /* 统计卡片 */
+    .stats-panel{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:16px}
+    .stat-card{background:#fff;border-radius:8px;padding:24px;border:1px solid #f0f3f8;box-shadow:0 2px 8px rgba(31,56,88,0.06)}
+    .stat-label{font-size:14px;color:var(--muted);margin-bottom:8px}
+    .stat-value{font-size:32px;font-weight:700;color:#1f2b3d}
+    .stat-unit{font-size:14px;color:var(--muted);margin-left:4px;font-weight:400}
+    
+    /* 筛选面板 */
+    .panel{border:1px solid #f0f3f8;border-radius:8px;box-shadow:0 8px 24px rgba(31,56,88,.05)}
+    .filter-panel{padding:22px 24px 20px;position:relative;margin-bottom:16px}
+    .filters{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px 22px;align-items:center}
+    .field{display:flex;align-items:center;gap:12px;min-width:0;position:relative}
+    .field label{min-width:72px;font-weight:600}
+    .control,.select{flex:1;min-width:0;height:34px;border:1px solid var(--line2);border-radius:2px;padding:0 14px;background:#fff;outline:none;color:#39485d}
+    .control::placeholder{color:#b5c0cf}
+    .actions-row{display:flex;justify-content:flex-end;gap:10px;margin-top:18px}
+    button{min-width:78px;height:34px;border:1px solid #d8e0eb;border-radius:4px;background:#fff;color:#314055;cursor:pointer}
+    button:hover{border-color:var(--brand);color:var(--brand)}
+    
+    /* 列表面板 */
+    .list-panel{padding:22px 16px 14px}
+    .table-wrap{overflow:auto;border:1px solid var(--line);border-radius:6px}
+    table{width:100%;min-width:900px;border-collapse:collapse;table-layout:fixed}
+    thead th{height:56px;padding:0 14px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);text-align:left;font-weight:700;white-space:nowrap;background:#fafbfc}
+    tbody td{padding:12px 14px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);vertical-align:middle;color:#405066}
+    thead th:last-child,tbody td:last-child{border-right:none}
+    tbody tr:hover{background:#dff3ff}
+    .rate-cell{color:#2a95f5;font-weight:600}
+    
+    /* 操作按钮 */
+    .table-actions{display:flex;flex-direction:column;gap:4px}
+    .table-link{color:var(--brand);text-decoration:none;cursor:pointer}
+    .table-link:hover{text-decoration:underline}
+    
+    /* 排行榜弹窗 */
+    .modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:1000}
+    .modal.show{display:flex}
+    .modal-content{background:#fff;border-radius:12px;width:90%;max-width:900px;max-height:90vh;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.3)}
+    .modal-header{padding:20px 24px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;background:#fafbfc}
+    .modal-title{font-size:16px;font-weight:600;color:#1f2b3d}
+    .modal-close{background:none;border:none;font-size:24px;cursor:pointer;color:#8b98ab;line-height:1}
+    .modal-close:hover{color:#1f2b3d}
+    .modal-body{padding:20px;max-height:calc(90vh - 140px);overflow-y:auto}
+    
+    /* 排行榜表格 */
+    .rank-table{width:100%;border-collapse:collapse}
+    .rank-table th,.rank-table td{padding:12px 16px;border-bottom:1px solid var(--line);text-align:left}
+    .rank-table th{background:#fafbfc;font-weight:600;color:#39485d;position:sticky;top:0}
+    .rank-table tbody tr:hover{background:#dff3ff}
+    .rank-number{width:60px;text-align:center}
+    .rank-badge{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;font-weight:700;font-size:13px}
+    .rank-badge.gold{background:linear-gradient(135deg,#ffd700,#ffb400);color:#fff}
+    .rank-badge.silver{background:linear-gradient(135deg,#c0c0c0,#a8a8a8);color:#fff}
+    .rank-badge.bronze{background:linear-gradient(135deg,#cd7f32,#b87333);color:#fff}
+    .rank-score{font-weight:600;color:#2a95f5}
+    
+    /* 分页样式 */
+    .footer-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 0 0;color:#5b6b81;flex-wrap:wrap}.pager{display:flex;align-items:center;gap:6px;flex-wrap:wrap}.page-btn,.page-select,.page-input{height:32px;border:1px solid #e0e6ed;border-radius:6px;background:#fff;color:#526178;font-size:13px}.page-btn{min-width:32px;display:inline-flex;align-items:center;justify-content:center;padding:0 10px;cursor:pointer;transition:all 0.2s;font-weight:500}.page-btn:hover:not(.active){background:#f0f7ff;border-color:var(--brand);color:var(--brand)}.page-btn.active{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:600}.page-select{padding:0 8px;outline:none;cursor:pointer}.page-input{width:48px;height:32px;border:1px solid #e0e6ed;border-radius:6px;text-align:center;padding:0 8px}.page-input:focus{border-color:var(--brand);outline:none}
+    
+    .empty{text-align:center;padding:54px 20px 60px;color:#94a2b6;font-size:15px}
+    
+    @media (max-width:1440px){.filters{grid-template-columns:1fr 1fr}.stats-panel{grid-template-columns:repeat(2,1fr)}}
+    @media (max-width:1100px){.app{grid-template-columns:1fr}.sidebar{display:none}.page{padding:12px}.stats-panel{grid-template-columns:1fr}.filters{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="logo"><div class="logo-mark">TFK</div><div class="logo-text">淘福客</div></div>
+      <nav class="nav">
+        <div class="nav-item active"><span>◻</span><span>活动管理</span></div>
+        <div class="nav-subtree">
+          <div class="nav-subitem" onclick="location.href='6.1.1-activity-management-list.html'">
+            <span>·</span><span>活动列表</span>
+          </div>
+          <div class="nav-subitem active" onclick="location.href='6.2-activity-statistics.html'">
+            <span>·</span><span>统计分析</span>
+          </div>
+        </div>
+      </nav>
+    </aside>
+    <main class="content">
+      <header class="topbar">
+        <div class="crumbs"><strong>活动管理</strong> / 统计分析</div>
+        <div class="topbar-actions"><span>⌂ 访问商城</span><span>⊙ 帮助中心</span><div class="user"><div class="avatar">刘</div><span>刘瑞辰</span></div></div>
+      </header>
+      <section class="page">
+        <!-- 总览卡片 -->
+        <div class="stats-panel">
+          <div class="stat-card">
+            <div class="stat-label">总参与人数</div>
+            <div class="stat-value" id="totalParticipants">0<span class="stat-unit">人</span></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">总完成人数</div>
+            <div class="stat-value" id="totalCompleted">0<span class="stat-unit">人</span></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">平均完成率</div>
+            <div class="stat-value" id="avgCompletionRate">0<span class="stat-unit">%</span></div>
+          </div>
+        </div>
+        
+        <!-- 筛选面板 -->
+        <div class="panel filter-panel">
+          <div class="filters">
+            <div class="field">
+              <label for="activityCode">活动编号：</label>
+              <input id="activityCode" class="control" placeholder="请输入活动编号，支持模糊搜索">
+            </div>
+            <div class="field">
+              <label for="activityTitle">活动名称：</label>
+              <input id="activityTitle" class="control" placeholder="请输入活动名称，支持模糊搜索">
+            </div>
+            <div class="field">
+              <label for="activityType">活动类型：</label>
+              <select id="activityType" class="select">
+                <option value="all">全部</option>
+                <option value="健步走">健步走</option>
+                <option value="问卷答题">问卷答题</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="status">活动状态：</label>
+              <select id="status" class="select">
+                <option value="all">全部</option>
+                <option value="进行中">进行中</option>
+                <option value="已结束">已结束</option>
+              </select>
+            </div>
+          </div>
+          <div class="actions-row">
+            <button id="queryBtn">查询</button>
+          </div>
+        </div>
+        
+        <!-- 数据表格 -->
+        <div class="panel list-panel">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:200px">活动编号</th>
+                  <th style="width:280px">活动名称</th>
+                  <th style="width:100px">活动类型</th>
+                  <th style="width:100px">活动状态</th>
+                  <th style="width:100px">参与人数</th>
+                  <th style="width:100px">完成人数</th>
+                  <th style="width:100px">完成率</th>
+                  <th style="width:160px">操作</th>
+                </tr>
+              </thead>
+              <tbody id="tableBody"></tbody>
+            </table>
+          </div>
+          <div class="empty" id="emptyState">当前没有符合条件的活动</div>
+        </div>
+      </section>
+    </main>
+  </div>
+  
+  <!-- 排行榜弹窗 -->
+  <div class="modal" id="rankModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span class="modal-title" id="modalTitle">🏆 活动排行榜</span>
+        <button class="modal-close" onclick="closeRankModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="table-wrap">
+          <table class="rank-table">
+            <thead>
+              <tr>
+                <th class="rank-number">排名</th>
+                <th>昵称</th>
+                <th>手机号</th>
+                <th id="scoreHeader">成绩</th>
+                <th id="durationHeader" style="display:none">用时</th>
+              </tr>
+            </thead>
+            <tbody id="rankTableBody"></tbody>
+          </table>
+        </div>
+        <div class="footer-bar">
+          <div id="rankSummary">共 0 条</div>
+          <div class="pager">
+            <span class="page-btn" id="rankPrevPage">&lt;</span>
+            <div id="rankPageNumbers" class="pager"></div>
+            <span class="page-btn" id="rankNextPage">&gt;</span>
+            <select id="rankPageSize" class="page-select">
+              <option value="10">10 条/页</option>
+              <option value="50">50 条/页</option>
+              <option value="100">100 条/页</option>
+            </select>
+            <span style="margin-left:12px">跳至</span>
+            <input id="rankJump" class="page-input">
+            <span>页</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // 高亮当前页面菜单项
+    const currentPage = window.location.pathname.split('/').pop();
+    document.querySelectorAll('.nav-subitem').forEach(item => {
+      if (item.getAttribute('onclick')?.includes(currentPage)) {
+        item.classList.add('active');
+      }
+    });
+    
+    // 模拟活动统计数据
+    const activityData = [
+      {
+        code: "HD20260330182255001",
+        name: "2026春季职工健步走挑战赛",
+        type: "健步走",
+        status: "进行中",
+        participants: 1256,
+        completed: 892,
+        targetUsers: 2000,
+        scoreType: "steps"
+      },
+      {
+        code: "HD20260328174040003",
+        name: "女职工关怀知识问答",
+        type: "问卷答题",
+        status: "已结束",
+        participants: 856,
+        completed: 723,
+        targetUsers: 1000,
+        scoreType: "score"
+      },
+      {
+        code: "HD20260326104527005",
+        name: "安全生产月线上答题",
+        type: "问卷答题",
+        status: "进行中",
+        participants: 2341,
+        completed: 1856,
+        targetUsers: 3000,
+        scoreType: "score"
+      },
+      {
+        code: "HD20260325124112006",
+        name: "企业职工健康步数榜",
+        type: "健步走",
+        status: "进行中",
+        participants: 1589,
+        completed: 1123,
+        targetUsers: 2500,
+        scoreType: "steps"
+      },
+      {
+        code: "HD20260323105733007",
+        name: "新员工入会知识普及答题",
+        type: "问卷答题",
+        status: "已结束",
+        participants: 423,
+        completed: 398,
+        targetUsers: 500,
+        scoreType: "score"
+      },
+      {
+        code: "HD20260317122309008",
+        name: "全员减脂月步数冲刺",
+        type: "健步走",
+        status: "已结束",
+        participants: 967,
+        completed: 734,
+        targetUsers: 1200,
+        scoreType: "steps"
+      }
+    ];
+    
+    // 模拟排行榜数据
+    const rankData = {
+      "HD20260330182255001": [
+        {rank: 1, nickname: "张三", phone: "13812345678", score: "286542", duration: "15天8小时"},
+        {rank: 2, nickname: "李四", phone: "13912341234", score: "275680", duration: "15天6小时"},
+        {rank: 3, nickname: "王五", phone: "13612349876", score: "268431", duration: "14天22小时"},
+        {rank: 4, nickname: "赵六", phone: "13712344321", score: "256789", duration: "14天18小时"},
+        {rank: 5, nickname: "钱七", phone: "13512348765", score: "243567", duration: "14天12小时"},
+        {rank: 6, nickname: "孙八", phone: "18812341111", score: "234567", duration: "14天8小时"},
+        {rank: 7, nickname: "周九", phone: "18912342222", score: "223456", duration: "13天20小时"},
+        {rank: 8, nickname: "吴十", phone: "18612343333", score: "212345", duration: "13天15小时"},
+        {rank: 9, nickname: "郑一", phone: "18712344444", score: "201234", duration: "13天10小时"},
+        {rank: 10, nickname: "王二", phone: "18512345555", score: "190123", duration: "12天18小时"},
+        {rank: 11, nickname: "冯三", phone: "13312346666", score: "180012", duration: "12天6小时"},
+        {rank: 12, nickname: "陈四", phone: "13212347777", score: "170901", duration: "11天22小时"}
+      ],
+      "HD20260328174040003": [
+        {rank: 1, nickname: "孙八", phone: "18812341111", score: "98分", duration: "5分28秒"},
+        {rank: 2, nickname: "周九", phone: "18912342222", score: "97分", duration: "6分12秒"},
+        {rank: 3, nickname: "吴十", phone: "18612343333", score: "96分", duration: "7分05秒"},
+        {rank: 4, nickname: "郑一", phone: "18712344444", score: "95分", duration: "8分30秒"},
+        {rank: 5, nickname: "王二", phone: "18512345555", score: "94分", duration: "9分15秒"}
+      ],
+      "HD20260326104527005": [
+        {rank: 1, nickname: "冯三", phone: "13312346666", score: "100分", duration: "4分50秒"},
+        {rank: 2, nickname: "陈四", phone: "13212347777", score: "99分", duration: "5分22秒"},
+        {rank: 3, nickname: "褚五", phone: "13112348888", score: "98分", duration: "6分08秒"},
+        {rank: 4, nickname: "卫六", phone: "13012349999", score: "97分", duration: "7分45秒"},
+        {rank: 5, nickname: "蒋七", phone: "15812340000", score: "96分", duration: "8分30秒"}
+      ],
+      "HD20260325124112006": [
+        {rank: 1, nickname: "沈八", phone: "15912341111", score: "312456", duration: "20天5小时"},
+        {rank: 2, nickname: "韩九", phone: "15712342222", score: "298234", duration: "19天18小时"},
+        {rank: 3, nickname: "杨十", phone: "15612343333", score: "287654", duration: "19天10小时"},
+        {rank: 4, nickname: "朱一", phone: "15512344444", score: "276543", duration: "18天22小时"},
+        {rank: 5, nickname: "秦二", phone: "15412345555", score: "265432", duration: "18天15小时"}
+      ]
+    };
+    
+    // 获取元素
+    const $ = id => document.getElementById(id);
+    const activityCodeInput = $('activityCode');
+    const activityTitleInput = $('activityTitle');
+    const activityTypeSelect = $('activityType');
+    const statusSelect = $('status');
+    const tableBody = $('tableBody');
+    const emptyState = $('emptyState');
+    const totalParticipants = $('totalParticipants');
+    const totalCompleted = $('totalCompleted');
+    const avgCompletionRate = $('avgCompletionRate');
+    
+    let filteredData = [...activityData];
+    
+    // 计算统计数据
+    function updateSummary() {
+      const total = filteredData.reduce((sum, item) => sum + item.participants, 0);
+      const completed = filteredData.reduce((sum, item) => sum + item.completed, 0);
+      const avgRate = filteredData.length > 0 
+        ? (filteredData.reduce((sum, item) => sum + (item.participants > 0 ? item.completed / item.participants * 100 : 0), 0) / filteredData.length).toFixed(1)
+        : 0;
+      
+      totalParticipants.innerHTML = total.toLocaleString() + '<span class="stat-unit">人</span>';
+      totalCompleted.innerHTML = completed.toLocaleString() + '<span class="stat-unit">人</span>';
+      avgCompletionRate.innerHTML = avgRate + '<span class="stat-unit">%</span>';
+    }
+    
+    // 渲染表格
+    function renderTable() {
+      tableBody.innerHTML = '';
+      
+      if (filteredData.length === 0) {
+        emptyState.style.display = 'block';
+        return;
+      }
+      
+      emptyState.style.display = 'none';
+      
+      filteredData.forEach(item => {
+        const completionRate = item.participants > 0 ? ((item.completed / item.participants) * 100).toFixed(1) : '0.0';
+        
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td title="${item.code}">${item.code}</td>
+          <td title="${item.name}">${item.name}</td>
+          <td>${item.type}</td>
+          <td>${item.status}</td>
+          <td style="font-weight:600">${item.participants.toLocaleString()}</td>
+          <td style="font-weight:600">${item.completed.toLocaleString()}</td>
+          <td class="rate-cell">${completionRate}%</td>
+          <td>
+            <div class="table-actions">
+              <a class="table-link" onclick="viewRank('${item.code}', '${item.name}', '${item.type}')">查看排行榜</a>
+              <a class="table-link" onclick="exportRank('${item.code}', '${item.name}', '${item.type}')">导出排行榜</a>
+            </div>
+          </td>
+        `;
+        tableBody.appendChild(tr);
+      });
+    }
+    
+    // 筛选数据
+    function applyFilters() {
+      const code = activityCodeInput.value.trim().toLowerCase();
+      const title = activityTitleInput.value.trim().toLowerCase();
+      const type = activityTypeSelect.value;
+      const status = statusSelect.value;
+      
+      filteredData = activityData.filter(item => {
+        const matchCode = !code || item.code.toLowerCase().includes(code);
+        const matchTitle = !title || item.name.toLowerCase().includes(title);
+        const matchType = type === 'all' || item.type === type;
+        const matchStatus = status === 'all' || item.status === status;
+        return matchCode && matchTitle && matchType && matchStatus;
+      });
+      
+      renderTable();
+      updateSummary();
+    }
+    
+    // 排行榜分页相关变量
+    let currentRankCode = null;
+    let currentRankType = null;
+    let currentRankPage = 1;
+    let currentRankPageSize = 10;
+    
+    // 查看排行榜
+    function viewRank(code, name, type) {
+      const modal = $('rankModal');
+      const modalTitle = $('modalTitle');
+      const scoreHeader = $('scoreHeader');
+      const durationHeader = $('durationHeader');
+      
+      currentRankCode = code;
+      currentRankPage = 1;
+      currentRankPageSize = 10;
+      currentRankType = type;
+      
+      modalTitle.textContent = `🏆 ${name} - 排行榜`;
+      
+      // 设置成绩列标题
+      if (type === '健步走') {
+        scoreHeader.textContent = '总步数';
+        durationHeader.style.display = 'none';
+      } else {
+        scoreHeader.textContent = '分数';
+        durationHeader.style.display = '';
+      }
+      
+      renderRankTable();
+      modal.classList.add('show');
+    }
+    
+    // 渲染排行榜表格
+    function renderRankTable() {
+      const ranks = rankData[currentRankCode] || [];
+      const rankTableBody = $('rankTableBody');
+      const rankSummary = $('rankSummary');
+      const rankPageNumbers = $('rankPageNumbers');
+      
+      if (ranks.length === 0) {
+        rankSummary.textContent = '共 0 条';
+        rankTableBody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#8b98ab;padding:40px">暂无数据</td></tr>';
+        rankPageNumbers.innerHTML = '';
+        return;
+      }
+      
+      rankSummary.textContent = `共 ${ranks.length} 条`;
+      
+      // 分页计算
+      const total = Math.ceil(ranks.length / currentRankPageSize);
+      if (currentRankPage > total) currentRankPage = total;
+      if (currentRankPage < 1) currentRankPage = 1;
+      
+      const start = (currentRankPage - 1) * currentRankPageSize;
+      const end = start + currentRankPageSize;
+      const pageData = ranks.slice(start, end);
+      
+      // 渲染表格
+      rankTableBody.innerHTML = pageData.map(item => `
+        <tr>
+          <td class="rank-number">${item.rank}</td>
+          <td>${item.nickname}</td>
+          <td>${item.phone}</td>
+          <td class="rank-score">${item.score}</td>
+          ${currentRankType !== '健步走' ? `<td>${item.duration || '-'}</td>` : ''}
+        </tr>
+      `).join('');
+      
+      // 渲染分页
+      renderRankPagination(total);
+    }
+    
+    // 渲染排行榜分页
+    function renderRankPagination(total) {
+      const rankPageNumbers = $('rankPageNumbers');
+      
+      if (total <= 1) {
+        rankPageNumbers.innerHTML = '<span class="page-btn active">1</span>';
+        return;
+      }
+      
+      let html = '';
+      if (total <= 7) {
+        for (let i = 1; i <= total; i++) {
+          html += `<span class="page-btn${i === currentRankPage ? ' active' : ''}" onclick="goToRankPage(${i})">${i}</span>`;
+        }
+      } else if (currentRankPage <= 4) {
+        for (let i = 1; i <= 5; i++) {
+          html += `<span class="page-btn${i === currentRankPage ? ' active' : ''}" onclick="goToRankPage(${i})">${i}</span>`;
+        }
+        html += '<span>…</span>';
+        html += `<span class="page-btn" onclick="goToRankPage(${total})">${total}</span>`;
+      } else if (currentRankPage >= total - 3) {
+        html += `<span class="page-btn" onclick="goToRankPage(1)">1</span>`;
+        html += '<span>…</span>';
+        for (let i = total - 4; i <= total; i++) {
+          html += `<span class="page-btn${i === currentRankPage ? ' active' : ''}" onclick="goToRankPage(${i})">${i}</span>`;
+        }
+      } else {
+        html += `<span class="page-btn" onclick="goToRankPage(1)">1</span>`;
+        html += '<span>…</span>';
+        for (let i = currentRankPage - 1; i <= currentRankPage + 1; i++) {
+          html += `<span class="page-btn${i === currentRankPage ? ' active' : ''}" onclick="goToRankPage(${i})">${i}</span>`;
+        }
+        html += '<span>…</span>';
+        html += `<span class="page-btn" onclick="goToRankPage(${total})">${total}</span>`;
+      }
+      
+      rankPageNumbers.innerHTML = html;
+      
+      // 更新翻页按钮状态
+      $('rankPrevPage').style.opacity = currentRankPage === 1 ? '0.45' : '1';
+      $('rankNextPage').style.opacity = currentRankPage === total ? '0.45' : '1';
+    }
+    
+    // 跳转到排行榜指定页
+    function goToRankPage(page) {
+      currentRankPage = page;
+      renderRankTable();
+    }
+    
+    // 排行榜分页事件
+    $('rankPrevPage').addEventListener('click', () => {
+      if (currentRankPage > 1) {
+        currentRankPage--;
+        renderRankTable();
+      }
+    });
+    
+    $('rankNextPage').addEventListener('click', () => {
+      const ranks = rankData[currentRankCode] || [];
+      const total = Math.ceil(ranks.length / currentRankPageSize);
+      if (currentRankPage < total) {
+        currentRankPage++;
+        renderRankTable();
+      }
+    });
+    
+    $('rankPageSize').addEventListener('change', function() {
+      currentRankPageSize = Number(this.value);
+      currentRankPage = 1;
+      renderRankTable();
+    });
+    
+    $('rankJump').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        const ranks = rankData[currentRankCode] || [];
+        const total = Math.ceil(ranks.length / currentRankPageSize);
+        const target = Number(this.value);
+        if (target >= 1 && target <= total) {
+          currentRankPage = target;
+          renderRankTable();
+        }
+      }
+    });
+    
+    // 关闭排行榜弹窗
+    function closeRankModal() {
+      $('rankModal').classList.remove('show');
+    }
+    
+    // 导出排行榜
+    function exportRank(code, name, type) {
+      const ranks = rankData[code] || [];
+      
+      if (ranks.length === 0) {
+        alert('暂无排行榜数据可导出');
+        return;
+      }
+      
+      // 生成CSV内容
+      const scoreTitle = type === '健步走' ? '总步数' : '分数';
+      let csv = `\uFEFF昵称,手机号,排名,${scoreTitle},用时\n`;
+      
+      ranks.forEach(item => {
+        csv += `${item.nickname},${item.phone},${item.rank},${item.score},${item.duration || '-'}\n`;
+      });
+      
+      // 创建下载
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const fileName = `${name}_排行榜.csv`;
+      
+      link.href = URL.createObjectURL(blob);
+      link.download = fileName;
+      link.click();
+      
+      URL.revokeObjectURL(link.href);
+    }
+    
+    // 点击弹窗外部关闭
+    $('rankModal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeRankModal();
+      }
+    });
+    
+    // ESC键关闭弹窗
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closeRankModal();
+      }
+    });
+    
+    // 绑定事件
+    $('queryBtn').addEventListener('click', applyFilters);
+    
+    // 回车搜索
+    activityCodeInput.addEventListener('keydown', e => e.key === 'Enter' && applyFilters());
+    activityTitleInput.addEventListener('keydown', e => e.key === 'Enter' && applyFilters());
+    
+    // 初始化
+    renderTable();
+    updateSummary();
+  </script>
+</body>
+</html>

@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>4.2 活动列表 - 淘福客 V3</title>
+<style>
+  :root {
+    --primary-red: #e64340;
+    --wechat-green: #07c160;
+    --warning-orange: #ff9700;
+    --disabled-gray: #999999;
+    --bg-color: #f7f7f7;
+    --text-main: #333333;
+    --text-sub: #666666;
+    --border-color: #ebedf0;
+    --safe-area-top: 44px;
+    --safe-area-bottom: 34px;
+    --tab-bar-height: 50px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background-color: #e0e0e0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, "PingFang SC", sans-serif;
+  }
+  
+  .iphone-mockup {
+    width: 393px;
+    height: 852px;
+    background: var(--bg-color);
+    border-radius: 55px;
+    box-shadow: 0 0 0 12px #000, 0 0 0 13px #333, 0 20px 40px rgba(0,0,0,0.2);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .dynamic-island {
+    position: absolute;
+    top: 11px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 35px;
+    background: #000;
+    border-radius: 20px;
+    z-index: 100;
+  }
+  .mini-program-header {
+    padding-top: var(--safe-area-top);
+    height: calc(44px + var(--safe-area-top));
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 100;
+  }
+  .mini-program-title {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--text-main);
+  }
+  .mini-program-capsule {
+    position: absolute;
+    right: 15px;
+    top: calc(var(--safe-area-top) + 6px);
+    width: 87px;
+    height: 32px;
+    border-radius: 16px;
+    background: rgba(0,0,0,0.1);
+    border: 1px solid rgba(0,0,0,0.05);
+  }
+
+  .filter-bar {
+    display: flex;
+    background: #fff;
+    height: 44px;
+    border-top: 0.5px solid var(--border-color);
+    border-bottom: 0.5px solid var(--border-color);
+    z-index: 90;
+    position: relative;
+  }
+  .filter-tab {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    color: var(--text-main);
+    cursor: pointer;
+    position: relative;
+  }
+  .filter-tab.active {
+    color: var(--primary-red);
+  }
+  .filter-tab:first-child::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 12px;
+    bottom: 12px;
+    width: 1px;
+    background: var(--border-color);
+  }
+  .arrow-down {
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 5px solid #ccc;
+    margin-left: 6px;
+    transition: transform 0.3s;
+  }
+  .filter-tab.active .arrow-down {
+    border-top-color: var(--primary-red);
+    transform: rotate(180deg);
+  }
+
+  .filter-mask {
+    position: absolute;
+    top: calc(88px + var(--safe-area-top));
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 80;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+  .filter-mask.show {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  
+  .filter-panel {
+    position: absolute;
+    top: calc(88px + var(--safe-area-top));
+    left: 0;
+    width: 100%;
+    background: #fff;
+    z-index: 85;
+    transform: translateY(-100%);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    border-radius: 0 0 12px 12px;
+  }
+  .filter-panel.show {
+    transform: translateY(0);
+    opacity: 1;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+  
+  .filter-list {
+    display: none;
+    padding: 8px 0;
+  }
+  .filter-list.active {
+    display: block;
+  }
+  .filter-option {
+    padding: 14px 24px;
+    font-size: 14px;
+    color: var(--text-main);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 0.5px solid var(--border-color);
+    cursor: pointer;
+  }
+  .filter-option:last-child {
+    border-bottom: none;
+  }
+  .filter-option.selected {
+    color: var(--primary-red);
+  }
+  .check-icon {
+    display: none;
+    width: 16px;
+    height: 8px;
+    border-left: 2px solid var(--primary-red);
+    border-bottom: 2px solid var(--primary-red);
+    transform: rotate(-45deg);
+    margin-top: -4px;
+  }
+  .filter-option.selected .check-icon {
+    display: block;
+  }
+
+  .content-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: calc(var(--tab-bar-height) + var(--safe-area-bottom) + 20px);
+    position: relative;
+    z-index: 10;
+  }
+
+  .activity-card {
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  .activity-card:active {
+    transform: scale(0.98);
+  }
+  .card-img-wrap {
+    width: 100%;
+    height: 140px;
+    background: #ebedf0;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ccc;
+  }
+  .status-tag {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    padding: 4px 10px;
+    border-radius: 4px 12px 4px 4px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #fff;
+    z-index: 2;
+  }
+  .status-tag.ended { background: var(--disabled-gray); }
+  .status-tag.ongoing { background: var(--wechat-green); }
+  .status-tag.not-started { background: var(--warning-orange); }
+
+  .card-info {
+    padding: 12px 16px;
+  }
+  .card-title {
+    font-size: 16px;
+    font-weight: bold;
+    color: var(--text-main);
+    margin-bottom: 8px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .card-time {
+    font-size: 13px;
+    color: var(--text-sub);
+  }
+  .card-type-label {
+    display: inline-block;
+    font-size: 11px;
+    color: var(--primary-red);
+    background: rgba(230, 67, 64, 0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+
+  .empty-state {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding-top: 80px;
+  }
+  .empty-icon {
+    width: 120px;
+    height: 120px;
+    background: #ebedf0;
+    border-radius: 50%;
+    margin-bottom: 20px;
+  }
+  .empty-text {
+    font-size: 15px;
+    color: var(--text-sub);
+  }
+
+  .tab-bar-wrap {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: #fff;
+    border-top: 0.5px solid var(--border-color);
+    z-index: 100;
+    padding-bottom: var(--safe-area-bottom);
+  }
+  .tab-bar {
+    height: var(--tab-bar-height);
+    display: flex;
+  }
+  .tab-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text-sub);
+  }
+  .tab-item.active { color: var(--primary-red); }
+  .tab-icon {
+    width: 24px;
+    height: 24px;
+    margin-bottom: 3px;
+    background-color: currentColor;
+    -webkit-mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-size: contain;
+    mask-repeat: no-repeat;
+    mask-position: center;
+  }
+  .icon-activity {
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm4.24 16L12 15.45 7.77 18l1.12-4.81-3.73-3.23 4.92-.42L12 5l1.92 4.53 4.92.42-3.73 3.23L16.23 18z'/%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm4.24 16L12 15.45 7.77 18l1.12-4.81-3.73-3.23 4.92-.42L12 5l1.92 4.53 4.92.42-3.73 3.23L16.23 18z'/%3E%3C/svg%3E");
+  }
+  .icon-my {
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E");
+  }
+  .tab-text { font-size: 10px; font-weight: 500; }
+  .home-indicator {
+    width: 134px;
+    height: 5px;
+    background: #000;
+    border-radius: 100px;
+    margin: 8px auto 8px;
+  }
+
+  .toast {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0,0,0,0.8);
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 20px;
+    font-size: 14px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+    z-index: 2000;
+    text-align: center;
+  }
+  .toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+  <div class="iphone-mockup">
+    <div class="dynamic-island"></div>
+    <div class="mini-program-header">
+      <div class="mini-program-title">活动列表</div>
+      <div class="mini-program-capsule"></div>
+    </div>
+    
+    <div class="filter-bar">
+      <div class="filter-tab" id="tabStatus">
+        <span class="tab-label">全部状态</span>
+        <div class="arrow-down"></div>
+      </div>
+      <div class="filter-tab" id="tabType">
+        <span class="tab-label">全部类型</span>
+        <div class="arrow-down"></div>
+      </div>
+    </div>
+
+    <div class="filter-mask" id="filterMask"></div>
+    <div class="filter-panel" id="filterPanel">
+      
+      <div class="filter-list" id="listStatus">
+        <div class="filter-option selected" data-type="status" data-value="all">
+          <span>全部状态</span><div class="check-icon"></div>
+        </div>
+        <div class="filter-option" data-type="status" data-value="not-started">
+          <span>未开始</span><div class="check-icon"></div>
+        </div>
+        <div class="filter-option" data-type="status" data-value="ongoing">
+          <span>进行中</span><div class="check-icon"></div>
+        </div>
+        <div class="filter-option" data-type="status" data-value="ended">
+          <span>已结束</span><div class="check-icon"></div>
+        </div>
+      </div>
+      
+      <div class="filter-list" id="listType">
+        <div class="filter-option selected" data-type="type" data-value="all">
+          <span>全部类型</span><div class="check-icon"></div>
+        </div>
+        <div class="filter-option" data-type="type" data-value="walking">
+          <span>健步走</span><div class="check-icon"></div>
+        </div>
+        <div class="filter-option" data-type="type" data-value="quiz">
+          <span>问卷答题</span><div class="check-icon"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="content-scroll" id="contentScroll">
+      <div class="empty-state" id="emptyState">
+        <div class="empty-icon"></div>
+        <div class="empty-text">当前没有符合条件的活动</div>
+      </div>
+      <div id="listContainer"></div>
+    </div>
+
+    <div class="tab-bar-wrap">
+      <div class="tab-bar">
+        <div class="tab-item active" id="tabActivity">
+          <div class="tab-icon icon-activity"></div>
+          <span class="tab-text">活动</span>
+        </div>
+        <div class="tab-item" id="tabMy">
+          <div class="tab-icon icon-my"></div>
+          <span class="tab-text">我的</span>
+        </div>
+      </div>
+      <div class="home-indicator"></div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+  </div>
+
+  <script>
+    const listContainer = document.getElementById('listContainer');
+    const emptyState = document.getElementById('emptyState');
+    const toastEl = document.getElementById('toast');
+    let toastTimer;
+
+    function showToast(msg) {
+      toastEl.innerText = msg;
+      toastEl.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => { toastEl.classList.remove('show'); }, 2000);
+    }
+
+    const mockActivityData = [
+      { id: 1, title: '2024年第一季度健步走活动', time: '2024.01.01-2024.03.31', status: 'ended', statusText: '已结束', type: 'walking', typeText: '健步走' },
+      { id: 2, title: '五一劳动节健步走活动', time: '2024.05.01-2024.05.05', status: 'ongoing', statusText: '进行中', type: 'walking', typeText: '健步走' },
+      { id: 3, title: '端午节答题活动', time: '2024.06.10-2024.06.12', status: 'not-started', statusText: '未开始', type: 'quiz', typeText: '问卷答题' },
+      { id: 4, title: '工会防诈骗知识问卷', time: '2024.08.01-2024.08.31', status: 'ongoing', statusText: '进行中', type: 'quiz', typeText: '问卷答题' }
+    ];
+
+    function renderList(data) {
+      if (!data || data.length === 0) {
+        listContainer.style.display = 'none';
+        emptyState.style.display = 'flex';
+      } else {
+        emptyState.style.display = 'none';
+        listContainer.style.display = 'block';
+        let htmlContent = '';
+        data.forEach(item => {
+          htmlContent += `
+            <div class="activity-card" onclick="goToActivity(${item.id})">
+              <div class="card-img-wrap">
+                <span style="color: #999; font-size: 14px;">活动主图占位</span>
+                <div class="status-tag ${item.status}">${item.statusText}</div>
+              </div>
+              <div class="card-info">
+                <div class="card-title"><span class="card-type-label">${item.typeText}</span>${item.title}</div>
+                <div class="card-time">${item.time}</div>
+              </div>
+            </div>`;
+        });
+        listContainer.innerHTML = htmlContent;
+      }
+    }
+
+    let currentFilters = { status: 'all', type: 'all' };
+
+    function applyFilters() {
+      const filteredData = mockActivityData.filter(item => {
+        const matchStatus = currentFilters.status === 'all' || item.status === currentFilters.status;
+        const matchType = currentFilters.type === 'all' || item.type === currentFilters.type;
+        return matchStatus && matchType;
+      });
+      renderList(filteredData);
+    }
+
+    const tabStatus = document.getElementById('tabStatus');
+    const tabType = document.getElementById('tabType');
+    const filterMask = document.getElementById('filterMask');
+    const filterPanel = document.getElementById('filterPanel');
+    const listStatus = document.getElementById('listStatus');
+    const listType = document.getElementById('listType');
+    
+    let activeTab = null;
+
+    function togglePanel(tabName) {
+      if (activeTab === tabName) {
+        closePanel();
+        return;
+      }
+      
+      activeTab = tabName;
+      filterMask.classList.add('show');
+      filterPanel.classList.add('show');
+      
+      tabStatus.classList.toggle('active', tabName === 'status');
+      tabType.classList.toggle('active', tabName === 'type');
+      listStatus.classList.toggle('active', tabName === 'status');
+      listType.classList.toggle('active', tabName === 'type');
+    }
+
+    function closePanel() {
+      activeTab = null;
+      filterMask.classList.remove('show');
+      filterPanel.classList.remove('show');
+      tabStatus.classList.remove('active');
+      tabType.classList.remove('active');
+    }
+
+    tabStatus.addEventListener('click', () => togglePanel('status'));
+    tabType.addEventListener('click', () => togglePanel('type'));
+    filterMask.addEventListener('click', closePanel);
+
+    document.querySelectorAll('.filter-option').forEach(option => {
+      option.addEventListener('click', function() {
+        const type = this.getAttribute('data-type');
+        const value = this.getAttribute('data-value');
+        const text = this.querySelector('span').innerText;
+
+        currentFilters[type] = value;
+        
+        if (type === 'status') {
+          tabStatus.querySelector('.tab-label').innerText = text;
+        } else {
+          tabType.querySelector('.tab-label').innerText = text;
+        }
+
+        const parentList = this.parentElement;
+        parentList.querySelectorAll('.filter-option').forEach(opt => opt.classList.remove('selected'));
+        this.classList.add('selected');
+
+        closePanel();
+        applyFilters();
+      });
+    });
+
+    window.goToActivity = function(id) { 
+      if (id === 2) {
+        window.location.href = '5.2.1-activity-entrance.html';
+      } else if (id === 4) {
+        window.location.href = '5.3.1-questionnaire-entrance.html';
+      } else {
+        showToast(`准备跳转至活动详情 (ID:${id})`); 
+      }
+    };
+    
+    document.getElementById('tabMy').addEventListener('click', function() { window.location.href = '4.4-my.html'; });
+
+    applyFilters();
+  </script>
+</body>
+</html>

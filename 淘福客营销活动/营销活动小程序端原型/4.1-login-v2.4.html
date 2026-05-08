@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>4.1 登录首页 - 淘福客 V2.4</title>
+<style>
+  :root {
+    --primary-red: #e64340;
+    --wechat-green: #07c160;
+    --disabled-color: #cccccc;
+    --bg-color: #FFF0F0;
+    --text-main: #333333;
+    --text-sub: #999999;
+    --link-color: #576b95;
+    --safe-area-top: 44px;
+    --safe-area-bottom: 34px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background-color: #e0e0e0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, "PingFang SC", sans-serif;
+  }
+  
+  /* iPhone 17 外壳 */
+  .iphone-mockup {
+    width: 393px;
+    height: 852px;
+    background: var(--bg-color);
+    border-radius: 55px;
+    box-shadow: 0 0 0 12px #000, 0 0 0 13px #333, 0 20px 40px rgba(0,0,0,0.2);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* 几何背景装饰层 */
+  .bg-decorations {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  
+  /* 右上角大圆形斑块 */
+  .blob-top-right {
+    position: absolute;
+    top: -60px;
+    right: -60px;
+    width: 220px;
+    height: 220px;
+    background: radial-gradient(circle, rgba(255, 150, 150, 0.4) 0%, rgba(255, 180, 180, 0.2) 50%, transparent 70%);
+    border-radius: 50%;
+    filter: blur(30px);
+  }
+  
+  /* 左下角半圆装饰 */
+  .shape-bottom-left {
+    position: absolute;
+    bottom: 120px;
+    left: -40px;
+    width: 140px;
+    height: 140px;
+    background: linear-gradient(135deg, rgba(255, 160, 160, 0.35) 0%, rgba(255, 200, 200, 0.2) 100%);
+    border-radius: 50% 50% 50% 0;
+    filter: blur(20px);
+  }
+  
+  /* 中间偏右小圆形 */
+  .blob-mid-right {
+    position: absolute;
+    top: 45%;
+    right: -20px;
+    width: 80px;
+    height: 80px;
+    background: radial-gradient(circle, rgba(255, 120, 120, 0.3) 0%, transparent 70%);
+    border-radius: 50%;
+    filter: blur(15px);
+  }
+  
+  /* 左上角小装饰圆 */
+  .dot-top-left {
+    position: absolute;
+    top: 100px;
+    left: 30px;
+    width: 20px;
+    height: 20px;
+    background: rgba(255, 180, 120, 0.5);
+    border-radius: 50%;
+  }
+  
+  /* 四角星装饰1 */
+  .star-1 {
+    position: absolute;
+    top: 180px;
+    right: 50px;
+    width: 16px;
+    height: 16px;
+    background: #FFD700;
+    clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+    transform: rotate(15deg);
+    opacity: 0.7;
+  }
+  
+  /* 四角星装饰2 */
+  .star-2 {
+    position: absolute;
+    bottom: 200px;
+    right: 80px;
+    width: 12px;
+    height: 12px;
+    background: #FFA07A;
+    clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+    transform: rotate(-10deg);
+    opacity: 0.6;
+  }
+  
+  /* 小圆点装饰 */
+  .dot-1 {
+    position: absolute;
+    top: 320px;
+    left: 50px;
+    width: 8px;
+    height: 8px;
+    background: rgba(255, 160, 100, 0.6);
+    border-radius: 50%;
+  }
+  
+  .dot-2 {
+    position: absolute;
+    bottom: 280px;
+    left: 20px;
+    width: 6px;
+    height: 6px;
+    background: rgba(255, 200, 150, 0.5);
+    border-radius: 50%;
+  }
+  
+  /* 底部渐变圆 */
+  .blob-bottom {
+    position: absolute;
+    bottom: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 200px;
+    height: 100px;
+    background: radial-gradient(ellipse, rgba(255, 140, 140, 0.25) 0%, transparent 70%);
+    border-radius: 50%;
+    filter: blur(20px);
+  }
+
+  .dynamic-island {
+    position: absolute;
+    top: 11px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 35px;
+    background: #000;
+    border-radius: 20px;
+    z-index: 100;
+  }
+  .mini-program-header {
+    padding-top: var(--safe-area-top);
+    height: calc(44px + var(--safe-area-top));
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 99;
+  }
+  .mini-program-capsule {
+    position: absolute;
+    right: 15px;
+    top: calc(var(--safe-area-top) + 6px);
+    width: 87px;
+    height: 32px;
+    border-radius: 16px;
+    background: rgba(0,0,0,0.1);
+    border: 1px solid rgba(0,0,0,0.05);
+  }
+
+  /* 登录页主内容区 */
+  .login-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 0 30px;
+    padding-bottom: calc(var(--safe-area-bottom) + 20px);
+    position: relative;
+    z-index: 1;
+  }
+  
+  .upper-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding-top: 60px;
+    width: 100%;
+  }
+  
+  /* 新头部文案 */
+  .header-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .header-line1 {
+    font-size: 32px;
+    font-weight: 700;
+    color: #c23a3a;
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+  }
+  .header-line2 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #333333;
+    letter-spacing: 1px;
+  }
+
+  .lower-content {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    padding-bottom: 40px;
+  }
+
+  .login-btn {
+    width: 100%;
+    height: 48px;
+    border-radius: 24px;
+    background-color: var(--disabled-color);
+    color: #fff;
+    font-size: 16px;
+    font-weight: 500;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    margin-bottom: 20px;
+  }
+  .login-btn.active {
+    background-color: var(--primary-red);
+  }
+  .login-btn.active:active {
+    opacity: 0.8;
+  }
+  .login-hint {
+    font-size: 12px;
+    color: var(--text-sub);
+    text-align: center;
+    margin-bottom: 16px;
+    line-height: 1.4;
+  }
+
+  .privacy-wrap {
+    display: flex;
+    align-items: center;
+    font-size: 13px;
+    color: var(--text-sub);
+  }
+  .privacy-checkbox {
+    width: 16px;
+    height: 16px;
+    border: 1px solid #c8c9cc;
+    border-radius: 50%;
+    margin-right: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+  .privacy-checkbox.checked {
+    background-color: var(--primary-red);
+    border-color: var(--primary-red);
+  }
+  .privacy-checkbox.checked::after {
+    content: '';
+    width: 4px;
+    height: 8px;
+    border-bottom: 2px solid #fff;
+    border-right: 2px solid #fff;
+    transform: rotate(45deg);
+    margin-bottom: 2px;
+  }
+  .privacy-link {
+    color: var(--link-color);
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  .home-indicator-wrap {
+    height: var(--safe-area-bottom);
+    width: 100%;
+    position: absolute;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 99;
+  }
+  .home-indicator {
+    width: 134px;
+    height: 5px;
+    background: #000;
+    border-radius: 100px;
+    margin-bottom: 8px;
+  }
+
+  .toast {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0,0,0,0.8);
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 20px;
+    font-size: 14px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+    z-index: 2000;
+    text-align: center;
+    white-space: nowrap;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  }
+  .toast.show {
+    opacity: 1;
+  }
+
+  /* 微信原生授权弹窗样式 */
+  .popup-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+  .popup-overlay.show {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  
+  .wechat-popup {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    background: #fff;
+    border-radius: 12px 12px 0 0;
+    z-index: 1001;
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    padding: 24px 24px calc(var(--safe-area-bottom) + 24px) 24px;
+  }
+  .wechat-popup.show {
+    transform: translateY(0);
+  }
+
+  /* 弹窗头部 */
+  .popup-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 24px;
+    position: relative;
+  }
+  .popup-logo {
+    width: 24px;
+    height: 24px;
+    background: linear-gradient(135deg, #ff7a7a, var(--primary-red));
+    border-radius: 50%;
+    margin-right: 8px;
+  }
+  .popup-title {
+    font-size: 15px;
+    font-weight: 500;
+    color: #333;
+  }
+  .popup-close {
+    position: absolute;
+    right: 0;
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+  }
+  .popup-close::before, .popup-close::after {
+    content: '';
+    position: absolute;
+    top: 11px;
+    left: 4px;
+    width: 16px;
+    height: 1.5px;
+    background: #ccc;
+  }
+  .popup-close::before { transform: rotate(45deg); }
+  .popup-close::after { transform: rotate(-45deg); }
+
+  /* 弹窗内容 */
+  .popup-subtitle {
+    font-size: 20px;
+    font-weight: bold;
+    color: #111;
+    margin-bottom: 20px;
+  }
+  
+  .phone-list {
+    margin-bottom: 30px;
+  }
+  .phone-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 0;
+    border-bottom: 0.5px solid #eee;
+    cursor: pointer;
+  }
+  .phone-item:last-child {
+    border-bottom: none;
+  }
+  .phone-info {
+    display: flex;
+    flex-direction: column;
+  }
+  .phone-num {
+    font-size: 17px;
+    font-weight: 500;
+    color: #333;
+  }
+  .phone-desc {
+    font-size: 13px;
+    color: #999;
+    margin-top: 4px;
+  }
+  
+  /* 勾选图标 */
+  .phone-radio {
+    width: 24px;
+    height: 24px;
+    display: none;
+    position: relative;
+  }
+  .phone-item.selected .phone-radio {
+    display: block;
+  }
+  .phone-item.selected .phone-radio::after {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 4px;
+    width: 6px;
+    height: 12px;
+    border: solid var(--wechat-green);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+  
+  .phone-other {
+    font-size: 15px;
+    color: var(--link-color);
+    padding: 16px 0;
+  }
+
+  /* 底部按钮 */
+  .popup-buttons {
+    display: flex;
+    gap: 16px;
+  }
+  .popup-btn {
+    flex: 1;
+    height: 44px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  .btn-reject {
+    background: #f2f2f2;
+    color: var(--wechat-green);
+  }
+  .btn-allow {
+    background: var(--wechat-green);
+    color: #fff;
+  }
+  .btn-allow:active, .btn-reject:active {
+    opacity: 0.8;
+  }
+</style>
+</head>
+<body>
+  <div class="iphone-mockup">
+    <div class="dynamic-island"></div>
+    
+    <!-- 几何背景装饰层 -->
+    <div class="bg-decorations">
+      <div class="blob-top-right"></div>
+      <div class="shape-bottom-left"></div>
+      <div class="blob-mid-right"></div>
+      <div class="blob-bottom"></div>
+      <div class="dot-top-left"></div>
+      <div class="star-1"></div>
+      <div class="star-2"></div>
+      <div class="dot-1"></div>
+      <div class="dot-2"></div>
+    </div>
+    
+    <div class="mini-program-header">
+      <div class="mini-program-capsule"></div>
+    </div>
+    
+    <div class="login-container">
+      <div class="upper-content">
+        <!-- 新头部文案：左对齐 -->
+        <div class="header-text">
+          <div class="header-line1">欢迎来到淘活动</div>
+          <div class="header-line2">请先登录</div>
+        </div>
+      </div>
+      
+      <div class="lower-content">
+        <button class="login-btn" id="loginBtn">手机号授权登录</button>
+        <div class="login-hint">仅限企业内部员工使用，请授权手机号验证身份</div>
+        <div class="privacy-wrap">
+          <div class="privacy-checkbox" id="checkbox"></div>
+          <span>已阅读同意<span class="privacy-link" id="privacyLink">《隐私政策》</span></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <div class="popup-overlay" id="popupOverlay"></div>
+    <div class="wechat-popup" id="wechatPopup">
+      <div class="popup-header">
+        <div class="popup-logo"></div>
+        <div class="popup-title">淘福客 申请使用</div>
+        <div class="popup-close" id="popupClose"></div>
+      </div>
+      <div class="popup-subtitle">你的手机号</div>
+      
+      <div class="phone-list">
+        <div class="phone-item selected" onclick="selectPhone(this)">
+          <div class="phone-info">
+            <span class="phone-num">138 **** 8888</span>
+            <span class="phone-desc">微信绑定的号码</span>
+          </div>
+          <div class="phone-radio"></div>
+        </div>
+        <div class="phone-item" onclick="selectPhone(this)">
+          <div class="phone-info">
+            <span class="phone-num">139 **** 9999</span>
+            <span class="phone-desc">微信绑定的号码</span>
+          </div>
+          <div class="phone-radio"></div>
+        </div>
+        <div class="phone-other">使用其他手机号</div>
+      </div>
+      
+      <div class="popup-buttons">
+        <button class="popup-btn btn-reject" id="btnReject">拒绝</button>
+        <button class="popup-btn btn-allow" id="btnAllow">允许</button>
+      </div>
+    </div>
+
+    <div class="home-indicator-wrap">
+      <div class="home-indicator"></div>
+    </div>
+  </div>
+
+  <script>
+    // 基础交互元素
+    const checkbox = document.getElementById('checkbox');
+    const privacyCheckArea = document.getElementById('checkbox');
+    const privacyLink = document.getElementById('privacyLink');
+    const loginBtn = document.getElementById('loginBtn');
+    const toastEl = document.getElementById('toast');
+    
+    // 弹窗相关元素
+    const popupOverlay = document.getElementById('popupOverlay');
+    const wechatPopup = document.getElementById('wechatPopup');
+    const popupClose = document.getElementById('popupClose');
+    const btnReject = document.getElementById('btnReject');
+    const btnAllow = document.getElementById('btnAllow');
+    
+    let isChecked = false;
+    let toastTimer;
+
+    // Toast 提示逻辑
+    function showToast(msg) {
+      toastEl.innerText = msg;
+      toastEl.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toastEl.classList.remove('show');
+      }, 2000);
+    }
+
+    // 勾选隐私协议
+    privacyCheckArea.addEventListener('click', (e) => {
+      isChecked = !isChecked;
+      if (isChecked) {
+        checkbox.classList.add('checked');
+        loginBtn.classList.add('active');
+      } else {
+        checkbox.classList.remove('checked');
+        loginBtn.classList.remove('active');
+      }
+    });
+
+    // 跳转隐私协议
+    privacyLink.addEventListener('click', (e) => {
+      e.stopPropagation();
+      window.location.href = '4.2-privacy.html';
+    });
+
+    // 隐藏弹窗函数
+    function hidePopup() {
+      popupOverlay.classList.remove('show');
+      wechatPopup.classList.remove('show');
+    }
+
+    // 点击登录按钮 -> 展开弹窗
+    loginBtn.addEventListener('click', () => {
+      if (!isChecked) {
+        showToast('请先阅读并勾选《隐私政策》');
+      } else {
+        popupOverlay.classList.add('show');
+        wechatPopup.classList.add('show');
+      }
+    });
+
+    // 切换手机号单选
+    window.selectPhone = function(element) {
+      document.querySelectorAll('.phone-item').forEach(item => {
+        item.classList.remove('selected');
+      });
+      element.classList.add('selected');
+    };
+
+    // 拒绝/关闭
+    popupClose.addEventListener('click', hidePopup);
+    btnReject.addEventListener('click', hidePopup);
+    popupOverlay.addEventListener('click', hidePopup);
+
+    // 允许 -> 【核心修改：执行真实跳转逻辑】
+    btnAllow.addEventListener('click', () => {
+      // 1. 获取当前选中的手机号文本 (模拟实际开发中的传值)
+      const selectedPhone = document.querySelector('.phone-item.selected .phone-num').innerText;
+      console.log('用户选择的手机号：', selectedPhone);
+      
+      // 2. 隐藏授权弹窗，并给用户正向反馈
+      hidePopup();
+      showToast('登录成功，正在跳转...');
+      
+      // 3. 延迟 1 秒后真实跳转至活动列表页
+      setTimeout(() => { 
+        window.location.href = '4.3-activity-list-v3.html';
+      }, 1000);
+    });
+  </script>
+</body>
+</html>

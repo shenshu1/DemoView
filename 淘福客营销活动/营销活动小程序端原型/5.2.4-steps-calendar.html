@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>5.2.1.1 步数详情 - 淘福客</title>
+<style>
+  :root {
+    --brand-color: #FF5A5F;
+    --brand-gradient: linear-gradient(135deg, #FF7E7E 0%, #FF5A5F 100%);
+    --bg-color: #F7F8FA;
+    --card-bg: #FFFFFF;
+    --text-main: #1D1E20;
+    --text-sub: #8A8F99;
+    --safe-area-top: 44px;
+    --safe-area-bottom: 34px;
+    --tab-bar-height: 50px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background-color: #e0e0e0; display: flex; justify-content: center;
+    align-items: center; min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, "PingFang SC", sans-serif;
+  }
+  
+  .iphone-mockup {
+    width: 393px; height: 852px; background: var(--bg-color);
+    border-radius: 55px; box-shadow: 0 0 0 12px #000, 0 0 0 13px #333, 0 20px 40px rgba(0,0,0,0.2);
+    position: relative; overflow: hidden; display: flex; flex-direction: column;
+  }
+  
+  .dynamic-island {
+    position: absolute; top: 11px; left: 50%; transform: translateX(-50%);
+    width: 120px; height: 35px; background: #000; border-radius: 20px; z-index: 100;
+  }
+
+  .mini-program-header {
+    padding-top: var(--safe-area-top); height: calc(44px + var(--safe-area-top));
+    background: var(--card-bg); display: flex; align-items: center; justify-content: center;
+    position: absolute; top: 0; left: 0; width: 100%; z-index: 10;
+    border-bottom: 0.5px solid #eee;
+  }
+  .header-back {
+    position: absolute; left: 15px; top: calc(var(--safe-area-top) + 6px);
+    width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer;
+  }
+  .header-back::after {
+    content: ''; width: 10px; height: 10px; border-left: 2px solid var(--text-main); border-bottom: 2px solid var(--text-main); transform: rotate(45deg);
+  }
+  .mini-program-title { font-size: 16px; font-weight: 600; color: var(--text-main); }
+
+  .content-scroll {
+    flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
+    padding-top: calc(44px + var(--safe-area-top));
+    padding-bottom: 20px;
+  }
+
+  .total-steps-card {
+    background: var(--card-bg); margin: 16px; padding: 24px;
+    border-radius: 16px; text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .total-label { font-size: 14px; color: var(--text-sub); margin-bottom: 8px; }
+  .total-val { font-size: 32px; font-weight: 700; color: var(--brand-color); }
+  .total-unit { font-size: 14px; color: var(--text-sub); font-weight: normal; }
+
+  .calendar-card {
+    background: var(--card-bg); margin: 0 16px; padding: 20px;
+    border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  
+  /* 优化日历头部布局，让按钮靠近月份 */
+  .calendar-header {
+    display: flex; justify-content: center; align-items: center;
+    margin-bottom: 20px; position: relative; gap: 16px; /* 增加元素间距 */
+  }
+  .calendar-month {
+    font-size: 16px; font-weight: 600; color: var(--text-main);
+    cursor: pointer; user-select: none;
+  }
+  .calendar-nav-btn {
+    width: 28px; height: 28px; background: #F5F6F8; border: none; border-radius: 50%;
+    font-size: 14px; color: var(--text-sub); cursor: pointer; 
+    display: flex; align-items: center; justify-content: center; transition: background 0.2s;
+  }
+  .calendar-nav-btn:active { background: #E5E6EB; }
+  .calendar-nav-btn:disabled { color: #ccc; cursor: not-allowed; background: transparent;}
+
+  .picker-mask {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5); z-index: 100;
+    opacity: 0; pointer-events: none; transition: opacity 0.3s;
+  }
+  .picker-mask.show { opacity: 1; pointer-events: auto; }
+
+  .picker-panel {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: #fff; border-radius: 16px 16px 0 0;
+    padding: 20px; padding-bottom: calc(20px + var(--safe-area-bottom));
+    transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    z-index: 101;
+  }
+  .picker-panel.show { transform: translateY(0); }
+
+  .picker-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 20px;
+  }
+  .picker-cancel { font-size: 16px; color: var(--text-sub); cursor: pointer; padding: 4px; }
+  .picker-confirm { font-size: 16px; color: var(--brand-color); font-weight: 600; cursor: pointer; padding: 4px; }
+
+  .picker-content { display: flex; gap: 10px; }
+  .picker-col {
+    flex: 1; height: 160px; overflow-y: auto;
+    background: #f5f5f5; border-radius: 8px; padding: 8px 0;
+  }
+  .picker-item {
+    height: 44px; display: flex; align-items: center; justify-content: center;
+    font-size: 16px; color: var(--text-main); cursor: pointer; transition: all 0.2s;
+  }
+  .picker-item.selected { color: var(--brand-color); font-weight: 600; background: #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.05); border-radius: 8px; margin: 0 8px;}
+
+  .calendar-weekdays {
+    display: grid; grid-template-columns: repeat(7, 1fr);
+    margin-bottom: 8px;
+  }
+  .weekday {
+    text-align: center; font-size: 12px; color: var(--text-sub);
+    padding: 8px 0;
+  }
+
+  .calendar-days {
+    display: grid; grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+  }
+  .calendar-day {
+    aspect-ratio: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    font-size: 14px; color: var(--text-main);
+    position: relative; border-radius: 8px;
+  }
+  .calendar-day.other-month { color: #ccc; }
+  .calendar-day.today {
+    background: var(--brand-color); color: #fff; font-weight: 600;
+  }
+  .day-steps {
+    font-size: 9px; color: var(--text-sub); margin-top: 2px;
+    max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .calendar-day.today .day-steps { color: rgba(255,255,255,0.8); }
+</style>
+</head>
+<body>
+  <div class="iphone-mockup">
+    <div class="dynamic-island"></div>
+    <div class="mini-program-header">
+      <div class="header-back" id="btnBack"></div>
+      <div class="mini-program-title">活动累计步数</div>
+    </div>
+    
+    <div class="content-scroll">
+      <div class="total-steps-card">
+        <div class="total-label">活动累计步数</div>
+        <div class="total-val">124,500 <span class="total-unit">步</span></div>
+      </div>
+
+      <div class="calendar-card">
+        <div class="calendar-header">
+          <button class="calendar-nav-btn" id="btnPrev">&lt;</button>
+          <div class="calendar-month" id="calendarMonth">2024年5月</div>
+          <button class="calendar-nav-btn" id="btnNext">&gt;</button>
+        </div>
+
+        <div class="calendar-weekdays">
+          <div class="weekday">日</div>
+          <div class="weekday">一</div>
+          <div class="weekday">二</div>
+          <div class="weekday">三</div>
+          <div class="weekday">四</div>
+          <div class="weekday">五</div>
+          <div class="weekday">六</div>
+        </div>
+
+        <div class="calendar-days" id="calendarDays"></div>
+      </div>
+    </div>
+
+    <div class="picker-mask" id="pickerMask"></div>
+    <div class="picker-panel" id="pickerPanel">
+      <div class="picker-header">
+        <span class="picker-cancel" id="pickerCancel">取消</span>
+        <span class="picker-confirm" id="pickerConfirm">确定</span>
+      </div>
+      <div class="picker-content">
+        <div class="picker-col" id="yearPicker"></div>
+        <div class="picker-col" id="monthPicker"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 定义活动的可选时间范围
+    const activityStart = { year: 2025, month: 11 }; // 2025年12月 (month从0开始)
+    const activityEnd = { year: 2026, month: 2 };   // 2026年3月
+
+    document.getElementById('btnBack').addEventListener('click', () => {
+      window.location.href = '5.2.2-walking-main.html';
+    });
+
+    const calendarMonth = document.getElementById('calendarMonth');
+    const calendarDays = document.getElementById('calendarDays');
+    const pickerMask = document.getElementById('pickerMask');
+    const pickerPanel = document.getElementById('pickerPanel');
+    const yearPicker = document.getElementById('yearPicker');
+    const monthPicker = document.getElementById('monthPicker');
+    const btnPrev = document.getElementById('btnPrev');
+    const btnNext = document.getElementById('btnNext');
+
+    let currentYear = 2026;
+    let currentMonth = 0; // 1月
+    
+    // 用于选择器面板临时存放的状态
+    let tempSelectedYear = currentYear;
+    let tempSelectedMonth = currentMonth;
+
+    // 模拟的步数数据
+    const mockStepData = {
+      '2025-11': { 1: 8500, 5: 9200, 10: 10000, 15: 8000, 20: 12000, 25: 9500, 28: 11000 },
+      '2025-12': { 1: 8650, 2: 12300, 3: 9800, 5: 11000, 10: 14500, 15: 8000, 20: 15000, 25: 9500, 30: 10200 },
+      '2026-0': { 1: 9000, 5: 8500, 10: 12000, 15: 9500, 20: 8000, 25: 10500 }, // 1月
+      '2026-1': { 1: 8000 }, // 2月
+      '2026-2': { 5: 5000 }  // 3月
+    };
+
+    // 边界检查：是否可以向前/向后翻页
+    function checkNavButtons() {
+      let disablePrev = false;
+      let disableNext = false;
+      
+      if (currentYear === activityStart.year && currentMonth <= activityStart.month) {
+        disablePrev = true;
+      }
+      if (currentYear === activityEnd.year && currentMonth >= activityEnd.month) {
+        disableNext = true;
+      }
+      
+      btnPrev.disabled = disablePrev;
+      btnNext.disabled = disableNext;
+    }
+
+    btnPrev.addEventListener('click', () => {
+      if (btnPrev.disabled) return;
+      currentMonth--;
+      if (currentMonth < 0) {
+        currentMonth = 11;
+        currentYear--;
+      }
+      renderCalendar(currentYear, currentMonth);
+    });
+
+    btnNext.addEventListener('click', () => {
+      if (btnNext.disabled) return;
+      currentMonth++;
+      if (currentMonth > 11) {
+        currentMonth = 0;
+        currentYear++;
+      }
+      renderCalendar(currentYear, currentMonth);
+    });
+
+    // 渲染主日历网格
+    function renderCalendar(year, month) {
+      calendarMonth.textContent = `${year}年${month + 1}月`;
+      calendarDays.innerHTML = '';
+      checkNavButtons();
+
+      const firstDay = new Date(year, month, 1).getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const daysInPrevMonth = new Date(year, month, 0).getDate();
+
+      const today = new Date();
+      // 这里为了演示效果，假定今天是 2026年1月25日
+      const mockToday = new Date(2026, 0, 25); 
+      const isCurrentMonth = mockToday.getFullYear() === year && mockToday.getMonth() === month;
+
+      const key = `${year}-${month}`;
+      const stepData = mockStepData[key] || {};
+
+      // 填充上个月的尾巴
+      for (let i = firstDay - 1; i >= 0; i--) {
+        const day = document.createElement('div');
+        day.className = 'calendar-day other-month';
+        day.innerHTML = `<span>${daysInPrevMonth - i}</span>`;
+        calendarDays.appendChild(day);
+      }
+
+      // 填充当月天数
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dayEl = document.createElement('div');
+        dayEl.className = 'calendar-day';
+        
+        if (isCurrentMonth && day === mockToday.getDate()) {
+          dayEl.classList.add('today');
+        }
+
+        const daySpan = document.createElement('span');
+        daySpan.textContent = day;
+        dayEl.appendChild(daySpan);
+
+        const steps = stepData[day];
+        if (steps) {
+          const stepsSpan = document.createElement('span');
+          stepsSpan.className = 'day-steps';
+          stepsSpan.textContent = steps.toLocaleString();
+          dayEl.appendChild(stepsSpan);
+        }
+
+        calendarDays.appendChild(dayEl);
+      }
+
+      // 填充下个月的开头
+      const totalCells = firstDay + daysInMonth;
+      const remainingCells = Math.ceil(totalCells / 7) * 7 - totalCells;
+      for (let i = 1; i <= remainingCells; i++) {
+        const day = document.createElement('div');
+        day.className = 'calendar-day other-month';
+        day.innerHTML = `<span>${i}</span>`;
+        calendarDays.appendChild(day);
+      }
+    }
+
+    // --- 以下为修复后的选择器逻辑 ---
+
+    // 渲染面板中的年份和月份列表
+    function renderPickerLists() {
+      yearPicker.innerHTML = '';
+      monthPicker.innerHTML = '';
+
+      // 渲染年份列
+      for (let y = activityStart.year; y <= activityEnd.year; y++) {
+        const yItem = document.createElement('div');
+        yItem.className = 'picker-item' + (y === tempSelectedYear ? ' selected' : '');
+        yItem.textContent = y + '年';
+        yItem.dataset.value = y;
+        yearPicker.appendChild(yItem);
+      }
+
+      // 渲染月份列（根据选中的年份动态限制可选月份）
+      let startMonth = tempSelectedYear === activityStart.year ? activityStart.month : 0;
+      let endMonth = tempSelectedYear === activityEnd.year ? activityEnd.month : 11;
+      
+      for (let m = startMonth; m <= endMonth; m++) {
+        const mItem = document.createElement('div');
+        mItem.className = 'picker-item' + (m === tempSelectedMonth ? ' selected' : '');
+        mItem.textContent = m + 1 + '月';
+        mItem.dataset.value = m;
+        monthPicker.appendChild(mItem);
+      }
+    }
+
+    function openPicker() {
+      tempSelectedYear = currentYear;
+      tempSelectedMonth = currentMonth;
+      renderPickerLists();
+      pickerMask.classList.add('show');
+      pickerPanel.classList.add('show');
+    }
+
+    function closePicker() {
+      pickerMask.classList.remove('show');
+      pickerPanel.classList.remove('show');
+    }
+
+    calendarMonth.addEventListener('click', openPicker);
+    pickerMask.addEventListener('click', closePicker);
+    document.getElementById('pickerCancel').addEventListener('click', closePicker);
+    
+    // 点击确定，应用选择
+    document.getElementById('pickerConfirm').addEventListener('click', () => {
+      currentYear = tempSelectedYear;
+      currentMonth = tempSelectedMonth;
+      renderCalendar(currentYear, currentMonth);
+      closePicker();
+    });
+
+    // 修复：事件委托处理点击选择逻辑
+    yearPicker.addEventListener('click', (e) => {
+      const item = e.target.closest('.picker-item');
+      if (item) {
+        tempSelectedYear = parseInt(item.dataset.value);
+        
+        // 跨年切换时，如果原本选中的月份在新的一年不在允许范围内，需要修正
+        let minM = tempSelectedYear === activityStart.year ? activityStart.month : 0;
+        let maxM = tempSelectedYear === activityEnd.year ? activityEnd.month : 11;
+        if (tempSelectedMonth < minM) tempSelectedMonth = minM;
+        if (tempSelectedMonth > maxM) tempSelectedMonth = maxM;
+
+        renderPickerLists(); // 重新渲染列表以更新选中状态
+      }
+    });
+
+    monthPicker.addEventListener('click', (e) => {
+      const item = e.target.closest('.picker-item');
+      if (item) {
+        tempSelectedMonth = parseInt(item.dataset.value);
+        renderPickerLists(); // 重新渲染列表以更新选中状态
+      }
+    });
+
+    // 初始渲染
+    renderCalendar(currentYear, currentMonth);
+  </script>
+</body>
+</html>
