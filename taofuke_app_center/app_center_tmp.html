@@ -136,6 +136,20 @@
   .detail-section ul li { font-size: 13px; color: #606266; line-height: 1.9; }
 
 
+  /* ===== Toast 提示 ===== */
+  .toast {
+    position: fixed; top: 16px; left: 50%; transform: translateX(-50%) translateY(-100%);
+    background: #fff; color: #303133; border-radius: 8px;
+    padding: 10px 20px; font-size: 14px;
+    box-shadow: 0 4px 12px rgba(0,0,0,.15);
+    z-index: 200; display: flex; align-items: center; gap: 8px;
+    opacity: 0; transition: all .3s ease;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+  .toast-icon { width: 18px; height: 18px; border-radius: 50%; background: #f56c6c; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; font-weight: 700; }
+  .toast-msg { color: #606266; font-size: 14px; }
+
 </style>
 </head>
 <body>
@@ -218,7 +232,7 @@
             <div class="app-desc">面向工会场景的专属营销解决方案，支持活动策划、会员福利发放、一键核销等功能，助力提升工会成员活跃度与满意度。</div>
             <div class="app-footer">
               <button class="btn btn-default" onclick="openModal('union')">查看详情</button>
-              <button class="btn btn-primary">进入应用</button>
+              <button class="btn btn-primary" onclick="showToast('该应用仅限管理员角色访问')">进入应用</button>
             </div>
           </div>
         </div>
@@ -245,6 +259,12 @@
   </main>
 </div>
 
+<!-- Toast 提示 -->
+<div class="toast" id="toast">
+  <span class="toast-icon">✕</span>
+  <span class="toast-msg" id="toastMsg"></span>
+</div>
+
 <!-- 详情弹窗 -->
 <div class="modal-mask" id="modalMask" onclick="onMaskClick(event)">
   <div class="modal">
@@ -266,6 +286,14 @@
 </div>
 
 <script>
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    const toastMsg = document.getElementById('toastMsg');
+    toastMsg.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => { toast.classList.remove('show'); }, 2000);
+  }
+
   const APP_DATA = {
     union: {
       title: '工会营销活动',
