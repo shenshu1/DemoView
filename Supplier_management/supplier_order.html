@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<title>码上兑订单 - 供应商管理系统</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; color: #333; background: #f0f2f5; font-size: 14px; }
+
+  /* ===== 顶部栏 ===== */
+  .topbar {
+    height: 48px; background: #fff;
+    display: flex; align-items: center;
+    padding: 0 20px; border-bottom: 1px solid #e8e8e8;
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  }
+  .logo { display: flex; align-items: center; gap: 12px; }
+  .logo-icon { font-size: 24px; font-weight: 700; font-style: italic; color: #1890ff; letter-spacing: -1px; }
+  .logo-icon span { color: #fa8c16; }
+  .topbar-title { font-size: 14px; color: #333; margin-left: 24px; line-height: 1.4; }
+  .topbar-title .sub { font-size: 12px; color: #999; }
+  .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 20px; font-size: 13px; color: #666; }
+  .topbar-right .notice { display: flex; align-items: center; gap: 4px; cursor: pointer; }
+  .topbar-right .notice:hover { color: #1890ff; }
+  .topbar-right .role-tag { background: #1890ff; color: #fff; padding: 2px 8px; border-radius: 3px; font-size: 12px; }
+  .topbar-right .username { color: #333; }
+  .topbar-right .logout { color: #999; cursor: pointer; }
+  .topbar-right .logout:hover { color: #1890ff; }
+
+  /* ===== 主布局 ===== */
+  .layout { display: flex; min-height: 100vh; padding-top: 48px; }
+
+  /* ===== 侧边栏 ===== */
+  .sidebar { width: 180px; background: #fff; border-right: 1px solid #e8e8e8; position: fixed; top: 48px; bottom: 0; left: 0; overflow-y: auto; z-index: 50; }
+  .sidebar-header { padding: 16px 16px 8px; border-bottom: 1px solid #f0f0f0; }
+  .sidebar-header .sys-name { font-size: 14px; font-weight: 600; color: #333; }
+  .sidebar-header .supplier-info { font-size: 12px; color: #999; margin-top: 6px; line-height: 1.6; }
+  .menu { list-style: none; padding: 4px 0; }
+  .menu-item { display: flex; align-items: center; padding: 0 16px; height: 40px; color: #333; cursor: pointer; font-size: 14px; gap: 8px; transition: all .15s; }
+  .menu-item:hover { color: #1890ff; background: #e6f7ff; }
+  .menu-item .icon { width: 16px; text-align: center; color: #666; font-size: 14px; }
+  .menu-item .label { flex: 1; }
+  .menu-item .arrow { color: #bbb; font-size: 12px; }
+  .menu-item.active { color: #1890ff; background: #e6f7ff; border-right: 3px solid #1890ff; }
+
+  .submenu { list-style: none; }
+  .submenu li { padding: 0 16px 0 40px; height: 36px; display: flex; align-items: center; color: #666; cursor: pointer; font-size: 13px; transition: all .15s; }
+  .submenu li:hover { color: #1890ff; background: #e6f7ff; }
+  .submenu li.active { color: #1890ff; font-weight: 500; }
+
+  /* ===== 内容区 ===== */
+  .content { flex: 1; margin-left: 180px; padding: 16px; }
+
+  /* ===== 筛选区 ===== */
+  .filter-card { background: #fff; border-radius: 4px; padding: 20px 20px 12px; margin-bottom: 16px; }
+  .filter-row { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 12px; align-items: center; }
+  .filter-item { display: flex; align-items: center; gap: 8px; }
+  .filter-item label { font-size: 13px; color: #666; white-space: nowrap; min-width: 56px; text-align: right; }
+  .filter-item input, .filter-item select { height: 32px; border: 1px solid #d9d9d9; border-radius: 4px; padding: 0 11px; font-size: 13px; color: #333; outline: none; transition: border-color .2s; }
+  .filter-item input:focus, .filter-item select:focus { border-color: #1890ff; box-shadow: 0 0 0 2px rgba(24,144,255,.1); }
+  .filter-item input { width: 180px; }
+  .filter-item select { width: 180px; appearance: auto; }
+  .filter-item .date-range { display: flex; align-items: center; gap: 8px; }
+  .filter-item .date-range input { width: 140px; }
+  .filter-item .date-range .sep { color: #999; }
+  .filter-actions { display: flex; justify-content: flex-end; gap: 8px; }
+  .btn { height: 32px; padding: 0 16px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: all .2s; }
+  .btn-primary { background: #1890ff; color: #fff; border-color: #1890ff; }
+  .btn-primary:hover { background: #40a9ff; border-color: #40a9ff; }
+  .btn-default { background: #fff; color: #333; }
+  .btn-default:hover { color: #1890ff; border-color: #1890ff; }
+
+  /* ===== 表格 ===== */
+  .table-card { background: #fff; border-radius: 4px; padding: 0; overflow: hidden; }
+  .table-wrapper { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead { background: #fafafa; }
+  th { padding: 12px 16px; text-align: left; font-weight: 600; color: #333; border-bottom: 1px solid #e8e8e8; white-space: nowrap; }
+  td { padding: 12px 16px; border-bottom: 1px solid #f0f0f0; color: #333; white-space: nowrap; }
+  tr:hover td { background: #e6f7ff; }
+  .link { color: #1890ff; cursor: pointer; text-decoration: none; }
+  .link:hover { color: #40a9ff; }
+
+  /* 状态 */
+  .status-success { color: #52c41a; }
+  .status-refund { color: #fa8c16; }
+  .status-cancel { color: #ff4d4f; }
+
+  /* ===== 分页 ===== */
+  .pagination { display: flex; align-items: center; justify-content: flex-end; padding: 12px 16px; gap: 8px; font-size: 13px; color: #666; }
+  .pagination .total { margin-right: auto; }
+  .page-btn { width: 28px; height: 28px; border: 1px solid #d9d9d9; border-radius: 4px; display: flex; align-items: center; justify-content: center; cursor: pointer; background: #fff; color: #333; font-size: 12px; }
+  .page-btn:hover { color: #1890ff; border-color: #1890ff; }
+  .page-btn.active { background: #1890ff; color: #fff; border-color: #1890ff; }
+  .page-btn.disabled { color: #d9d9d9; cursor: not-allowed; }
+  .page-size select { height: 28px; border: 1px solid #d9d9d9; border-radius: 4px; padding: 0 4px; font-size: 12px; }
+
+  /* ===== 详情页 ===== */
+  .detail-page { display: none; }
+  .detail-page.show { display: block; }
+  .list-page.hide { display: none; }
+
+  .detail-header { background: #fff; border-radius: 4px; padding: 20px 24px; margin-bottom: 16px; }
+  .detail-info { display: flex; flex-wrap: wrap; gap: 40px; font-size: 13px; color: #333; padding: 4px 0; }
+  .detail-info .label { color: #999; }
+  .detail-result { display: flex; align-items: center; gap: 8px; margin-top: 16px; }
+  .detail-result .icon { width: 24px; height: 24px; border-radius: 50%; background: #52c41a; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+  .detail-result .text { font-size: 16px; font-weight: 500; color: #333; }
+
+  .detail-section { background: #fff; border-radius: 4px; padding: 20px 24px; margin-bottom: 16px; }
+  .detail-section h3 { font-size: 15px; font-weight: 600; color: #333; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #f0f0f0; }
+  .detail-table { width: 100%; border-collapse: collapse; border: 1px solid #e8e8e8; }
+  .detail-table th { background: #fafafa; padding: 14px 16px; text-align: left; font-weight: 600; color: #333; border: 1px solid #e8e8e8; font-size: 13px; }
+  .detail-table td { padding: 14px 16px; font-size: 13px; color: #666; border: 1px solid #e8e8e8; }
+
+  .back-btn { position: fixed; bottom: 24px; right: 24px; z-index: 50; }
+</style>
+</head>
+<body>
+
+<!-- 顶部栏 -->
+<div class="topbar">
+  <div class="logo">
+    <div class="logo-icon">T<span>F</span>K</div>
+  </div>
+  <div class="topbar-title">
+    供应商名称：鑫源供应链<br/>
+    <span class="sub">运营商名称：黄志华1177</span>
+  </div>
+  <div class="topbar-right">
+    <span class="notice">🔔 消息通知</span>
+    <span class="role-tag">待确定</span>
+    <span class="username">liuruichenmsdscys</span>
+    <span class="logout">退 出</span>
+  </div>
+</div>
+
+<!-- 主体 -->
+<div class="layout">
+  <!-- 侧边栏 -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sys-name">供应商管理系统</div>
+    </div>
+    <ul class="menu">
+      <li class="menu-item">
+        <span class="icon">🏠</span>
+        <span class="label">主页</span>
+        <span class="arrow">‹</span>
+      </li>
+      <li class="menu-item active">
+        <span class="icon">📋</span>
+        <span class="label">订单中心</span>
+        <span class="arrow">›</span>
+      </li>
+    </ul>
+    <ul class="submenu">
+      <li>商品订单</li>
+      <li class="active">码上兑订单</li>
+    </ul>
+    <ul class="menu">
+      <li class="menu-item">
+        <span class="icon">🔧</span>
+        <span class="label">售后中心</span>
+        <span class="arrow">›</span>
+      </li>
+      <li class="menu-item">
+        <span class="icon">📊</span>
+        <span class="label">结算中心</span>
+        <span class="arrow">›</span>
+      </li>
+      <li class="menu-item">
+        <span class="icon">🏪</span>
+        <span class="label">商家管理</span>
+        <span class="arrow">›</span>
+      </li>
+      <li class="menu-item">
+        <span class="icon">🛒</span>
+        <span class="label">商品中心</span>
+        <span class="arrow">›</span>
+      </li>
+    </ul>
+  </aside>
+
+  <!-- 内容区 -->
+  <main class="content">
+    <!-- 列表页 -->
+    <div class="list-page" id="listPage">
+      <div class="filter-card">
+        <div class="filter-row">
+          <div class="filter-item">
+            <label>订单编号:</label>
+            <input type="text" placeholder="请输入订单编号" />
+          </div>
+          <div class="filter-item">
+            <label>订单状态:</label>
+            <select>
+              <option value="">请选择订单状态</option>
+              <option>核销成功</option>
+              <option>已撤销</option>
+            </select>
+          </div>
+          <div class="filter-item">
+            <label>核销门店:</label>
+            <select>
+              <option value="">请选择核销门店</option>
+              <option>Jason的民宿</option>
+              <option>夏氏螺丝</option>
+            </select>
+          </div>
+        </div>
+        <div class="filter-row">
+          <div class="filter-item">
+            <label>下单时间:</label>
+            <div class="date-range">
+              <input type="date" value="2025-12-01" />
+              <span class="sep">→</span>
+              <input type="date" value="2026-04-30" />
+            </div>
+          </div>
+          <div class="filter-actions" style="margin-left:auto;">
+            <button class="btn btn-primary">查 询</button>
+            <button class="btn btn-default">导 出</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-card">
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>订单编号</th>
+                <th>订单金额(元)</th>
+                <th>折扣率</th>
+                <th>结算金额(元)</th>
+                <th>下单时间</th>
+                <th>核销门店</th>
+                <th>订单状态</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>202512171417191616193</td>
+                <td>1.00</td>
+                <td>0.8</td>
+                <td>0.80</td>
+                <td>2025-12-17 14:17:21</td>
+                <td>Jason的民宿</td>
+                <td>核销成功</td>
+                <td><a class="link" onclick="showDetail('success')">查看</a></td>
+              </tr>
+              <tr>
+                <td>202512090217254640122</td>
+                <td>89.10</td>
+                <td>0.9</td>
+                <td>80.19</td>
+                <td>2025-12-09 02:17:26</td>
+                <td>夏氏螺丝</td>
+                <td>已撤销</td>
+                <td><a class="link" onclick="showDetail('cancel_in24h')">查看</a></td>
+              </tr>
+              <tr>
+                <td>202512090217181786677</td>
+                <td>99.00</td>
+                <td>0.9</td>
+                <td>89.10</td>
+                <td>2025-12-09 02:17:18</td>
+                <td>夏氏螺丝</td>
+                <td>已撤销</td>
+                <td><a class="link" onclick="showDetail('cancel_over24h')">查看</a></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="pagination">
+          <span class="total">共有3条记录</span>
+          <span class="page-btn disabled">‹</span>
+          <span class="page-btn active">1</span>
+          <span class="page-btn disabled">›</span>
+          <div class="page-size">
+            <select><option>10 条/页</option></select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 详情页 -->
+    <div class="detail-page" id="detailPage">
+      <div class="detail-section">
+        <h3>基本信息</h3>
+        <div class="detail-info" id="detailInfo"></div>
+      </div>
+
+      <!-- 码上兑信息 -->
+      <div class="detail-section">
+        <h3>码上兑信息</h3>
+        <table class="detail-table">
+          <thead>
+            <tr>
+              <th>电子券码</th>
+              <th>券码状态</th>
+              <th>有效截止时间</th>
+              <th>供应商结算金额(元)</th>
+            </tr>
+          </thead>
+          <tbody id="couponBody"></tbody>
+        </table>
+      </div>
+
+      <!-- 核销信息 -->
+      <div class="detail-section">
+        <h3>核销信息</h3>
+        <table class="detail-table">
+          <thead>
+            <tr>
+              <th>核销门店</th>
+              <th>操作说明</th>
+              <th>核销时间</th>
+              <th>撤销时间</th>
+              <th>核销金额</th>
+            </tr>
+          </thead>
+          <tbody id="verifyBody"></tbody>
+        </table>
+      </div>
+
+      <div class="back-btn">
+        <button class="btn btn-primary" onclick="backToList()">返回</button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+  var DETAIL_DATA = {
+    success: {
+      info: '<span><span class="label">订单编号：</span>202512171417191616193</span><span><span class="label">下单时间：</span>2025-12-17 14:17:21</span>',
+      coupon: '<tr><td>80****22</td><td>已核销</td><td>2025-12-18 14:17:21</td><td>0.80</td></tr>',
+      verify: '<tr><td>Jason的民宿</td><td>已核销</td><td>2025-12-17 14:17:21</td><td>—</td><td>1.00</td></tr>'
+    },
+    cancel_in24h: {
+      info: '<span><span class="label">订单编号：</span>202512090217254640122</span><span><span class="label">下单时间：</span>2025-12-09 02:17:26</span>',
+      coupon: '<tr><td>80****56</td><td>未核销</td><td>2025-12-10 02:17:26</td><td>80.19</td></tr>',
+      verify: '<tr><td>夏氏螺丝</td><td>已撤销</td><td>2025-12-09 02:17:26</td><td>2025-12-09 10:30:00</td><td>89.10</td></tr>'
+    },
+    cancel_over24h: {
+      info: '<span><span class="label">订单编号：</span>202512090217181786677</span><span><span class="label">下单时间：</span>2025-12-09 02:17:18</span>',
+      coupon: '<tr><td>80****56</td><td>已作废</td><td>2025-12-10 02:17:18</td><td>89.10</td></tr>',
+      verify: '<tr><td>夏氏螺丝</td><td>已撤销</td><td>2025-12-09 02:17:18</td><td>2025-12-11 09:00:00</td><td>99.00</td></tr>'
+    }
+  };
+
+  function showDetail(type) {
+    var data = DETAIL_DATA[type];
+    document.getElementById('detailInfo').innerHTML = data.info;
+    document.getElementById('couponBody').innerHTML = data.coupon;
+    document.getElementById('verifyBody').innerHTML = data.verify;
+    document.getElementById('listPage').classList.add('hide');
+    document.getElementById('detailPage').classList.add('show');
+  }
+
+  function backToList() {
+    document.getElementById('listPage').classList.remove('hide');
+    document.getElementById('detailPage').classList.remove('show');
+  }
+</script>
+
+</body>
+</html>
