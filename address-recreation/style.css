@@ -1,0 +1,941 @@
+/* ==========================================================================
+   🌌 Address Recreation CSS - High Fidelity Style
+   ========================================================================== */
+
+:root {
+    --bg-gray: #f7f7f7;
+    --divider-gray: #f5f5f5;
+    --border-gray: #eeeeee;
+    --text-primary: #333333;
+    --text-secondary: #999999;
+    --text-placeholder: #b0b0b0;
+    --brand-red: #c83c3c;
+    --save-pink: #df8f8f;
+    --save-pink-active: #cc7e7e;
+    --phone-bg: #000000;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background-color: #121212;
+    color: #e0e0e0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* ==========================================================================
+   📱 Phone Mockup Shell (Only applies on Desktop)
+   ========================================================================== */
+.phone-shell {
+    width: 375px;
+    height: 812px;
+    background-color: var(--phone-bg);
+    border-radius: 40px;
+    border: 12px solid #2d2d2d;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8),
+                0 0 0 2px #3d3d3d;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Simulated iPhone Notch / Dynamic Island on desktop */
+.phone-shell::before {
+    content: '';
+    position: absolute;
+    top: 5px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 110px;
+    height: 30px;
+    background-color: #000000;
+    border-radius: 20px;
+    z-index: 100;
+}
+
+/* Active screen area inside mockup */
+.phone-screen {
+    width: 100%;
+    height: 100%;
+    background-color: var(--bg-gray);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+    user-select: none;
+}
+
+/* ==========================================================================
+   🔋 WeChat Header Mockup
+   ========================================================================== */
+.wechat-header {
+    background-color: #191919;
+    color: #ffffff;
+    padding-top: 14px; /* Space for status bar icons */
+    flex-shrink: 0;
+    z-index: 90;
+}
+
+.status-bar {
+    height: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 24px 0 20px;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: -0.2px;
+    color: #ffffff;
+}
+
+.status-icons {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.icon-wifi {
+    width: 13px;
+    height: 13px;
+    color: #ffffff;
+}
+
+.signal-bar {
+    display: flex;
+    align-items: flex-end;
+    gap: 1.5px;
+    height: 9px;
+}
+
+.signal-bar .bar {
+    width: 2.5px;
+    background-color: rgba(255, 255, 255, 0.4);
+    border-radius: 0.5px;
+}
+
+.signal-bar .bar:nth-child(1) { height: 3px; }
+.signal-bar .bar:nth-child(2) { height: 5px; }
+.signal-bar .bar:nth-child(3) { height: 7px; }
+.signal-bar .bar:nth-child(4) { height: 9px; }
+
+.signal-bar .bar.fill {
+    background-color: #ffffff;
+}
+
+.battery {
+    width: 20px;
+    height: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    border-radius: 2px;
+    position: relative;
+    padding: 1px;
+    display: flex;
+}
+
+.battery::after {
+    content: '';
+    position: absolute;
+    right: -3px;
+    top: 2px;
+    width: 2px;
+    height: 4px;
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 0 1px 1px 0;
+}
+
+.battery-level {
+    width: 73%;
+    height: 100%;
+    background-color: #ffffff;
+    border-radius: 0.5px;
+}
+
+.battery-text {
+    font-size: 8px;
+    position: absolute;
+    left: -15px;
+    top: -1px;
+    color: #ffffff;
+    transform: scale(0.85);
+}
+
+.title-bar {
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    border-bottom: 0.5px solid rgba(255, 255, 255, 0.08);
+}
+
+.wechat-title-group {
+    text-align: center;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.main-title {
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.2;
+}
+
+.sub-title {
+    font-size: 9px;
+    color: #888888;
+    line-height: 1.2;
+    margin-top: 1px;
+}
+
+.close-btn, .menu-btn {
+    background: none;
+    border: none;
+    color: #ffffff;
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+.close-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+.menu-btn svg {
+    width: 20px;
+    height: 20px;
+}
+
+.close-btn:hover, .menu-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ==========================================================================
+   🧭 Page Navigation Bar
+   ========================================================================== */
+.page-nav {
+    background-color: #ffffff;
+    height: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 8px;
+    border-bottom: 0.5px solid var(--border-gray);
+    flex-shrink: 0;
+}
+
+.back-btn {
+    background: none;
+    border: none;
+    color: #666666;
+    cursor: pointer;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.back-btn svg {
+    width: 22px;
+    height: 22px;
+}
+
+.back-btn:active {
+    opacity: 0.5;
+}
+
+.nav-title {
+    font-size: 17px;
+    font-weight: 500;
+    color: #000000;
+    margin-right: 18px; /* Offset the back button space to keep it centered */
+}
+
+.nav-placeholder {
+    width: 20px;
+}
+
+/* ==========================================================================
+   📜 Scrollable Content Area
+   ========================================================================== */
+.scroll-content {
+    flex-grow: 1;
+    overflow-y: auto;
+    background-color: var(--bg-gray);
+    padding-bottom: 100px; /* Space for floating bottom save button */
+    scrollbar-width: none; /* Hide scrollbar for clean app experience */
+}
+
+.scroll-content::-webkit-scrollbar {
+    display: none;
+}
+
+/* ==========================================================================
+   📝 Form Input Fields
+   ========================================================================== */
+.form-group {
+    background-color: #ffffff;
+    width: 100%;
+}
+
+.form-row {
+    position: relative;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    border-bottom: 0.5px solid var(--border-gray);
+}
+
+.form-row:last-child {
+    border-bottom: none;
+}
+
+.form-input {
+    width: 100%;
+    height: 100%;
+    border: none;
+    outline: none;
+    font-size: 15px;
+    color: #000000;
+    background: transparent;
+}
+
+.form-input::placeholder {
+    color: var(--text-placeholder);
+}
+
+/* Address Picker Row Specifics */
+.address-picker-row {
+    justify-content: space-between;
+    cursor: pointer;
+    height: auto;
+    min-height: 52px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.address-picker-label {
+    font-size: 15px;
+    color: var(--text-placeholder);
+    flex-grow: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    line-height: 1.4;
+    user-select: none;
+    word-break: break-all;
+}
+
+.address-picker-label.selected {
+    color: #000000;
+}
+
+.location-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #999999;
+    padding-left: 14px;
+    border-left: 0.5px solid var(--border-gray);
+    height: 32px;
+    min-width: 48px;
+    cursor: pointer;
+    user-select: none;
+    flex-shrink: 0;
+}
+
+.location-btn:active {
+    opacity: 0.6;
+}
+
+.icon-location {
+    width: 16px;
+    height: 16px;
+    color: #888888;
+    margin-bottom: 2px;
+}
+
+.location-btn span {
+    font-size: 10px;
+    line-height: 1;
+    color: #999999;
+}
+
+/* ==========================================================================
+   💬 Tooltip Box (获取精准地址)
+   ========================================================================== */
+.tooltip-container {
+    position: absolute;
+    right: 8px;
+    top: -26px;
+    z-index: 10;
+    pointer-events: none;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+    animation: bounce 2s infinite;
+}
+
+.tooltip-box {
+    background-color: #333333;
+    color: #ffffff;
+    font-size: 11px;
+    padding: 5px 8px;
+    border-radius: 4px;
+    position: relative;
+    white-space: nowrap;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+/* Tooltip Triangle arrow pointing down */
+.tooltip-box::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    right: 18px;
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 4px solid #333333;
+}
+
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-4px);
+    }
+}
+
+/* ==========================================================================
+   ➖ Grey Section Divider
+   ========================================================================== */
+.section-divider {
+    height: 10px;
+    background-color: var(--bg-gray);
+    width: 100%;
+}
+
+/* ==========================================================================
+   ✂️ Auto Parse/Paste Section
+   ========================================================================== */
+.parser-section {
+    padding: 12px 14px;
+    background-color: var(--bg-gray);
+}
+
+.parser-card {
+    background-color: #ffffff;
+    border: 0.5px solid #dedede;
+    border-radius: 4px;
+    position: relative;
+    padding: 10px;
+    height: 125px;
+    display: flex;
+    flex-direction: column;
+}
+
+.parser-textarea {
+    width: 100%;
+    height: 80px;
+    border: none;
+    resize: none;
+    outline: none;
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: #333333;
+    background: transparent;
+    font-family: inherit;
+}
+
+.parser-textarea::placeholder {
+    color: #b8b8b8;
+}
+
+.identify-btn {
+    position: absolute;
+    right: 8px;
+    bottom: 8px;
+    background-color: var(--brand-red);
+    color: #ffffff;
+    border: none;
+    outline: none;
+    border-radius: 4px;
+    padding: 5px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.identify-btn:active {
+    background-color: #a62e2e;
+}
+
+/* Text Hint */
+.hint-text {
+    padding: 0 16px;
+    font-size: 11px;
+    color: #b0b0b0;
+    line-height: 1.4;
+    background-color: var(--bg-gray);
+}
+
+/* ==========================================================================
+   🔘 Default Address Switch
+   ========================================================================== */
+.default-row {
+    display: flex;
+    align-items: center;
+    padding: 18px 16px;
+    background-color: var(--bg-gray);
+    cursor: pointer;
+    user-select: none;
+    width: max-content;
+}
+
+.custom-checkbox {
+    width: 18px;
+    height: 18px;
+    border: 1.5px solid #cccccc;
+    border-radius: 50%;
+    margin-right: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    background-color: #ffffff;
+}
+
+.default-row:active .custom-checkbox {
+    transform: scale(0.95);
+}
+
+.custom-checkbox.checked {
+    border-color: var(--save-pink);
+    background-color: var(--save-pink);
+}
+
+.custom-checkbox.checked::after {
+    content: '';
+    width: 8px;
+    height: 4px;
+    border-left: 1.5px solid #ffffff;
+    border-bottom: 1.5px solid #ffffff;
+    transform: rotate(-45deg);
+    margin-bottom: 2px;
+}
+
+.default-label {
+    font-size: 14px;
+    color: #000000;
+}
+
+/* ==========================================================================
+   💾 Bottom Save Action Button
+   ========================================================================== */
+.footer-action {
+    position: absolute;
+    bottom: 50px; /* Suspended above the browser bottom bar */
+    left: 0;
+    width: 100%;
+    background-color: transparent;
+    padding: 0;
+    z-index: 80;
+}
+
+.save-btn {
+    width: 100%;
+    height: 48px;
+    background-color: var(--save-pink);
+    color: #ffffff;
+    border: none;
+    outline: none;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.save-btn:active {
+    background-color: var(--save-pink-active);
+}
+
+/* ==========================================================================
+   🧭 Mock Browser Bottom Bar
+   ========================================================================== */
+.wechat-bottom-bar {
+    height: 50px;
+    background-color: #121212;
+    border-top: 0.5px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 0 40px;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    z-index: 90;
+}
+
+.nav-arrow-btn {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nav-arrow-btn svg {
+    width: 20px;
+    height: 20px;
+}
+
+.nav-arrow-btn.disabled {
+    color: rgba(255, 255, 255, 0.2);
+    cursor: not-allowed;
+}
+
+/* ==========================================================================
+   🏢 Full-page Address Selection Overlay
+   ========================================================================== */
+.address-page-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.address-page-overlay.show {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.address-page-shell {
+    position: relative;
+}
+
+.address-page-shell .phone-screen {
+    background-color: #ffffff;
+}
+
+/* Search Bar */
+.addr-search-bar {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    background-color: #ffffff;
+    border-bottom: 0.5px solid var(--border-gray);
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.addr-city-selector {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    font-size: 14px;
+    color: #333;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+    padding-right: 4px;
+}
+
+.addr-city-arrow {
+    color: #666;
+}
+
+.addr-search-input-wrap {
+    display: flex;
+    align-items: center;
+    background-color: #f5f5f5;
+    border-radius: 4px;
+    padding: 0 10px;
+    height: 34px;
+    flex-grow: 1;
+    gap: 6px;
+}
+
+.addr-search-icon {
+    flex-shrink: 0;
+}
+
+.addr-search-input {
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 14px;
+    color: #333;
+    width: 100%;
+    height: 100%;
+}
+
+.addr-search-input::placeholder {
+    color: #b0b0b0;
+}
+
+/* Map Area */
+.addr-map-area {
+    width: 100%;
+    height: 200px;
+    flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.addr-map-placeholder {
+    width: 100%;
+    height: 100%;
+    background-color: #e8e4df;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Simulated map grid lines */
+.addr-map-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(200, 195, 188, 0.5) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(200, 195, 188, 0.5) 1px, transparent 1px);
+    background-size: 50px 50px;
+}
+
+.addr-map-grid::before {
+    content: '';
+    position: absolute;
+    top: 30%;
+    left: 10%;
+    width: 45%;
+    height: 35%;
+    background-color: rgba(180, 210, 160, 0.4);
+    border-radius: 4px;
+}
+
+.addr-map-grid::after {
+    content: '';
+    position: absolute;
+    top: 20%;
+    left: 55%;
+    width: 40%;
+    height: 50%;
+    background-color: rgba(210, 200, 185, 0.5);
+    border-radius: 2px;
+}
+
+.addr-map-marker {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -100%);
+    z-index: 5;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+}
+
+.addr-map-relocate {
+    position: absolute;
+    right: 12px;
+    bottom: 12px;
+    width: 36px;
+    height: 36px;
+    background-color: #ffffff;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    cursor: pointer;
+    z-index: 5;
+}
+
+.addr-map-relocate:active {
+    background-color: #f0f0f0;
+}
+
+/* Address Results List */
+.addr-results-area {
+    flex-grow: 1;
+    overflow-y: auto;
+    background-color: #ffffff;
+    scrollbar-width: none;
+}
+
+.addr-results-area::-webkit-scrollbar {
+    display: none;
+}
+
+.addr-results-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.addr-result-item {
+    display: flex;
+    align-items: flex-start;
+    padding: 14px 16px;
+    cursor: pointer;
+    border-bottom: 0.5px solid var(--border-gray);
+    gap: 12px;
+    transition: background-color 0.15s;
+}
+
+.addr-result-item:active {
+    background-color: #f8f8f8;
+}
+
+.addr-result-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #cccccc;
+    margin-top: 6px;
+    flex-shrink: 0;
+}
+
+.addr-result-item.active .addr-result-dot {
+    background-color: #e74c3c;
+}
+
+.addr-result-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.addr-result-name {
+    font-size: 15px;
+    font-weight: 500;
+    color: #000000;
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.addr-result-detail {
+    font-size: 12px;
+    color: #999999;
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ==========================================================================
+   🍞 Toast Popup Styling
+   ========================================================================== */
+.toast {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.9);
+    background-color: rgba(0, 0, 0, 0.85);
+    color: #ffffff;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    z-index: 2000;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    text-align: center;
+    max-width: 80%;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+    pointer-events: auto;
+}
+
+/* ==========================================================================
+   📱 Responsive adjustments for native mobile devices
+   ========================================================================== */
+@media (max-width: 500px) {
+    body {
+        background-color: var(--bg-gray);
+    }
+    
+    .phone-shell {
+        width: 100vw;
+        height: 100vh;
+        border: none;
+        border-radius: 0;
+        box-shadow: none;
+    }
+    
+    .phone-shell::before {
+        display: none; /* Hide simulated iPhone notch on actual mobile screen */
+    }
+    
+    .wechat-header {
+        padding-top: env(safe-area-inset-top, 20px); /* Account for actual system status bar */
+    }
+    
+    .wechat-bottom-bar {
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+        height: calc(50px + env(safe-area-inset-bottom, 0px));
+    }
+    
+    .footer-action {
+        bottom: calc(50px + env(safe-area-inset-bottom, 0px));
+    }
+    
+    .scroll-content {
+        padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px));
+    }
+    
+    .address-page-shell {
+        width: 100vw;
+        height: 100vh;
+        border: none;
+        border-radius: 0;
+        box-shadow: none;
+    }
+    
+    .address-page-shell::before {
+        display: none;
+    }
+}

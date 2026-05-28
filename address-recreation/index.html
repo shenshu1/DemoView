@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>新建地址</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts for premium typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+    <!-- Responsive Phone Shell for Desktop, transparent on Mobile -->
+    <div class="phone-shell">
+        <div class="phone-screen">
+
+            <!-- 1. WeChat Top Browser Header Mockup -->
+            <div class="wechat-header">
+                <div class="status-bar">
+                    <span class="time">17:17</span>
+                    <div class="status-icons">
+                        <svg class="icon-wifi" viewBox="0 0 24 24">
+                            <path fill="currentColor"
+                                d="M12 21l-12-12c2.9-2.9 6.8-4.5 11-4.5s8.1 1.6 11 4.5l-12 12zm0-18c-3.3 0-6.4 1.2-8.8 3.2l8.8 8.8 8.8-8.8c-2.4-2-5.5-3.2-8.8-3.2z" />
+                        </svg>
+                        <span class="signal-bar">
+                            <span class="bar fill"></span>
+                            <span class="bar fill"></span>
+                            <span class="bar fill"></span>
+                            <span class="bar fill"></span>
+                        </span>
+                        <div class="battery">
+                            <div class="battery-level"></div>
+                            <span class="battery-text">73</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="title-bar">
+                    <button class="close-btn" id="closeBtn">
+                        <svg viewBox="0 0 24 24">
+                            <path fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                                stroke-linejoin="round" d="M18 6L6 18M6 6l12 12" />
+                        </svg>
+                    </button>
+                    <div class="wechat-title-group">
+                        <div class="main-title">淘福客 chj 专用</div>
+                        <div class="sub-title">m.quanmaigo.com</div>
+                    </div>
+                    <button class="menu-btn">
+                        <svg viewBox="0 0 24 24">
+                            <circle cx="5" cy="12" r="2" fill="currentColor" />
+                            <circle cx="12" cy="12" r="2" fill="currentColor" />
+                            <circle cx="19" cy="12" r="2" fill="currentColor" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 2. Page Navigation Bar -->
+            <div class="page-nav">
+                <button class="back-btn" id="backNavBtn">
+                    <svg viewBox="0 0 24 24">
+                        <path fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                            stroke-linejoin="round" d="M15 18l-6-6 6-6" />
+                    </svg>
+                </button>
+                <div class="nav-title">新建地址</div>
+                <div class="nav-placeholder"></div>
+            </div>
+
+            <!-- Main Scrollable Form Container -->
+            <div class="scroll-content">
+                <form id="addressForm">
+                    <!-- Form Fields -->
+                    <div class="form-group">
+                        <div class="form-row">
+                            <input type="text" id="receiverName" class="form-input" placeholder="请填写收货人姓名"
+                                autocomplete="off" required>
+                        </div>
+
+                        <div class="form-row">
+                            <input type="tel" id="receiverPhone" class="form-input" placeholder="请填写收货人手机号"
+                                autocomplete="off" maxlength="11" required>
+                        </div>
+
+                        <div class="form-row address-picker-row" id="addressPickerTrigger">
+                            <div class="address-picker-label" id="regionText">点击选择地址</div>
+                            <div class="location-btn" id="locationBtn">
+                                <svg class="icon-location" viewBox="0 0 24 24">
+                                    <path fill="currentColor"
+                                        d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+                                </svg>
+                                <span>定位</span>
+                            </div>
+                            <!-- Tooltip above location -->
+                            <div class="tooltip-container" id="tooltip">
+                                <div class="tooltip-box">获取精准地址</div>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <input type="text" id="detailAddress" class="form-input" placeholder="请输入门牌号，如2栋1单元101室"
+                                autocomplete="off" required>
+                        </div>
+                    </div>
+
+                    <!-- Grey Separator -->
+                    <div class="section-divider"></div>
+
+                    <!-- Auto Parse Area -->
+                    <div class="parser-section">
+                        <div class="parser-card">
+                            <textarea id="parserInput" class="parser-textarea"
+                                placeholder="粘贴文本，自动识别姓名、电话、地址，例如，张三，13100000000，广东省深圳市南山区科兴科学园"></textarea>
+                            <button type="button" class="identify-btn" id="identifyBtn">识别</button>
+                        </div>
+                    </div>
+
+                    <!-- Clear hint text -->
+                    <div class="hint-text">
+                        购买跨境商品时需要姓名、身份证号用于清关，信息将被加密保存
+                    </div>
+
+                    <!-- Default Address Switch -->
+                    <div class="default-row" id="defaultToggle">
+                        <div class="custom-checkbox" id="defaultCheckbox"></div>
+                        <span class="default-label">设为默认地址</span>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Footer Action Button -->
+            <div class="footer-action">
+                <button type="submit" form="addressForm" class="save-btn" id="saveBtn">保存</button>
+            </div>
+
+            <!-- Mock Browser Navigation Bar at the Bottom -->
+            <div class="wechat-bottom-bar">
+                <button class="nav-arrow-btn disabled">
+                    <svg viewBox="0 0 24 24">
+                        <path fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                            stroke-linejoin="round" d="M15 18l-6-6 6-6" />
+                    </svg>
+                </button>
+                <button class="nav-arrow-btn disabled">
+                    <svg viewBox="0 0 24 24">
+                        <path fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                            stroke-linejoin="round" d="M9 18l6-6-6-6" />
+                    </svg>
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Full-page Address Selection Overlay -->
+    <div class="address-page-overlay" id="addressPageOverlay">
+        <div class="phone-shell address-page-shell">
+            <div class="phone-screen">
+                <!-- WeChat Header (same as main) -->
+                <div class="wechat-header">
+                    <div class="status-bar">
+                        <span class="time">17:17</span>
+                        <div class="status-icons">
+                            <svg class="icon-wifi" viewBox="0 0 24 24">
+                                <path fill="currentColor"
+                                    d="M12 21l-12-12c2.9-2.9 6.8-4.5 11-4.5s8.1 1.6 11 4.5l-12 12zm0-18c-3.3 0-6.4 1.2-8.8 3.2l8.8 8.8 8.8-8.8c-2.4-2-5.5-3.2-8.8-3.2z" />
+                            </svg>
+                            <span class="signal-bar">
+                                <span class="bar fill"></span>
+                                <span class="bar fill"></span>
+                                <span class="bar fill"></span>
+                                <span class="bar fill"></span>
+                            </span>
+                            <div class="battery">
+                                <div class="battery-level"></div>
+                                <span class="battery-text">73</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="title-bar">
+                        <button class="close-btn" id="addrCloseBtn">
+                            <svg viewBox="0 0 24 24">
+                                <path fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                                    stroke-linejoin="round" d="M18 6L6 18M6 6l12 12" />
+                            </svg>
+                        </button>
+                        <div class="wechat-title-group">
+                            <div class="main-title">淘福客 chj 专用</div>
+                            <div class="sub-title">m.quanmaigo.com</div>
+                        </div>
+                        <button class="menu-btn">
+                            <svg viewBox="0 0 24 24">
+                                <circle cx="5" cy="12" r="2" fill="currentColor" />
+                                <circle cx="12" cy="12" r="2" fill="currentColor" />
+                                <circle cx="19" cy="12" r="2" fill="currentColor" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Address Page Nav -->
+                <div class="page-nav">
+                    <button class="back-btn" id="addrBackBtn">
+                        <svg viewBox="0 0 24 24">
+                            <path fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                                stroke-linejoin="round" d="M15 18l-6-6 6-6" />
+                        </svg>
+                    </button>
+                    <div class="nav-title">新建地址</div>
+                    <div class="nav-placeholder"></div>
+                </div>
+
+                <!-- Search Bar -->
+                <div class="addr-search-bar">
+                    <div class="addr-city-selector" id="addrCitySelector">
+                        <span id="addrCityText">深圳</span>
+                        <svg class="addr-city-arrow" viewBox="0 0 24 24" width="12" height="12">
+                            <path fill="currentColor" d="M7 10l5 5 5-5z" />
+                        </svg>
+                    </div>
+                    <div class="addr-search-input-wrap">
+                        <svg class="addr-search-icon" viewBox="0 0 24 24" width="16" height="16">
+                            <path fill="#999"
+                                d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+                        </svg>
+                        <input type="text" class="addr-search-input" id="addrSearchInput" placeholder="请输入收货地址">
+                    </div>
+                </div>
+
+                <!-- Map Area -->
+                <div class="addr-map-area" id="addrMapArea">
+                    <div class="addr-map-placeholder">
+                        <div class="addr-map-grid"></div>
+                        <!-- Map marker -->
+                        <div class="addr-map-marker">
+                            <svg viewBox="0 0 24 24" width="28" height="28">
+                                <path fill="#e74c3c"
+                                    d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+                            </svg>
+                        </div>
+                        <!-- Crosshair/relocate button -->
+                        <div class="addr-map-relocate" id="addrMapRelocate">
+                            <svg viewBox="0 0 24 24" width="20" height="20">
+                                <path fill="#666"
+                                    d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3A8.994 8.994 0 0013 3.06V1h-2v2.06A8.994 8.994 0 003.06 11H1v2h2.06A8.994 8.994 0 0011 20.94V23h2v-2.06A8.994 8.994 0 0020.94 13H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z" />
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Address Results List -->
+                <div class="addr-results-area">
+                    <ul class="addr-results-list" id="addrResultsList">
+                        <!-- Populated dynamically -->
+                    </ul>
+                </div>
+
+                <!-- Bottom Bar -->
+                <div class="wechat-bottom-bar">
+                    <button class="nav-arrow-btn">
+                        <svg viewBox="0 0 24 24">
+                            <path fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                                stroke-linejoin="round" d="M15 18l-6-6 6-6" />
+                        </svg>
+                    </button>
+                    <button class="nav-arrow-btn">
+                        <svg viewBox="0 0 24 24">
+                            <path fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                                stroke-linejoin="round" d="M9 18l6-6-6-6" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div class="toast" id="toast"></div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
