@@ -394,7 +394,6 @@ body {
     pointer-events: none;
     opacity: 1;
     transition: opacity 0.3s ease;
-    animation: bounce 2s infinite;
 }
 
 .tooltip-box {

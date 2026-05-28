@@ -225,7 +225,6 @@ function selectAddress(city, addr, index) {
     
     // Close the address page
     closeAddressPage();
-    showToast(`已选择: ${addr.name}`);
 }
 
 // Address picker label click -> open address page
@@ -264,24 +263,13 @@ addrCitySelector.addEventListener("click", () => {
 locationBtn.addEventListener("click", (e) => {
     e.stopPropagation(); // Avoid triggering region selector
     
-    showToast("获取 GPS 定位中...");
-    locationBtn.style.pointerEvents = "none";
-    locationBtn.querySelector("span").textContent = "定位中";
+    currentProvince = "广东省";
+    currentCity = "深圳市";
+    currentDistrict = "南山区";
     
-    setTimeout(() => {
-        currentProvince = "广东省";
-        currentCity = "深圳市";
-        currentDistrict = "南山区";
-        
-        regionText.textContent = `${currentProvince}-${currentCity}-${currentDistrict}`;
-        regionText.classList.add("selected");
-        detailAddressInput.value = "科兴科学园B栋3单元1201室";
-        
-        locationBtn.style.pointerEvents = "auto";
-        locationBtn.querySelector("span").textContent = "定位";
-        
-        showToast("已成功获取高精度定位！");
-    }, 1200);
+    regionText.textContent = `${currentProvince}-${currentCity}-${currentDistrict}`;
+    regionText.classList.add("selected");
+    detailAddressInput.value = "科兴科学园B栋3单元1201室";
 });
 
 // ─── 8. Smart Regex Parser ("识别") Feature ────────────────────────────────────
