@@ -740,75 +740,50 @@
     }
 
     .city-view {
-      background: #fff;
-    }
-
-    .city-status {
-      height: 58px;
-      display: flex;
-      align-items: end;
-      justify-content: space-between;
-      padding: 0 45px 11px 68px;
-      background: #fff;
-      color: #000;
-      font-size: 19px;
-      font-weight: 700;
-      line-height: 1;
-    }
-
-    .city-status .battery {
-      width: 26px;
-      min-width: 26px;
-      height: 13px;
-      padding: 0;
-      border: 2px solid #000;
-      border-radius: 3px;
-      background: #fff;
-      color: transparent;
-    }
-
-    .city-status .battery::before {
-      content: "";
       position: absolute;
-      inset: 2px 3px;
-      background: #000;
-      border-radius: 1px;
+      inset: 0;
+      z-index: 12;
+      display: block;
+      pointer-events: none;
+      visibility: hidden;
     }
 
-    .city-status .battery::after {
-      right: -5px;
-      top: 3px;
-      width: 2px;
-      height: 5px;
-      background: #000;
+    .city-view.active {
+      pointer-events: auto;
+      visibility: visible;
     }
 
-    .city-title {
-      height: 85px;
-      display: grid;
-      grid-template-columns: 64px 1fr 64px;
-      align-items: center;
-      background: #fff;
-      border-bottom: 1px solid #e6e6e6;
+    .city-backdrop {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, .48);
+      opacity: 0;
+      transition: opacity .26s ease;
     }
 
-    .city-title h1 {
-      font-size: 24px;
-      font-weight: 700;
-    }
-
-    .city-mask {
-      height: 52px;
-      background: #878787;
+    .city-view.active .city-backdrop {
+      opacity: 1;
     }
 
     .city-sheet {
-      height: calc(100% - 195px);
-      margin-top: -1px;
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 684px;
+      max-height: calc(100% - 146px);
       border-radius: 7px 7px 0 0;
       background: #fff;
       overflow: hidden;
-      position: relative;
+      transform: translateY(102%);
+      transition: transform .32s cubic-bezier(.22, .82, .24, 1);
+      will-change: transform;
+    }
+
+    .city-view.active .city-sheet {
+      transform: translateY(0);
     }
 
     .current-city {
@@ -1096,21 +1071,8 @@
       </nav>
     </section>
 
-    <section class="view city-view" id="cityView" aria-label="选择城市页面">
-      <header class="city-status">
-        <span>9:41</span>
-        <span class="status-icons" aria-hidden="true">
-          <span class="signal"><span></span><span></span><span></span><span></span></span>
-          <span class="wifi"></span>
-          <span class="battery">73</span>
-        </span>
-      </header>
-      <section class="city-title">
-        <button class="back" id="cityBack" type="button" aria-label="返回"></button>
-        <h1>选择城市</h1>
-        <span></span>
-      </section>
-      <div class="city-mask"></div>
+    <section class="city-view" id="cityView" aria-label="选择城市弹窗">
+      <button class="city-backdrop" id="cityBack" type="button" aria-label="关闭选择城市弹窗"></button>
       <section class="city-sheet">
         <div class="current-city">
           <span>当前： <span id="currentCity">深圳</span></span>
@@ -1160,14 +1122,15 @@
     const currentCity = document.getElementById("currentCity");
 
     function show(view) {
-      [formView, addressView, cityView].forEach((item) => item.classList.remove("active"));
+      cityView.classList.remove("active");
+      [formView, addressView].forEach((item) => item.classList.remove("active"));
       view.classList.add("active");
     }
 
     addressTrigger.addEventListener("click", () => show(addressView));
     document.getElementById("addressBack").addEventListener("click", () => show(formView));
-    document.getElementById("cityTrigger").addEventListener("click", () => show(cityView));
-    document.getElementById("cityBack").addEventListener("click", () => show(addressView));
+    document.getElementById("cityTrigger").addEventListener("click", () => cityView.classList.add("active"));
+    document.getElementById("cityBack").addEventListener("click", () => cityView.classList.remove("active"));
 
     document.querySelectorAll(".place-item").forEach((button) => {
       button.addEventListener("click", () => {
@@ -1184,7 +1147,7 @@
         const city = button.dataset.city;
         pickerCity.textContent = city;
         currentCity.textContent = city;
-        show(addressView);
+        cityView.classList.remove("active");
       });
     });
   </script>
