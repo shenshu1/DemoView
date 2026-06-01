@@ -1,0 +1,1868 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>新建地址</title>
+  <style>
+    :root {
+      --page-w: 393px;
+      --page-h: 879px;
+      --black: #101010;
+      --text: #222;
+      --muted: #c7c7c7;
+      --line: #eeeeee;
+      --soft: #f4f4f4;
+      --red: #c82d35;
+      --blue: #2f7edc;
+      --save: #df9298;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      background: #1b1b1b;
+      color: var(--text);
+    }
+
+    body {
+      display: grid;
+      place-items: start center;
+    }
+
+    button,
+    input {
+      border: 0;
+      background: none;
+      color: inherit;
+      font: inherit;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    button { cursor: pointer; }
+
+    .phone {
+      position: relative;
+      width: min(100vw, var(--page-w));
+      height: var(--page-h);
+      min-height: var(--page-h);
+      overflow: hidden;
+      background: #eee;
+    }
+
+    .view {
+      position: absolute;
+      inset: 0;
+      display: none;
+      background: #eee;
+    }
+
+    .view.active { display: block; }
+
+    .wechat {
+      height: 98px;
+      background: var(--black);
+      color: #f6f6f6;
+    }
+
+    .status {
+      height: 42px;
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      padding: 0 30px 6px 38px;
+      font-size: 17px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .status-left,
+    .status-icons {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .muted-bell {
+      position: relative;
+      width: 14px;
+      height: 15px;
+      border: 2px solid #f6f6f6;
+      border-top-left-radius: 8px;
+      border-top-right-radius: 8px;
+      border-bottom: 0;
+      transform: rotate(-15deg);
+    }
+
+    .muted-bell::before,
+    .muted-bell::after {
+      content: "";
+      position: absolute;
+      background: #f6f6f6;
+    }
+
+    .muted-bell::before {
+      left: -4px;
+      right: -4px;
+      bottom: -4px;
+      height: 2px;
+      border-radius: 2px;
+    }
+
+    .muted-bell::after {
+      width: 2px;
+      height: 25px;
+      top: -6px;
+      left: 6px;
+      transform: rotate(-45deg);
+      border-radius: 2px;
+    }
+
+    .signal {
+      display: inline-flex;
+      align-items: flex-end;
+      gap: 3px;
+      height: 15px;
+    }
+
+    .signal span {
+      width: 4px;
+      border-radius: 2px;
+      background: #f8f8f8;
+    }
+
+    .signal span:nth-child(1) { height: 5px; }
+    .signal span:nth-child(2) { height: 8px; }
+    .signal span:nth-child(3) { height: 11px; }
+    .signal span:nth-child(4) { height: 14px; }
+
+    .wifi {
+      position: relative;
+      width: 20px;
+      height: 14px;
+    }
+
+    .wifi::before,
+    .wifi::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      border: 3px solid #f8f8f8;
+      border-color: #f8f8f8 transparent transparent transparent;
+      border-radius: 50%;
+      transform: translateX(-50%);
+    }
+
+    .wifi::before {
+      top: 0;
+      width: 24px;
+      height: 24px;
+    }
+
+    .wifi::after {
+      top: 6px;
+      width: 13px;
+      height: 13px;
+    }
+
+    .battery {
+      min-width: 30px;
+      height: 19px;
+      padding: 1px 5px 0;
+      border-radius: 7px;
+      background: #eee;
+      color: #111;
+      font-size: 13px;
+      font-weight: 800;
+      text-align: center;
+      line-height: 18px;
+      position: relative;
+    }
+
+    .battery::after {
+      content: "";
+      position: absolute;
+      right: -3px;
+      top: 6px;
+      width: 2px;
+      height: 7px;
+      border-radius: 0 2px 2px 0;
+      background: #eee;
+    }
+
+    .webbar {
+      height: 56px;
+      display: grid;
+      grid-template-columns: 62px 1fr 62px;
+      align-items: center;
+      padding-top: 4px;
+    }
+
+    .close {
+      width: 44px;
+      height: 44px;
+      margin-left: 14px;
+      position: relative;
+    }
+
+    .close::before,
+    .close::after {
+      content: "";
+      position: absolute;
+      left: 8px;
+      top: 21px;
+      width: 26px;
+      height: 2px;
+      border-radius: 2px;
+      background: #d7d7d7;
+    }
+
+    .close::before { transform: rotate(45deg); }
+    .close::after { transform: rotate(-45deg); }
+
+    .brand {
+      text-align: center;
+      font-weight: 700;
+      color: #dddddd;
+      line-height: 1.05;
+      font-size: 18px;
+    }
+
+    .brand span {
+      display: block;
+      margin-top: 4px;
+      color: #8f8f8f;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .3px;
+    }
+
+    .more {
+      display: flex;
+      justify-content: center;
+      gap: 5px;
+    }
+
+    .more span {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: #d4d4d4;
+    }
+
+    .titlebar {
+      height: 45px;
+      display: grid;
+      grid-template-columns: 50px 1fr 50px;
+      align-items: center;
+      background: #fff;
+      border-bottom: 1px solid #e7e7e7;
+      box-shadow: 0 8px 10px rgba(0, 0, 0, .08);
+      position: relative;
+      z-index: 2;
+    }
+
+    .back {
+      width: 44px;
+      height: 44px;
+      position: relative;
+    }
+
+    .back::before {
+      content: "";
+      position: absolute;
+      left: 15px;
+      top: 14px;
+      width: 13px;
+      height: 13px;
+      border-left: 1.7px solid #222;
+      border-bottom: 1.7px solid #222;
+      transform: rotate(45deg);
+    }
+
+    h1 {
+      margin: 0;
+      text-align: center;
+      font-size: 18px;
+      font-weight: 650;
+      letter-spacing: 0;
+    }
+
+    .address-mode-card {
+      background: #fff;
+      margin: 12px 10px;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, .06);
+    }
+
+    .mode-tabs {
+      display: flex;
+      position: relative;
+    }
+
+    .mode-tab {
+      flex: 1;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 500;
+      color: #666;
+      position: relative;
+      background: #f8f8f8;
+      transition: all .2s;
+    }
+
+    .mode-tab:first-child {
+      border-radius: 0;
+    }
+
+    .mode-tab.active {
+      color: #222;
+      font-weight: 600;
+      background: #fff;
+    }
+
+    .mode-tab.active::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      bottom: 0;
+      transform: translateX(-50%);
+      width: 28px;
+      height: 2px;
+      border-radius: 1px;
+      background: var(--red);
+    }
+
+    /* 地图选取标签小红气泡 */
+    .mode-badge {
+      display: inline-block;
+      position: relative;
+      top: -6px;
+      margin-left: 2px;
+      padding: 1px 5px;
+      font-size: 10px;
+      font-weight: 500;
+      color: #fff;
+      background: var(--red);
+      border-radius: 6px;
+      line-height: 1.4;
+    }
+
+    .mode-content {
+      display: none;
+      padding: 0;
+    }
+
+    .mode-content.active {
+      display: block;
+    }
+
+    /* 手动填写模式 */
+    .region-picker {
+      display: flex;
+      align-items: center;
+      min-height: 52px;
+      padding: 0 14px;
+      border-bottom: 1px solid var(--line);
+      cursor: pointer;
+      justify-content: space-between;
+    }
+
+    .region-text {
+      flex: 1;
+      color: var(--muted);
+      font-size: 15px;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .region-text.selected {
+      color: #333;
+    }
+
+    .region-locate {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      color: var(--blue);
+      font-size: 14px;
+      font-weight: 500;
+      white-space: nowrap;
+      flex-shrink: 0;
+      margin-left: 8px;
+    }
+
+    .locate-pin {
+      width: 14px;
+      height: 14px;
+      border: 1.5px solid var(--blue);
+      border-radius: 50% 50% 50% 0;
+      transform: rotate(-45deg);
+      position: relative;
+    }
+
+    .locate-pin::before {
+      content: "";
+      position: absolute;
+      left: 3px;
+      top: 3px;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--blue);
+    }
+
+    .detail-input {
+      min-height: 52px;
+      display: flex;
+      align-items: center;
+      padding: 0 14px;
+    }
+
+    .detail-input input {
+      width: 100%;
+      height: 40px;
+      border: 0;
+      background: transparent;
+      color: #333;
+      font-size: 15px;
+      outline: 0;
+    }
+
+    .detail-input input::placeholder {
+      color: var(--muted);
+    }
+
+    /* 地区选择弹窗 */
+    .region-sheet-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 999;
+      display: none;
+      background: rgba(0,0,0,.4);
+    }
+
+    .region-sheet-overlay.active {
+      display: block;
+    }
+
+    .region-sheet {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 50%;
+      background: #fff;
+      border-radius: 12px 12px 0 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .region-sheet-header {
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      border-bottom: 1px solid #eee;
+      flex-shrink: 0;
+    }
+
+    .region-sheet-header .cancel {
+      color: #999;
+      font-size: 15px;
+    }
+
+    .region-sheet-header .confirm {
+      color: var(--red);
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .region-sheet-body {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+
+    .region-column {
+      flex: 1;
+      overflow-y: auto;
+      background: #f8f8f8;
+    }
+
+    .region-column:nth-child(2) {
+      background: #fff;
+    }
+
+    .region-column:nth-child(3) {
+      background: #fff;
+    }
+
+    .region-option {
+      height: 44px;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      font-size: 15px;
+      color: #333;
+      background: #f8f8f8;
+    }
+
+    .region-option.active {
+      background: #fff;
+      color: var(--red);
+      font-weight: 600;
+    }
+
+    .region-column:nth-child(2) .region-option {
+      background: #fff;
+    }
+
+    .region-column:nth-child(3) .region-option {
+      background: #fff;
+    }
+
+    /* 地图选取模式 */
+    .map-select-trigger {
+      min-height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      cursor: pointer;
+      border-bottom: 1px solid var(--line);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* 虚拟地图渐变背景 */
+    .map-select-trigger::before {
+      content: "";
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 140px;
+      background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(232,244,232,0.6) 30%, rgba(200,230,200,0.4) 100%);
+      pointer-events: none;
+    }
+
+    /* 地图展开icon */
+    .map-icon {
+      width: 24px;
+      height: 20px;
+      position: relative;
+      z-index: 1;
+      flex-shrink: 0;
+      margin-left: 6px;
+    }
+
+    /* 地图纸张 - 左侧页 */
+    .map-icon::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 10px;
+      height: 18px;
+      border: 2px solid #999;
+      border-right: 0;
+      border-radius: 2px 0 0 2px;
+      transform: skewY(-8deg);
+    }
+
+    /* 地图纸张 - 右侧页 */
+    .map-icon::after {
+      content: "";
+      position: absolute;
+      right: 0;
+      top: 2px;
+      width: 10px;
+      height: 18px;
+      border: 2px solid #999;
+      border-left: 0;
+      border-radius: 0 2px 2px 0;
+      transform: skewY(8deg);
+    }
+
+    /* 定位pin在地图中央 */
+    .map-icon-pin {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -60%);
+      width: 10px;
+      height: 10px;
+      background: var(--red);
+      border-radius: 50% 50% 50% 0;
+      transform: translate(-50%, -60%) rotate(-45deg);
+      z-index: 2;
+    }
+
+    .map-icon-pin::after {
+      content: "";
+      position: absolute;
+      left: 3px;
+      top: 3px;
+      width: 4px;
+      height: 4px;
+      background: #fff;
+      border-radius: 50%;
+    }
+
+    .map-select-text {
+      flex: 1;
+      min-width: 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .map-select-placeholder {
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.4;
+    }
+
+    .map-result-name {
+      display: block;
+      color: #222;
+      font-size: 16px;
+      font-weight: 650;
+      line-height: 1.3;
+      word-break: break-all;
+    }
+
+    .map-result-address {
+      display: block;
+      margin-top: 4px;
+      color: #888;
+      font-size: 14px;
+      line-height: 1.3;
+      word-break: break-all;
+    }
+
+    .arrow-right {
+      width: 8px;
+      height: 8px;
+      border-right: 2px solid #c0c0c0;
+      border-top: 2px solid #c0c0c0;
+      transform: rotate(45deg);
+      flex-shrink: 0;
+      margin-left: 8px;
+    }
+
+    /* 快速定位气泡浮窗 */
+    .quick-locate-bubble {
+      position: relative;
+      margin: 0 14px 12px;
+      background: #3a3f4c;
+      border-radius: 8px;
+      padding: 12px 14px;
+    }
+
+    /* 气泡顶部小三角 - 靠左 */
+    .quick-locate-bubble::before {
+      content: "";
+      position: absolute;
+      top: -8px;
+      left: 40px;
+      width: 0;
+      height: 0;
+      border-left: 8px solid transparent;
+      border-right: 8px solid transparent;
+      border-bottom: 8px solid #3a3f4c;
+    }
+
+    .quick-locate-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+    }
+
+    .quick-locate-name {
+      flex: 1;
+      font-size: 15px;
+      color: #fff;
+      font-weight: 500;
+      line-height: 1.4;
+    }
+
+    .quick-locate-close {
+      width: 18px;
+      height: 18px;
+      position: relative;
+      flex-shrink: 0;
+      margin-left: 10px;
+      cursor: pointer;
+    }
+
+    .quick-locate-close::before,
+    .quick-locate-close::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 14px;
+      height: 2px;
+      background: #9fa3ab;
+      border-radius: 1px;
+    }
+
+    .quick-locate-close::before {
+      transform: translate(-50%, -50%) rotate(45deg);
+    }
+
+    .quick-locate-close::after {
+      transform: translate(-50%, -50%) rotate(-45deg);
+    }
+
+    .door-input {
+      min-height: 52px;
+      display: flex;
+      align-items: center;
+      padding: 0 14px;
+      border-top: 1px solid var(--line);
+    }
+
+    .door-input input {
+      width: 100%;
+      height: 40px;
+      border: 0;
+      background: transparent;
+      color: #333;
+      font-size: 15px;
+      outline: 0;
+    }
+
+    .door-input input::placeholder {
+      color: var(--muted);
+    }
+
+    .form {
+      background: transparent;
+      position: relative;
+      z-index: 1;
+    }
+
+    .info-card {
+      background: #fff;
+      margin: 12px 10px;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, .06);
+    }
+
+    .info-row {
+      min-height: 52px;
+      display: flex;
+      align-items: center;
+      padding: 0 14px;
+      border-bottom: 1px solid var(--line);
+      gap: 12px;
+    }
+
+    .info-row:last-child {
+      border-bottom: 0;
+    }
+
+    .info-label {
+      font-size: 15px;
+      color: #333;
+      font-weight: 500;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .info-row input {
+      flex: 1;
+      width: 100%;
+      outline: 0;
+      color: #333;
+      padding: 0;
+      background: none;
+      border: 0;
+      font-size: 15px;
+    }
+
+    .info-row input::placeholder {
+      color: var(--muted);
+      opacity: 1;
+    }
+
+    .row {
+      min-height: 52px;
+      display: flex;
+      align-items: center;
+      border-bottom: 1px solid var(--line);
+      padding: 0 10px;
+      color: var(--muted);
+      font-size: 15px;
+      letter-spacing: .1px;
+    }
+
+    .row input {
+      width: 100%;
+      outline: 0;
+      color: #333;
+      padding: 0;
+    }
+
+    .row input::placeholder {
+      color: var(--muted);
+      opacity: 1;
+    }
+
+    .address-row {
+      justify-content: space-between;
+      gap: 12px;
+      position: relative;
+      text-align: left;
+      width: 100%;
+    }
+
+    .address-row::before {
+      content: "获取精准地址";
+      position: absolute;
+      right: 11px;
+      top: -22px;
+      padding: 3px 8px 4px;
+      border-radius: 2px;
+      background: #555;
+      color: #fff;
+      font-size: 13px;
+      white-space: nowrap;
+      line-height: 1.25;
+    }
+
+    .address-row::after {
+      content: "";
+      position: absolute;
+      right: 28px;
+      top: 1px;
+      border: 7px solid transparent;
+      border-top-color: #555;
+    }
+
+    .address-row.has-address {
+      min-height: 68px;
+      color: #333;
+    }
+
+    .address-row.has-address::before,
+    .address-row.has-address::after {
+      display: none;
+    }
+
+    .address-text {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      line-height: 21px;
+      text-overflow: ellipsis;
+    }
+
+    .locate {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      color: #b8b8b8;
+      font-size: 15px;
+      padding-right: 4px;
+      white-space: nowrap;
+    }
+
+    .pin {
+      width: 15px;
+      height: 15px;
+      border: 1.6px solid #d1d1d1;
+      border-radius: 50% 50% 50% 0;
+      transform: rotate(-45deg);
+      position: relative;
+    }
+
+    .pin::before {
+      content: "";
+      position: absolute;
+      left: 4px;
+      top: 4px;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: #d1d1d1;
+    }
+
+    .paste-wrap {
+      padding: 12px 10px 12px;
+      background: #eee;
+    }
+
+    .paste-card {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, .06);
+      overflow: hidden;
+    }
+
+    .paste-box {
+      height: 141px;
+      border: 0;
+      position: relative;
+      padding: 13px 14px;
+      color: #c9c9c9;
+      font-size: 14px;
+      line-height: 1.75;
+    }
+
+    .paste-box p { margin: 0; }
+
+    .recognize {
+      position: absolute;
+      right: 14px;
+      bottom: 8px;
+      width: 50px;
+      height: 29px;
+      border-radius: 3px;
+      background: var(--red);
+      color: rgba(255, 255, 255, .62);
+      font-size: 13px;
+    }
+
+    .notice {
+      height: 34px;
+      display: flex;
+      align-items: center;
+      padding: 0 9px;
+      margin: 0;
+      color: #c2c2c2;
+      background: #fff;
+      font-size: 12px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .default-row {
+      height: 95px;
+      display: flex;
+      justify-content: center;
+      align-items: start;
+      gap: 8px;
+      padding-top: 27px;
+      background: #eee;
+      font-size: 15px;
+      font-weight: 650;
+      color: #222;
+    }
+
+    .radio {
+      width: 21px;
+      height: 21px;
+      border-radius: 50%;
+      border: 1.5px solid #c8c8c8;
+      background: #fff;
+    }
+
+    .save {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 86px;
+      height: 47px;
+      background: var(--save);
+      color: #fff;
+      font-size: 15px;
+      letter-spacing: 1px;
+    }
+
+    .browser-bottom {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 86px;
+      background: #1d1d1d;
+      display: flex;
+      align-items: start;
+      justify-content: center;
+      gap: 72px;
+      padding-top: 23px;
+      z-index: 4;
+    }
+
+    .nav-arrow {
+      width: 18px;
+      height: 18px;
+      border-left: 2px solid #9b9b9b;
+      border-bottom: 2px solid #9b9b9b;
+    }
+
+    .nav-arrow.left { transform: rotate(45deg); }
+    .nav-arrow.right {
+      opacity: .42;
+      transform: rotate(225deg);
+    }
+
+    .address-picker {
+      background: #fff;
+    }
+
+    .search-panel {
+      height: 74px;
+      display: grid;
+      grid-template-columns: 92px 1fr;
+      align-items: center;
+      gap: 0;
+      padding: 10px 10px 11px;
+      background: #fff;
+      border-bottom: 1px solid #eee;
+      position: relative;
+      z-index: 3;
+    }
+
+    .city-trigger {
+      height: 42px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      color: #747474;
+      font-size: 16px;
+    }
+
+    .down {
+      width: 8px;
+      height: 8px;
+      border-right: 1.5px solid #777;
+      border-bottom: 1.5px solid #777;
+      transform: rotate(45deg) translateY(-3px);
+    }
+
+    .searchbox {
+      height: 42px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 12px;
+      background: #f5f5f5;
+      color: #bebebe;
+      font-size: 15px;
+    }
+
+    .magnifier {
+      width: 15px;
+      height: 15px;
+      border: 1.8px solid #222;
+      border-radius: 50%;
+      position: relative;
+      flex: 0 0 auto;
+    }
+
+    .magnifier::after {
+      content: "";
+      position: absolute;
+      width: 8px;
+      height: 2px;
+      right: -6px;
+      bottom: -4px;
+      background: #222;
+      transform: rotate(45deg);
+      border-radius: 2px;
+    }
+
+    .map {
+      height: 318px;
+      position: relative;
+      overflow: hidden;
+      background:
+        linear-gradient(25deg, transparent 39%, rgba(196, 82, 88, .38) 40%, rgba(196, 82, 88, .38) 41%, transparent 42%),
+        linear-gradient(118deg, transparent 43%, #fff 44%, #fff 47%, transparent 48%),
+        linear-gradient(78deg, transparent 46%, #fff 47%, #fff 50%, transparent 51%),
+        linear-gradient(154deg, transparent 48%, #fff 49%, #fff 52%, transparent 53%),
+        linear-gradient(0deg, rgba(196, 224, 229, .72) 0 19%, transparent 20%),
+        #f4f1e8;
+    }
+
+    .map::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(96deg, transparent 0 57%, rgba(224, 215, 232, .9) 58% 76%, transparent 77%),
+        linear-gradient(18deg, rgba(196, 224, 229, .9) 0 18%, transparent 19%),
+        linear-gradient(140deg, transparent 0 38%, rgba(248, 248, 248, .9) 39% 45%, transparent 46%),
+        repeating-linear-gradient(28deg, transparent 0 22px, rgba(255, 255, 255, .75) 23px 27px);
+      opacity: .9;
+    }
+
+    .map-label {
+      position: absolute;
+      z-index: 1;
+      color: #888;
+      font-size: 13px;
+      line-height: 1.3;
+      text-shadow: 0 1px 0 rgba(255, 255, 255, .8);
+    }
+
+    .park {
+      left: 116px;
+      top: 70px;
+      color: #46aa5a;
+      font-weight: 650;
+    }
+
+    .road-a {
+      right: 25px;
+      top: 62px;
+      writing-mode: vertical-rl;
+      letter-spacing: 2px;
+    }
+
+    .road-b {
+      left: 228px;
+      top: 170px;
+      writing-mode: vertical-rl;
+      letter-spacing: 2px;
+    }
+
+    .poi-a {
+      left: 202px;
+      top: 94px;
+      color: #b5a9b4;
+      font-size: 18px;
+    }
+
+    .poi-b {
+      left: 205px;
+      top: 145px;
+      color: #777;
+      font-size: 14px;
+    }
+
+    .selected-pin {
+      position: absolute;
+      z-index: 2;
+      left: 186px;
+      top: 102px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50% 50% 50% 0;
+      background: #cf333c;
+      transform: rotate(-45deg);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, .22);
+    }
+
+    .selected-pin::after {
+      content: "";
+      position: absolute;
+      left: 7px;
+      top: 7px;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #fff;
+    }
+
+    .map-control {
+      position: absolute;
+      z-index: 2;
+      right: 12px;
+      bottom: 26px;
+      width: 33px;
+      height: 33px;
+      border: 1px solid #d0d0d0;
+      border-radius: 3px;
+      background: #fff;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, .16);
+    }
+
+    .map-control::before {
+      content: "";
+      position: absolute;
+      left: 8px;
+      top: 8px;
+      width: 17px;
+      height: 17px;
+      border-radius: 50%;
+      background: #777;
+      box-shadow: inset 0 0 0 3px #d8d8d8;
+    }
+
+    .place-list {
+      height: 344px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      overflow: auto;
+      background: #fff;
+    }
+
+    .place-item {
+      min-height: 76px;
+      display: grid;
+      grid-template-columns: 32px 1fr;
+      align-items: start;
+      padding: 21px 16px 14px 9px;
+      border-bottom: 1px solid #f1f1f1;
+      background: #fff;
+      text-align: left;
+      width: 100%;
+    }
+
+    .place-dot {
+      width: 8px;
+      height: 8px;
+      margin-top: 7px;
+      border-radius: 50%;
+      background: #dedede;
+    }
+
+    .place-item.active .place-dot { background: #d42d35; }
+
+    .place-name {
+      display: block;
+      color: #222;
+      font-size: 16px;
+      font-weight: 650;
+      line-height: 1.3;
+    }
+
+    .place-address {
+      display: block;
+      margin-top: 6px;
+      color: #888;
+      font-size: 14px;
+      line-height: 1.3;
+    }
+
+    .city-view {
+      position: absolute;
+      inset: 0;
+      z-index: 12;
+      display: block;
+      pointer-events: none;
+      visibility: hidden;
+    }
+
+    .city-view.active {
+      pointer-events: auto;
+      visibility: visible;
+    }
+
+    .city-backdrop {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, .48);
+      opacity: 0;
+      transition: opacity .26s ease;
+    }
+
+    .city-view.active .city-backdrop {
+      opacity: 1;
+    }
+
+    .city-sheet {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 684px;
+      max-height: calc(100% - 146px);
+      border-radius: 7px 7px 0 0;
+      background: #fff;
+      overflow: hidden;
+      transform: translateY(102%);
+      transition: transform .32s cubic-bezier(.22, .82, .24, 1);
+      will-change: transform;
+    }
+
+    .city-view.active .city-sheet {
+      transform: translateY(0);
+    }
+
+    .current-city {
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px;
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .relocate {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--blue);
+      font-size: 15px;
+      font-weight: 500;
+    }
+
+    .target {
+      width: 17px;
+      height: 17px;
+      border: 1.8px solid var(--blue);
+      border-radius: 50%;
+      position: relative;
+    }
+
+    .target::before,
+    .target::after {
+      content: "";
+      position: absolute;
+      background: var(--blue);
+    }
+
+    .target::before {
+      left: 7px;
+      top: -5px;
+      width: 1.5px;
+      height: 25px;
+    }
+
+    .target::after {
+      left: -5px;
+      top: 7px;
+      width: 25px;
+      height: 1.5px;
+    }
+
+    .city-search {
+      height: 52px;
+      display: flex;
+      align-items: center;
+      margin: 0 18px;
+      padding: 0 18px;
+      border-radius: 26px;
+      background: #f7f7f7;
+      color: #b7b7b7;
+      font-size: 15px;
+    }
+
+    .hot-title {
+      margin: 34px 18px 18px;
+      font-size: 17px;
+      font-weight: 700;
+    }
+
+    .hot-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px 16px;
+      padding: 0 18px;
+    }
+
+    .hot-grid button {
+      height: 29px;
+      border-radius: 18px;
+      background: #f7f7f7;
+      color: #333;
+      font-size: 15px;
+    }
+
+    .city-list {
+      height: 372px;
+      margin-top: 28px;
+      overflow: hidden;
+      border-top: 1px solid #f2f2f2;
+      position: relative;
+    }
+
+    .letter-section {
+      height: 42px;
+      display: flex;
+      align-items: center;
+      padding-left: 18px;
+      color: #999;
+      font-size: 15px;
+      border-bottom: 1px solid #f2f2f2;
+    }
+
+    .city-row {
+      height: 51px;
+      display: flex;
+      align-items: center;
+      padding-left: 18px;
+      border-bottom: 1px solid #f2f2f2;
+      color: #222;
+      font-size: 16px;
+    }
+
+    .alphabet {
+      position: absolute;
+      right: 19px;
+      top: 306px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      color: #333;
+      font-size: 13px;
+      line-height: 1;
+    }
+  </style>
+</head>
+<body>
+  <main class="phone">
+    <section class="view active" id="formView" aria-label="新建地址页面">
+      <header class="wechat" aria-label="微信浏览器顶部栏">
+        <div class="status">
+          <div class="status-left">
+            <span>17:17</span>
+            <i class="muted-bell" aria-hidden="true"></i>
+          </div>
+          <div class="status-icons" aria-hidden="true">
+            <span class="signal"><span></span><span></span><span></span><span></span></span>
+            <span class="wifi"></span>
+            <span class="battery">73</span>
+          </div>
+        </div>
+        <div class="webbar">
+          <button class="close" aria-label="关闭"></button>
+          <div class="brand">淘福客 chj专用<span>m.quanmaigo.com</span></div>
+          <div class="more" aria-hidden="true"><span></span><span></span><span></span></div>
+        </div>
+      </header>
+
+      <section class="titlebar" aria-label="页面标题">
+        <button class="back" aria-label="返回"></button>
+        <h1>新建地址</h1>
+        <span></span>
+      </section>
+
+      <section class="form" aria-label="地址表单">
+        <div class="info-card">
+          <label class="info-row">
+            <input aria-label="收货人姓名" placeholder="请填写收货人姓名" />
+          </label>
+          <label class="info-row">
+            <input aria-label="收货人手机号" placeholder="请填写收货人手机号" />
+          </label>
+        </div>
+      </section>
+
+      <section class="address-mode-card" aria-label="地址选择方式">
+        <div class="mode-tabs">
+          <button class="mode-tab active" data-mode="manual" type="button">手动填写</button>
+          <button class="mode-tab" data-mode="map" type="button">地图选取<span class="mode-badge">更准确</span></button>
+        </div>
+
+        <div class="mode-content active" id="manualMode">
+          <div class="region-picker" id="regionPicker">
+            <span class="region-text" id="regionText">请选择省-市-区</span>
+            <span class="region-locate"><i class="locate-pin" aria-hidden="true"></i>定位</span>
+          </div>
+          <div class="detail-input">
+            <input id="manualAddress" aria-label="详细地址" placeholder="请输入街道、门牌号等信息" />
+          </div>
+        </div>
+
+        <div class="mode-content" id="mapMode">
+          <div class="map-select-trigger" id="mapAddressTrigger">
+            <div class="map-select-text" id="mapAddressText">
+              <span class="map-select-placeholder">请点击选择地址</span>
+            </div>
+            <span class="map-icon" aria-hidden="true"><span class="map-icon-pin"></span></span>
+          </div>
+          <div class="quick-locate-bubble" id="quickLocateBubble">
+            <div class="quick-locate-item" id="quickLocateItem">
+              <span class="quick-locate-name">龙华区数字创新中心</span>
+              <span class="quick-locate-close" aria-hidden="true"></span>
+            </div>
+          </div>
+          <div class="door-input">
+            <input id="doorNumber" aria-label="门牌号" placeholder="请输入门牌号，如1栋1单元101室" />
+          </div>
+        </div>
+      </section>
+
+      <section class="paste-wrap" aria-label="地址智能识别">
+        <div class="paste-card">
+          <div class="paste-box">
+            <p>粘贴文本，自动识别姓名、电话、地址，例如，张三，13100000000，广东省深圳市南山区科兴科学园</p>
+            <button class="recognize" type="button">识别</button>
+          </div>
+        </div>
+      </section>
+
+      <p class="notice">购买跨境商品时需要姓名、身份证号用于清关，信息将被加密保存</p>
+
+      <label class="default-row">
+        <span class="radio" aria-hidden="true"></span>
+        <span>设为默认地址</span>
+      </label>
+
+      <button class="save" type="button">保存</button>
+      <nav class="browser-bottom" aria-label="浏览器导航">
+        <span class="nav-arrow left" aria-hidden="true"></span>
+        <span class="nav-arrow right" aria-hidden="true"></span>
+      </nav>
+    </section>
+
+    <section class="view address-picker" id="addressView" aria-label="选择地址页面">
+      <header class="wechat" aria-label="微信浏览器顶部栏">
+        <div class="status">
+          <div class="status-left">
+            <span>17:17</span>
+            <i class="muted-bell" aria-hidden="true"></i>
+          </div>
+          <div class="status-icons" aria-hidden="true">
+            <span class="signal"><span></span><span></span><span></span><span></span></span>
+            <span class="wifi"></span>
+            <span class="battery">73</span>
+          </div>
+        </div>
+        <div class="webbar">
+          <button class="close" aria-label="关闭"></button>
+          <div class="brand">淘福客 chj专用<span>m.quanmaigo.com</span></div>
+          <div class="more" aria-hidden="true"><span></span><span></span><span></span></div>
+        </div>
+      </header>
+
+      <section class="titlebar">
+        <button class="back" id="addressBack" type="button" aria-label="返回"></button>
+        <h1>新建地址</h1>
+        <span></span>
+      </section>
+
+      <section class="search-panel">
+        <button class="city-trigger" id="cityTrigger" type="button">
+          <span id="pickerCity">深圳</span>
+          <i class="down" aria-hidden="true"></i>
+        </button>
+        <div class="searchbox"><i class="magnifier" aria-hidden="true"></i><span>请输入收货地址</span></div>
+      </section>
+
+      <section class="map" aria-label="地图">
+        <span class="map-label park">白松公园</span>
+        <span class="map-label road-a">龙华大道</span>
+        <span class="map-label road-b">民塘路</span>
+        <span class="map-label poi-a">鸿荣源·天俊</span>
+        <span class="map-label poi-b">华侨城北站壹号</span>
+        <span class="selected-pin" aria-hidden="true"></span>
+        <span class="map-control" aria-hidden="true"></span>
+      </section>
+
+      <ul class="place-list">
+        <li>
+          <button class="place-item active" type="button" data-full="广东省深圳市民塘路与白松路交叉口东60米龙华区数字创新中心">
+            <span class="place-dot" aria-hidden="true"></span>
+            <span>
+              <span class="place-name">龙华区数字创新中心</span>
+              <span class="place-address">民塘路与白松路交叉口东60米</span>
+            </span>
+          </button>
+        </li>
+        <li>
+          <button class="place-item" type="button" data-full="广东省深圳市民塘路328号鸿荣源北站中心A座">
+            <span class="place-dot" aria-hidden="true"></span>
+            <span>
+              <span class="place-name">鸿荣源北站中心A座</span>
+              <span class="place-address">民塘路328号</span>
+            </span>
+          </button>
+        </li>
+        <li>
+          <button class="place-item" type="button" data-full="广东省深圳市民治街道民塘路鸿荣源·天俊">
+            <span class="place-dot" aria-hidden="true"></span>
+            <span>
+              <span class="place-name">鸿荣源·天俊</span>
+              <span class="place-address">民治街道民塘路</span>
+            </span>
+          </button>
+        </li>
+        <li>
+          <button class="place-item" type="button" data-full="广东省深圳市民塘路328号鸿荣源北站中心B座">
+            <span class="place-dot" aria-hidden="true"></span>
+            <span>
+              <span class="place-name">鸿荣源北站中心B座</span>
+              <span class="place-address">民塘路328号</span>
+            </span>
+          </button>
+        </li>
+        <li>
+          <button class="place-item" type="button" data-full="广东省深圳市白松路与新冶路交叉口东北100米壹号写字楼">
+            <span class="place-dot" aria-hidden="true"></span>
+            <span>
+              <span class="place-name">壹号写字楼</span>
+              <span class="place-address">白松路与新冶路交叉口东北100米</span>
+            </span>
+          </button>
+        </li>
+      </ul>
+
+      <nav class="browser-bottom" aria-label="浏览器导航">
+        <span class="nav-arrow left" aria-hidden="true"></span>
+        <span class="nav-arrow right" aria-hidden="true"></span>
+      </nav>
+    </section>
+
+    <section class="city-view" id="cityView" aria-label="选择城市弹窗">
+      <button class="city-backdrop" id="cityBack" type="button" aria-label="关闭选择城市弹窗"></button>
+      <section class="city-sheet">
+        <div class="current-city">
+          <span>当前： <span id="currentCity">深圳</span></span>
+          <button class="relocate" type="button"><i class="target" aria-hidden="true"></i>重新定位</button>
+        </div>
+        <div class="city-search">输入城市名或拼音</div>
+        <h2 class="hot-title">热门城市</h2>
+        <div class="hot-grid">
+          <button type="button" data-city="北京">北京</button>
+          <button type="button" data-city="上海">上海</button>
+          <button type="button" data-city="深圳">深圳</button>
+          <button type="button" data-city="广州">广州</button>
+          <button type="button" data-city="成都">成都</button>
+          <button type="button" data-city="武汉">武汉</button>
+          <button type="button" data-city="杭州">杭州</button>
+          <button type="button" data-city="天津">天津</button>
+          <button type="button" data-city="西安">西安</button>
+          <button type="button" data-city="南京">南京</button>
+          <button type="button" data-city="重庆">重庆</button>
+          <button type="button" data-city="长沙">长沙</button>
+        </div>
+        <div class="city-list">
+          <div class="letter-section">A</div>
+          <button class="city-row" type="button" data-city="阿坝">阿坝</button>
+          <button class="city-row" type="button" data-city="阿城区">阿城区</button>
+          <button class="city-row" type="button" data-city="阿克苏">阿克苏</button>
+          <button class="city-row" type="button" data-city="阿拉尔">阿拉尔</button>
+          <button class="city-row" type="button" data-city="阿拉善盟">阿拉善盟</button>
+          <button class="city-row" type="button" data-city="阿勒泰">阿勒泰</button>
+          <button class="city-row" type="button" data-city="阿勒泰市">阿勒泰市</button>
+          <button class="city-row" type="button" data-city="阿里">阿里</button>
+        </div>
+        <div class="alphabet" aria-hidden="true">
+          <span>A</span><span>B</span><span>C</span><span>D</span><span>E</span><span>F</span><span>G</span><span>H</span><span>I</span><span>J</span><span>K</span><span>L</span><span>M</span><span>N</span><span>O</span><span>P</span><span>Q</span><span>R</span><span>S</span><span>T</span><span>W</span><span>X</span>
+        </div>
+      </section>
+    </section>
+    <section class="region-sheet-overlay" id="regionOverlay" aria-label="选择地区弹窗">
+      <section class="region-sheet">
+        <div class="region-sheet-header">
+          <button class="cancel" id="regionCancel" type="button">取消</button>
+          <span style="font-size:16px;font-weight:600;">请选择所在地区</span>
+          <button class="confirm" id="regionConfirm" type="button">确定</button>
+        </div>
+        <div class="region-sheet-body">
+          <div class="region-column" id="provinceList"></div>
+          <div class="region-column" id="cityList"></div>
+          <div class="region-column" id="districtList"></div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const formView = document.getElementById("formView");
+    const addressView = document.getElementById("addressView");
+    const cityView = document.getElementById("cityView");
+    const pickerCity = document.getElementById("pickerCity");
+    const currentCity = document.getElementById("currentCity");
+
+    // 模式切换
+    const modeTabs = document.querySelectorAll(".mode-tab");
+    const manualMode = document.getElementById("manualMode");
+    const mapMode = document.getElementById("mapMode");
+    const modeBadge = document.querySelector(".mode-badge");
+
+    modeTabs.forEach(tab => {
+      tab.addEventListener("click", () => {
+        modeTabs.forEach(t => t.classList.remove("active"));
+        tab.classList.add("active");
+        const mode = tab.dataset.mode;
+        manualMode.classList.toggle("active", mode === "manual");
+        mapMode.classList.toggle("active", mode === "map");
+        // 只有手动填写tab激活时才显示"更准确"气泡
+        modeBadge.style.display = mode === "manual" ? "inline-block" : "none";
+      });
+    });
+
+    // 地图选取模式
+    const mapAddressTrigger = document.getElementById("mapAddressTrigger");
+    const mapAddressText = document.getElementById("mapAddressText");
+
+    mapAddressTrigger.addEventListener("click", () => {
+      show(addressView);
+    });
+
+    function show(view) {
+      cityView.classList.remove("active");
+      [formView, addressView].forEach((item) => item.classList.remove("active"));
+      view.classList.add("active");
+    }
+
+    document.getElementById("addressBack").addEventListener("click", () => show(formView));
+    document.getElementById("cityTrigger").addEventListener("click", () => cityView.classList.add("active"));
+    document.getElementById("cityBack").addEventListener("click", () => cityView.classList.remove("active"));
+
+    // 地图选取：选择地址后返回
+    document.querySelectorAll(".place-item").forEach((button) => {
+      button.addEventListener("click", () => {
+        document.querySelectorAll(".place-item").forEach((item) => item.classList.remove("active"));
+        button.classList.add("active");
+        const name = button.querySelector(".place-name").textContent;
+        const addr = button.querySelector(".place-address").textContent;
+        const province = pickerCity.textContent;
+        setMapAddress(name, province + "市" + addr);
+        show(formView);
+      });
+    });
+
+    // 城市选择
+    document.querySelectorAll("[data-city]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const city = button.dataset.city;
+        pickerCity.textContent = city;
+        currentCity.textContent = city;
+        cityView.classList.remove("active");
+      });
+    });
+
+    // === 手动填写：地区选择弹窗 ===
+    const regionPicker = document.getElementById("regionPicker");
+    const regionText = document.getElementById("regionText");
+    const regionOverlay = document.getElementById("regionOverlay");
+    const regionCancel = document.getElementById("regionCancel");
+    const regionConfirm = document.getElementById("regionConfirm");
+    const provinceList = document.getElementById("provinceList");
+    const cityList = document.getElementById("cityList");
+    const districtList = document.getElementById("districtList");
+
+    let selectedProvince = null;
+    let selectedCity = null;
+    let selectedDistrict = null;
+
+    const regionData = {
+      "广东省": {
+        "深圳市": ["南山区", "福田区", "龙华区", "宝安区", "罗湖区", "龙岗区"],
+        "广州市": ["天河区", "越秀区", "海珠区", "荔湾区", "白云区"]
+      },
+      "北京市": {
+        "北京市": ["朝阳区", "海淀区", "东城区", "西城区", "丰台区"]
+      },
+      "上海市": {
+        "上海市": ["浦东新区", "黄浦区", "静安区", "徐汇区", "长宁区"]
+      },
+      "浙江省": {
+        "杭州市": ["西湖区", "上城区", "拱墅区", "滨江区"],
+        "宁波市": ["海曙区", "江北区", "北仑区", "镇海区"]
+      },
+      "江苏省": {
+        "南京市": ["玄武区", "秦淮区", "建邺区", "鼓楼区", "浦口区"],
+        "苏州市": ["姑苏区", "虎丘区", "吴中区", "相城区"]
+      }
+    };
+
+    function renderProvince() {
+      provinceList.innerHTML = "";
+      Object.keys(regionData).forEach(prov => {
+        const el = document.createElement("div");
+        el.className = "region-option" + (selectedProvince === prov ? " active" : "");
+        el.textContent = prov;
+        el.addEventListener("click", () => {
+          selectedProvince = prov;
+          selectedCity = null;
+          selectedDistrict = null;
+          renderProvince();
+          renderCity();
+          districtList.innerHTML = "";
+        });
+        provinceList.appendChild(el);
+      });
+    }
+
+    function renderCity() {
+      cityList.innerHTML = "";
+      if (!selectedProvince || !regionData[selectedProvince]) return;
+      Object.keys(regionData[selectedProvince]).forEach(city => {
+        const el = document.createElement("div");
+        el.className = "region-option" + (selectedCity === city ? " active" : "");
+        el.textContent = city;
+        el.addEventListener("click", () => {
+          selectedCity = city;
+          selectedDistrict = null;
+          renderCity();
+          renderDistrict();
+        });
+        cityList.appendChild(el);
+      });
+    }
+
+    function renderDistrict() {
+      districtList.innerHTML = "";
+      if (!selectedProvince || !selectedCity || !regionData[selectedProvince][selectedCity]) return;
+      regionData[selectedProvince][selectedCity].forEach(district => {
+        const el = document.createElement("div");
+        el.className = "region-option" + (selectedDistrict === district ? " active" : "");
+        el.textContent = district;
+        el.addEventListener("click", () => {
+          selectedDistrict = district;
+          renderDistrict();
+        });
+        districtList.appendChild(el);
+      });
+    }
+
+    regionPicker.addEventListener("click", () => {
+      renderProvince();
+      if (selectedProvince) { renderCity(); }
+      if (selectedCity) { renderDistrict(); }
+      regionOverlay.classList.add("active");
+    });
+
+    regionCancel.addEventListener("click", () => {
+      regionOverlay.classList.remove("active");
+    });
+
+    regionConfirm.addEventListener("click", () => {
+      if (selectedProvince && selectedCity && selectedDistrict) {
+        regionText.textContent = selectedProvince + " " + selectedCity + " " + selectedDistrict;
+        regionText.classList.add("selected");
+      }
+      regionOverlay.classList.remove("active");
+    });
+
+    regionOverlay.addEventListener("click", (e) => {
+      if (e.target === regionOverlay) regionOverlay.classList.remove("active");
+    });
+
+    // === 快速定位气泡浮窗 ===
+    const quickLocateBubble = document.getElementById("quickLocateBubble");
+    const quickLocateItem = document.getElementById("quickLocateItem");
+    const quickLocateClose = quickLocateBubble.querySelector(".quick-locate-close");
+
+    function setMapAddress(landmark, address) {
+      mapAddressText.innerHTML = `
+        <span class="map-result-name">${landmark}</span>
+        <span class="map-result-address">${address}</span>
+      `;
+    }
+
+    // 点击地标名称 → 填入地址框
+    quickLocateItem.addEventListener("click", (e) => {
+      if (e.target.closest(".quick-locate-close")) return;
+      setMapAddress("龙华区数字创新中心", "广东省深圳市龙华区民塘路与白松路交叉口东60米");
+      quickLocateBubble.style.display = "none";
+    });
+
+    // 点击关闭按钮 → 关闭气泡
+    quickLocateClose.addEventListener("click", (e) => {
+      e.stopPropagation();
+      quickLocateBubble.style.display = "none";
+    });
+  </script>
+</body>
+</html>
