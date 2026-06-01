@@ -532,7 +532,7 @@
       background: #fff;
     }
 
-    /* 地图选取模式 */
+    /* 地图选点模式 */
     .map-select-trigger {
       min-height: 52px;
       display: flex;
@@ -1457,7 +1457,7 @@
       <section class="address-mode-card" aria-label="地址选择方式">
         <div class="mode-tabs">
           <button class="mode-tab active" data-mode="manual" type="button">手动填写</button>
-          <button class="mode-tab" data-mode="map" type="button">地图选取<span class="mode-badge">更准确</span></button>
+          <button class="mode-tab" data-mode="map" type="button">地图选点<span class="mode-badge">更准确</span></button>
         </div>
 
         <div class="mode-content active" id="manualMode">
@@ -1690,7 +1690,7 @@
       });
     });
 
-    // 地图选取模式
+    // 地图选点模式
     const mapAddressTrigger = document.getElementById("mapAddressTrigger");
     const mapAddressText = document.getElementById("mapAddressText");
 
