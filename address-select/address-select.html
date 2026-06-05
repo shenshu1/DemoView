@@ -918,14 +918,15 @@
       overflow: hidden;
     }
 
-    .paste-box {
+    .paste-box-inner {
       height: 141px;
-      border: 0;
+      border: 1px solid #ddd;
       position: relative;
       padding: 13px 14px;
       color: #c9c9c9;
       font-size: 14px;
       line-height: 1.75;
+      margin: 8px;
     }
 
     .paste-box p { margin: 0; }
@@ -943,15 +944,13 @@
     }
 
     .notice {
-      height: 34px;
       display: flex;
       align-items: center;
-      padding: 0 9px;
+      padding: 8px 14px;
       margin: 0;
-      color: #c2c2c2;
-      background: #fff;
+      color: #999;
       font-size: 12px;
-      border-bottom: 1px solid #f0f0f0;
+      line-height: 1.5;
     }
 
     .default-row {
@@ -1491,7 +1490,7 @@
 
       <section class="paste-wrap" aria-label="地址智能识别">
         <div class="paste-card">
-          <div class="paste-box">
+          <div class="paste-box-inner">
             <p>粘贴文本，自动识别姓名、电话、地址，例如，张三，13100000000，广东省深圳市南山区科兴科学园</p>
             <button class="recognize" type="button">识别</button>
           </div>
