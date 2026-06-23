@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>小象超市 - 商品过滤配置</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#1890ff',
+            'primary-dark': '#096dd9',
+            'primary-light': '#e6f7ff',
+            sidebar: '#001529',
+            'sidebar-hover': '#1890ff',
+            border: '#d9d9d9',
+            'text-primary': '#333333',
+            'text-secondary': '#666666',
+            'text-muted': '#999999',
+            'bg-gray': '#f0f2f5'
+          },
+          fontFamily: {
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: #f0f2f5; color: #333; }
+
+    /* 自定义滚动条 */
+    .custom-scroll::-webkit-scrollbar { width: 6px; }
+    .custom-scroll::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 3px; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 3px; }
+    .custom-scroll::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+
+    /* ========== Dropdown 下拉选择器 ========== */
+    .dropdown-wrap { position: relative; overflow: visible; }
+    .dropdown-trigger {
+      width: 100%;
+      height: 32px;
+      padding-left: 10px;
+      padding-right: 28px;
+      border: 1px solid #d9d9d9;
+      border-radius: 4px;
+      font-size: 13px;
+      color: #333;
+      background: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 4px;
+      transition: all 0.15s ease;
+      line-height: 1;
+      min-height: 32px;
+    }
+    .dropdown-trigger:hover { border-color: #1890ff; }
+    .dropdown-trigger.open { border-color: #1890ff; box-shadow: 0 0 0 2px rgba(24,144,255,0.15); }
+    .dropdown-trigger .placeholder { color: #bbb; }
+    .dropdown-arrow {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #999;
+      font-size: 10px;
+      pointer-events: none;
+      transition: transform 0.2s ease;
+    }
+    .dropdown-trigger.open ~ .dropdown-arrow { transform: translateY(-50%) rotate(180deg); }
+
+    /* 下拉面板 */
+    .dropdown-panel {
+      position: fixed;
+      background: #fff;
+      border: 1px solid #d9d9d9;
+      border-radius: 4px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+      z-index: 99999;
+      display: none;
+      max-height: 260px;
+      width: 0;
+      overflow-y: auto;
+    }
+    .dropdown-panel.show { display: block; }
+
+    /* 树状选择器 */
+    .tree-node { user-select: none; }
+    .tree-row {
+      display: flex;
+      align-items: center;
+      padding: 5px 10px;
+      cursor: pointer;
+      border-radius: 2px;
+      font-size: 13px;
+      transition: background-color 0.15s ease;
+      line-height: 22px;
+    }
+    .tree-row:hover { background-color: #f5f5f5; }
+    .tree-toggle {
+      width: 18px; height: 18px;
+      display: inline-flex; align-items: center; justify-content: center;
+      flex-shrink: 0; cursor: pointer; color: #666; font-size: 12px;
+      transition: transform 0.2s ease;
+    }
+    .tree-toggle.expanded { transform: rotate(90deg); }
+    .tree-toggle-placeholder { width: 18px; flex-shrink: 0; display: inline-block; }
+    .cb-square {
+      width: 15px; height: 15px;
+      border: 1.5px solid #d9d9d9; border-radius: 2px;
+      display: inline-flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-right: 6px; cursor: pointer;
+      background: #fff; transition: all 0.15s ease;
+    }
+    .cb-square:hover { border-color: #1890ff; }
+    .cb-square.checked { background: #1890ff; border-color: #1890ff; }
+    .cb-square.checked svg { opacity: 1; }
+    .cb-square.indeterminate { background: #1890ff; border-color: #1890ff; }
+    .cb-square.indeterminate svg { display: none; }
+    .cb-square.indeterminate::after {
+      content: ""; width: 7px; height: 7px;
+      background: #fff; border-radius: 1px; display: block;
+    }
+    .cb-square svg { opacity: 0; width: 11px; height: 11px; color: white; pointer-events: none; }
+    .tree-children { padding-left: 24px; display: none; }
+    .tree-children.expanded { display: block; }
+
+    /* Tag标签 */
+    .tag-item {
+      display: inline-flex; align-items: center; gap: 3px;
+      padding: 1px 7px; border-radius: 3px; font-size: 12px;
+      cursor: default; transition: all 0.15s ease;
+    }
+    .tag-close {
+      cursor: pointer; width: 14px; height: 14px;
+      display: inline-flex; align-items: center; justify-content: center;
+      border-radius: 50%; font-size: 12px; line-height: 1;
+      transition: background 0.15s ease; margin-left: 2px;
+    }
+    .tag-close:hover { background: rgba(0,0,0,0.12); color: #fff !important; }
+
+    /* 分隔线 */
+    .modal-divider { border-top: 1px dashed #e8e8e8; margin: 16px 0; }
+
+    /* tooltip */
+    .tooltip-icon {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 15px; height: 15px; border-radius: 50%;
+      border: 1px solid #d9d9d9; font-size: 10px; color: #999;
+      cursor: help; position: relative; vertical-align: middle;
+      margin-left: 3px; transition: all 0.15s ease;
+      z-index: 10;
+    }
+    .tooltip-icon:hover { border-color: #1890ff; color: #1890ff; }
+    .tooltip-bubble {
+      display: none; position: absolute;
+      bottom: calc(100% + 6px); left: -70px;
+      background: #333; color: #fff; font-size: 12px;
+      padding: 10px 14px; border-radius: 4px; z-index: 999999;
+      line-height: 2; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      min-width: 300px; max-width: 360px; white-space: nowrap;
+    }
+    .tooltip-bubble::after {
+      content: ""; position: absolute; top: 100%; left: 78px;
+      border: 5px solid transparent; border-top-color: #333;
+    }
+    .tooltip-icon:hover .tooltip-bubble { display: block; }
+
+    /* Toast */
+    .toast-container {
+      position: fixed; top: 15%; left: 50%; transform: translateX(-50%);
+      z-index: 999999; pointer-events: none;
+    }
+    .toast {
+      background: #fff; border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+      padding: 14px 24px; display: flex; align-items: center; gap: 10px;
+      font-size: 14px; color: #333; white-space: nowrap;
+      animation: toastIn 0.3s ease forwards, toastOut 0.3s ease 1.7s forwards;
+    }
+    .toast-icon {
+      width: 20px; height: 20px; background: #52c41a;
+      border-radius: 50%; display: flex; align-items: center;
+      justify-content: center; flex-shrink: 0;
+    }
+    .toast-icon svg { width: 12px; height: 12px; color: #fff; }
+    @keyframes toastIn { from{opacity:0;transform:translateY(-10px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes toastOut { from{opacity:1} to{opacity:0;transform:translateY(-6px)} }
+
+  </style>
+</head>
+<body class="min-h-screen">
+
+  <!-- ==================== 主布局 ==================== -->
+  <div class="flex min-h-screen">
+    <!-- 左侧导航栏 -->
+    <aside class="w-[180px] bg-sidebar text-white flex-shrink-0 flex flex-col">
+      <div class="h-14 flex items-center px-4 text-base font-semibold border-b border-white/10">商城模式</div>
+      <nav class="flex-1 py-3 text-sm">
+        <div class="px-4 py-2 text-white/50 text-xs uppercase tracking-wider">营销活动</div>
+        <a href="#" class="block px-4 py-2.5 hover:bg-sidebar-hover hover:text-white text-white/70 transition-colors">在营活动库</a>
+        <a href="#" class="block px-4 py-2.5 bg-sidebar-hover text-white font-medium">📦 品类管理</a>
+        <a href="#" class="block px-4 py-2.5 hover:bg-sidebar-hover hover:text-white text-white/70 transition-colors">批量管理</a>
+        <a href="#" class="block px-4 py-2.5 hover:bg-sidebar-hover hover:text-white text-white/70 transition-colors">特殊选品</a>
+        <a href="#" class="block px-4 py-2.5 hover:bg-sidebar-hover hover:text-white text-white/70 transition-colors">商品分类</a>
+        <a href="#" class="block px-4 py-2.5 hover:bg-sidebar-hover hover:text-white text-white/70 transition-colors">商城装修</a>
+        <a href="#" class="block px-4 py-2.5 hover:bg-sidebar-hover hover:text-white text-white/70 transition-colors">商品模版</a>
+        <a href="#" class="block px-4 py-2.5 hover:bg-sidebar-hover hover:text-white text-white/70 transition-colors">运费规则</a>
+        <a href="#" class="block px-4 py-2.5 hover:bg-sidebar-hover hover:text-white text-white/70 transition-colors">智能运营</a>
+      </nav>
+    </aside>
+
+    <!-- 右侧内容区 -->
+    <main class="flex-1 flex flex-col min-w-0">
+      <header class="h-14 bg-white border-b border-border flex items-center px-6 flex-shrink-0">
+        <div class="flex gap-6 text-sm">
+          <button class="pb-3.5 border-b-2 border-primary text-primary font-medium">平台资源</button>
+          <button class="pb-3.5 border-b-2 border-transparent text-text-secondary hover:text-primary transition-colors">自有资源</button>
+        </div>
+        <div class="ml-auto flex items-center gap-3">
+          <span class="text-xs text-text-muted">资源标签：</span>
+          <input type="text" placeholder="请选择资源组" class="w-40 h-8 px-3 text-xs border border-border rounded focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30">
+        </div>
+      </header>
+
+      <div class="flex-1 p-6 overflow-auto">
+        <div class="mb-4 flex items-center gap-3">
+          <label class="text-sm text-text-secondary whitespace-nowrap">资源名称：</label>
+          <input type="text" value="小象超市" readonly class="h-9 px-3 text-sm border border-border rounded bg-white w-64">
+        </div>
+
+        <div class="flex gap-1 mb-4 border-b border-border">
+          <button class="px-4 py-2 text-sm text-primary border-b-2 border-primary font-medium -mb-px">已选资源(1)</button>
+          <button class="px-4 py-2 text-sm text-text-secondary hover:text-primary transition-colors">未选服务费(0)</button>
+          <button class="ml-auto px-4 py-2 text-sm text-text-secondary">已选择 0 个资源</button>
+          <button class="px-4 py-2 text-sm text-text-secondary hover:text-primary transition-colors">清除筛选</button>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-sm border border-border overflow-hidden">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="bg-bg-gray text-text-secondary text-left">
+                <th class="p-4 font-medium"><input type="checkbox"></th>
+                <th class="p-4 font-medium">资源信息</th>
+                <th class="p-4 font-medium">资源ID</th>
+                <th class="p-4 font-medium">标签</th>
+                <th class="p-4 font-medium">定价类型</th>
+                <th class="p-4 font-medium">定价方式</th>
+                <th class="p-4 font-medium">用户H5服务费</th>
+                <th class="p-4 font-medium">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="border-t border-border hover:bg-blue-50/50 transition-colors">
+                <td class="p-4"><input type="checkbox"></td>
+                <td class="p-4"><div class="flex items-center gap-3"><img src="https://via.placeholder.com/48x48/34d399/ffffff?text=小象" alt="" class="w-12 h-12 rounded-lg"><span class="font-medium">小象超市H5</span></div></td>
+                <td class="p-4 text-text-secondary font-mono text-xs">@022</td>
+                <td class="p-4">
+                  <div class="flex gap-1.5 flex-wrap"><span class="px-2 py-0.5 rounded text-xs bg-green-50 text-green-600 border border-green-200">有税点</span><span class="px-2 py-0.5 rounded text-xs bg-cyan-50 text-cyan-600 border border-cyan-200">全利润</span></div>
+                  <div class="mt-1"><span class="px-2 py-0.5 rounded text-xs bg-red-50 text-red-500 border border-red-200">门店后</span></div>
+                </td>
+                <td class="p-4 text-text-secondary">商品底价阶</td>
+                <td class="p-4 text-text-secondary">公式定价</td>
+                <td class="p-4 text-primary">平台成本1%+1.11元</td>
+                <td class="p-4">
+                  <div class="flex gap-2 text-xs">
+                    <a href="#" class="text-primary hover:text-primary-dark cursor-pointer transition-colors">修改服务费</a>
+                    <span class="text-border">|</span>
+                    <a href="#modal-service" onclick="openModal('service');return false;" class="text-primary hover:text-primary-dark cursor-pointer transition-colors">限制规则</a>
+                    <span class="text-border">|</span>
+                    <a href="#" class="text-primary hover:text-primary-dark transition-colors">详情</a>
+                    <span class="text-border">|</span>
+                    <a href="#" class="text-danger hover:text-red-700 transition-colors">移除</a>
+                  </div>
+                </td>
+              </tr>
+              <tr class="border-t border-border hover:bg-blue-50/50 transition-colors">
+                <td class="p-4"><input type="checkbox"></td>
+                <td class="p-4"><div class="flex items-center gap-3"><img src="https://via.placeholder.com/48x48/34d399/ffffff?text=小象" alt="" class="w-12 h-12 rounded-lg"><span class="font-medium">小象超市H5</span></div></td>
+                <td class="p-4 text-text-secondary font-mono text-xs">@023</td>
+                <td class="p-4">
+                  <div class="flex gap-1.5 flex-wrap"><span class="px-2 py-0.5 rounded text-xs bg-green-50 text-green-600 border border-green-200">有税点</span><span class="px-2 py-0.5 rounded text-xs bg-cyan-50 text-cyan-600 border border-cyan-200">全利润</span></div>
+                  <div class="mt-1"><span class="px-2 py-0.5 rounded text-xs bg-orange-50 text-orange-500 border border-orange-200">门店前</span></div>
+                </td>
+                <td class="p-4 text-text-secondary">商品底价阶</td>
+                <td class="p-4 text-text-secondary">公式定价</td>
+                <td class="p-4 text-primary">平台成本1%+1.11元</td>
+                <td class="p-4">
+                  <div class="flex gap-2 text-xs">
+                    <a href="#" class="text-primary hover:text-primary-dark cursor-pointer transition-colors">修改服务费</a>
+                    <span class="text-border">|</span>
+                    <a href="#modal-service" onclick="openModal('service');return false;" class="text-primary hover:text-primary-dark cursor-pointer transition-colors">限制规则</a>
+                    <span class="text-border">|</span>
+                    <a href="#" class="text-primary hover:text-primary-dark transition-colors">详情</a>
+                    <span class="text-border">|</span>
+                    <a href="#" class="text-danger hover:text-red-700 transition-colors">移除</a>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- ========== 主弹窗：修改服务费与限制规则 ========== -->
+  <!-- ============================================================ -->
+  <div id="service-modal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50" onclick="onServiceModalOverlay(event)">
+    <div class="bg-white rounded-xl shadow-2xl w-[720px] overflow-hidden animate-in max-h-[90vh] flex flex-col" onclick="event.stopPropagation()">
+      <div class="px-6 py-4 border-b border-border flex items-center justify-between flex-shrink-0">
+        <h3 class="font-semibold text-base">限制规则</h3>
+        <button onclick="closeModal()" class="w-7 h-7 flex items-center justify-center rounded-full hover:bg-bg-gray transition-colors cursor-pointer">
+          <svg class="w-4 h-4 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-4 overflow-y-auto custom-scroll">
+
+        <!-- ===== 商品过滤 ===== -->
+        <div class="space-y-3">
+          <div class="flex items-center gap-4">
+            <label class="text-sm text-text-secondary whitespace-nowrap shrink-0">
+              商品过滤<span class="tooltip-icon ml-1">?
+                <span class="tooltip-bubble"><div>1、配置后会根据勾选规则过滤小象超市H5页的商品</div><div>2、规则由美团提供，如需调整请联系平台运营</div></span>
+              </span>：
+            </label>
+            <label class="flex items-center gap-1.5 cursor-pointer select-none text-sm whitespace-nowrap">
+              <input type="radio" name="shopFlavorEnabled" value="no" checked onchange="toggleShopFlavor()" class="accent-primary"> 否
+            </label>
+            <label class="flex items-center gap-1.5 cursor-pointer select-none text-sm whitespace-nowrap">
+              <input type="radio" name="shopFlavorEnabled" value="yes" onchange="toggleShopFlavor()" class="accent-primary"> 是
+            </label>
+          </div>
+          <div id="shopFlavorPanel" style="display:none;" class="pl-[calc(5rem+1rem)]">
+            <div class="dropdown-wrap">
+              <div id="shopFlavorTrigger" class="dropdown-trigger" onclick="toggleDropdown('shopFlavor')">
+                <span class="placeholder">请选择规则</span>
+                <span class="dropdown-arrow">▾</span>
+              </div>
+              <div id="shopFlavorDropdown" class="dropdown-panel custom-scroll"></div>
+            </div>
+            <div id="shopFlavorTags" class="flex flex-wrap gap-1.5 mt-2 min-h-[24px]"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="px-6 py-4 border-t border-border flex justify-end gap-3 flex-shrink-0">
+        <button onclick="closeModal()" class="px-5 py-2 text-sm border border-border rounded hover:border-primary hover:text-primary transition-colors cursor-pointer">取消</button>
+        <button onclick="saveConfig()" class="px-5 py-2 text-sm bg-primary text-white rounded hover:bg-primary-dark transition-colors shadow-sm cursor-pointer">确定</button>
+      </div>
+    </div>
+  </div>
+
+
+
+
+  <!-- ===================== JavaScript ===================== -->
+  <script>
+    // ================================================================
+    //  数据定义：一二级树形结构（原有）
+    // ================================================================
+    const shopFlavorTreeData = [
+      { id: "rule_1", name: "规则1：屏蔽xxxx" },
+      { id: "rule_2", name: "规则2 屏蔽xxxx" },
+      { id: "rule_3", name: "规则3" }
+    ];
+
+    // ================================================================
+    //  全局状态管理
+    // ================================================================
+    const state = {
+      shopFlavor: { selected:new Set(), enabled:false, dropdownOpen:false, expanded:new Set(), searchQuery:"" }
+    };
+
+    function init() {
+      renderTree("shopFlavor");
+    }
+    init();
+
+    // ================================================================
+    //  Tooltip 气泡：hover 时动态挂到 body 避免被 overflow 裁剪
+    // ================================================================
+    document.addEventListener("mouseover", function(e) {
+      const icon = e.target.closest(".tooltip-icon");
+      if (!icon) return;
+      const bubble = icon.querySelector(".tooltip-bubble");
+      if (!bubble || bubble.dataset._portal) return;
+      const rect = icon.getBoundingClientRect();
+      bubble.style.display = "block";
+      bubble.style.position = "fixed";
+      bubble.style.left = Math.max(8, rect.left + rect.width / 2 - 150) + "px";
+      bubble.style.bottom = (window.innerHeight - rect.top + 8) + "px";
+      bubble.style.top = "auto";
+      bubble.dataset._portal = "1";
+      document.body.appendChild(bubble);
+    });
+    document.addEventListener("mouseout", function(e) {
+      const icon = e.target.closest(".tooltip-icon");
+      if (!icon) return;
+      var bubble = icon.querySelector(".tooltip-bubble") || null;
+      if (!bubble) {
+        // 可能已挂到body上了，找回来
+        var all = document.querySelectorAll(".tooltip-bubble[data-_portal]");
+        for (var i = 0; i < all.length; i++) { bubble = all[i]; break; }
+        if (!bubble) return;
+      }
+      if (!bubble.dataset._portal) return;
+      bubble.style.display = "none";
+      bubble.removeAttribute("data-_portal");
+      bubble.style.position = "";
+      bubble.style.left = "";
+      bubble.style.top = "";
+      bubble.style.bottom = "";
+      icon.appendChild(bubble);
+    });
+
+    function escapeHtml(str){
+      if(!str) return "";
+      const d=document.createElement("div"); d.textContent=str; return d.innerHTML;
+    }
+
+
+    // ================================================================
+    //  原有：店铺过滤逻辑（保持不变）
+    // ================================================================
+    function getData(type) { return shopFlavorTreeData; }
+    function findParent(data, parentId) { return data.find(n => n.id === parentId); }
+    function findNode(nodes, id) {
+      for(const n of nodes){ if(n.id===id) return n; if(n.children){const r=findNode(n.children,id);if(r)return r;} } return null;
+    }
+    function getParentState(type, parentId) {
+      const parent = findParent(getData(type), parentId);
+      if(!parent || !parent.children) return "none";
+      const sel = state[type].selected;
+      const c = parent.children.filter(c => sel.has(c.id)).length;
+      if(c===0) return "none"; if(c===parent.children.length) return "all"; return "part";
+    }
+    function getSelectedDisplayInfo(type) {
+      const data = getData(type); const sel = state[type].selected; const result=[];
+      for(const p of data){
+        if(!p.children) {
+          if(sel.has(p.id)) {
+            result.push({parentId:p.id,state:"all",displayName:p.name,childNames:[]});
+          }
+          continue;
+        }
+        const c = p.children.filter(c=>sel.has(c.id)).length;
+        if(c===0) continue;
+        if(c===p.children.length){ result.push({parentId:p.id,state:"all",displayName:p.name,childNames:[]}); }
+        else{ result.push({parentId:p.id,state:"part",displayName:null,childNames:p.children.filter(c=>sel.has(c.id)).map(c=>c.name)}); }
+      } return result;
+    }
+    function toggleShopFlavor() {
+      const v = document.querySelector('input[name="shopFlavorEnabled"]:checked').value;
+      state.shopFlavor.enabled = v==="yes";
+      document.getElementById("shopFlavorPanel").style.display = state.shopFlavor.enabled ? "block":"none";
+      if(state.shopFlavor.enabled){renderTree("shopFlavor");updateTrigger("shopFlavor");}
+    }
+    function toggleDropdown(type) {
+      const trigger=document.getElementById("shopFlavorTrigger"), panel=document.getElementById("shopFlavorDropdown");
+      if(state[type].dropdownOpen){ closeDropdown(type); } else{
+        trigger.classList.add("open"); panel.classList.add("show");
+        state[type].dropdownOpen=true;
+        const rect=trigger.getBoundingClientRect();
+        panel.style.top=(rect.bottom+4)+"px"; panel.style.left=rect.left+"px"; panel.style.width=rect.width+"px";
+        renderTree(type);
+        setTimeout(()=>document.addEventListener("click",function h(e){
+          if(!document.getElementById("shopFlavorPanel").contains(e.target)){closeDropdown(type); document.removeEventListener("click",h);}
+        }),0);
+      }
+    }
+    function closeDropdown(type){
+      document.getElementById("shopFlavorTrigger").classList.remove("open");
+      document.getElementById("shopFlavorDropdown").classList.remove("show");
+      state[type].dropdownOpen=false;
+    }
+    function renderTree(type, filterText){
+      const data=getData(type), container=document.getElementById("shopFlavorDropdown"),
+            exp=state[type].expanded, query=(filterText!==undefined?filterText:(state[type].searchQuery||"")).toLowerCase().trim();
+      function buildNodeHTML(node){
+        if(!node.children) return buildLeafHTML(node);
+        const isExp=exp.has(node.id), ps=getParentState(type,node.id);
+        let childHTML="";
+        if(query){const m=node.children.filter(c=>c.name.toLowerCase().includes(query));childHTML=m.map(c=>buildLeafHTML(c)).join("");
+          if(!childHTML&&!node.name.toLowerCase().includes(query)) return "";
+        }else{childHTML=node.children.map(c=>buildLeafHTML(c)).join("");}
+        let cbClass="", cbStyle="";
+        if(ps==="all"){cbClass="checked";cbStyle="background:#1890ff;border-color:#1890ff";}
+        else if(ps==="part"){cbClass="indeterminate";cbStyle="background:#1890ff;border-color:#1890ff";}
+        else{cbClass="";cbStyle="border-color:#d9d9d9";}
+        return `<div class="tree-node"><div class="tree-row" onclick="event.stopPropagation();toggleTreeNode('${type}','${node.id}')">
+          <span class="tree-toggle ${isExp?'expanded':''}">&#9654;</span>
+          <span class="cb-square ${cbClass}" style="${cbStyle}" onclick="event.stopPropagation();toggleParentClick('${type}','${node.id}')">
+          <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 6l3 3 5-5"/></svg></span>
+          <span>${escapeHtml(node.name)}</span></div>
+          <div class="tree-children ${isExp?'expanded':''}">${childHTML||'<div class="py-1 px-6 text-xs text-text-muted">无匹配项</div>'}</div></div>`;
+      }
+      function buildLeafHTML(node){
+        if(query&&!node.name.toLowerCase().includes(query)) return "";
+        const chk=state[type].selected.has(node.id);
+        return `<div class="tree-node"><div class="tree-row" onclick="event.stopPropagation();toggleLeaf('${type}','${node.id}','${escapeHtml(node.name)}')">
+          <span class="tree-toggle-placeholder"></span>
+          <span class="cb-square ${chk?'checked':''}" style="${chk?'background:#1890ff;border-color:#1890ff;':'border-color:#d9d9d9;'}"
+          onclick="event.stopPropagation();toggleLeaf('${type}','${node.id}','${escapeHtml(node.name)}')">
+          <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 6l3 3 5-5"/></svg></span>
+          <span>${escapeHtml(node.name)}</span></div></div>`;
+      }
+      container.innerHTML=data.map(n=>buildNodeHTML(n)).join("")||'<div class="py-6 text-center text-sm text-text-muted">无匹配结果</div>';
+    }
+    function toggleTreeNode(type,nid){const s=state[type].expanded;s.has(nid)?s.delete(nid):s.add(nid);renderTree(type);}
+    function toggleParentClick(type,pid){
+      const p=findParent(getData(type),pid);if(!p||!p.children)return;
+      const s=state[type].selected,st=getParentState(type,pid);
+      if(st==="all")p.children.forEach(c=>s.delete(c.id));else p.children.forEach(c=>s.add(c.id));
+      renderTree(type);updateTrigger(type);renderTags(type);
+    }
+    function toggleLeaf(type,id,name){const s=state[type].selected;s.has(id)?s.delete(id):s.add(id);renderTree(type);updateTrigger(type);renderTags(type);}
+    function updateTrigger(type){
+      const trigger=document.getElementById("shopFlavorTrigger"), infoList=getSelectedDisplayInfo(type);
+      if(infoList.length===0){trigger.innerHTML=`<span class="placeholder">请选择规则<span class="dropdown-arrow" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);color:#999;font-size:10px;pointer-events:none;">&#9662;</span></span>`;return;}
+      let html="";for(const i of infoList){
+        if(i.state==="all")html+=`<span class="tag-item bg-primary-light text-primary border border-primary/30">${escapeHtml(i.displayName)}<span class="tag-close text-primary" onclick="event.stopPropagation();clearParent('${type}','${i.parentId}')">&times;</span></span>`;
+        else for(const cn of i.childNames) html+=`<span class="tag-item bg-primary-light text-primary border border-primary/30">${escapeHtml(cn)}<span class="tag-close text-primary" onclick="event.stopPropagation();removeChildByName('${type}','${escapeHtml(cn)}')">&times;</span></span>`;
+      }
+      trigger.innerHTML=html+`<span class="dropdown-arrow" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);color:#999;font-size:10px;pointer-events:none;">&#9662;</span>`;
+    }
+    function renderTags(type){}
+    function clearParent(type,pid){
+      const p=findParent(getData(type),pid);
+      if(p&&p.children)p.children.forEach(c=>state[type].selected.delete(c.id));
+      else if(p)state[type].selected.delete(p.id);
+      renderTree(type);updateTrigger(type);renderTags(type);
+    }
+    function removeChildByName(type,cn){for(const p of getData(type)){if(p.children){const f=p.children.find(c=>c.name===cn);if(f){state[type].selected.delete(f.id);break;}}}renderTree(type);updateTrigger(type);renderTags(type);}
+
+    // ================================================================
+    //  主弹窗控制
+    // ================================================================
+    function openModal(t){if(t==="service"){const el=document.getElementById("service-modal");el.classList.remove("hidden");el.classList.add("flex");}}
+    function closeModal(){const el=document.getElementById("service-modal");el.classList.add("hidden");el.classList.remove("flex");}
+    function onServiceModalOverlay(e){if(e.currentTarget===e.target)closeModal();}
+
+
+
+
+
+    // ============================================================
+    //  保存
+    // ============================================================
+    function saveConfig(){
+      const priceType = document.querySelector('input[name="priceType"]:checked')?.value;
+      const shopFlavorEnabled = document.querySelector('input[name="shopFlavorEnabled"]:checked')?.value;
+
+      console.log("===== 保存的配置 =====");
+      console.log("定价类型:", priceType);
+      console.log("商品过滤启用状态:", shopFlavorEnabled, "选中规则:", Array.from(state.shopFlavor.selected));
+
+      closeModal();
+      showToast("配置成功");
+    }
+
+    function showToast(msg, type) {
+      const isError = type === "error";
+      const bg = isError ? "#ff4d4f" : "#52c41a";
+      const icon = isError
+        ? '<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l6 6M9 3l-6 6"/></svg>'
+        : '<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 6l3 3 5-5"/></svg>';
+      const container = document.createElement("div");
+      container.className = "toast-container";
+      container.innerHTML = `<div class="toast"><span class="toast-icon" style="background:${bg};">${icon}</span><span>${escapeHtml(msg)}</span></div>`;
+      document.body.appendChild(container);
+      setTimeout(() => container.remove(), 2000);
+    }
+
+    // (省市区使用select，无需额外点击外部关闭逻辑)
+  </script>
+</body>
+</html>
