@@ -332,7 +332,7 @@
     <div class="toast-overlay" id="toastModal">
         <div class="toast">
             <div class="toast-icon">✓</div>
-            <span class="toast-text">保存成功</span>
+            <span class="toast-text" id="toastText">保存成功</span>
         </div>
     </div>
 
@@ -448,7 +448,7 @@
     </div>
 
     <!-- 隐藏的文件上传 -->
-    <input type="file" id="fileUploadInput" style="display:none;" accept=".doc,.docx,.pdf,.xls,.xlsx,.png,.jpg,.jpeg,.gif" onchange="handleFileUpload(this)">
+    <input type="file" id="fileUploadInput" style="display:none;" accept=".doc,.docx,.pdf,.xls,.xlsx,.csv,.png,.jpg,.jpeg,.zip,.rar,.7z,.tgz" onchange="handleFileUpload(this)">
 
     <script>
         // 模拟运营商数据
@@ -671,7 +671,7 @@
             updateAssocCell(currentResourceId);
             closeConfirmModal();
             closeConfigModal();
-            showToast();
+            showToast('保存成功');
         }
 
         function saveConfig() {
@@ -687,12 +687,13 @@
                 // 没有取消关联，直接保存
                 updateAssocCell(currentResourceId);
                 closeConfigModal();
-                showToast();
+                showToast('保存成功');
             }
         }
 
-        function showToast() {
+        function showToast(msg) {
             const toast = document.getElementById('toastModal');
+            if(msg) document.getElementById('toastText').textContent = msg;
             toast.classList.add('show');
             setTimeout(() => {
                 toast.classList.remove('show');
@@ -817,7 +818,7 @@
                 resourceArchives[key].status = '已归档';
                 input.value = '';
                 renderArchiveList();
-                showToast();
+                showToast('上传成功');
             }
         }
 
