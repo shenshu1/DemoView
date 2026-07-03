@@ -447,6 +447,28 @@
         </div>
     </div>
 
+    <!-- 操作日志弹窗 -->
+    <div class="modal-overlay" id="logModal">
+        <div class="modal" style="width:600px;max-width:90vw;max-height:70vh;">
+            <div class="modal-header">
+                <span class="modal-title" id="logTitle">操作日志</span>
+                <span class="modal-close" onclick="closeLogModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <table class="view-table">
+                    <thead>
+                        <tr>
+                            <th>操作人员</th>
+                            <th>操作时间</th>
+                            <th>信息变更</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
     <!-- 隐藏的文件上传 -->
     <input type="file" id="fileUploadInput" style="display:none;" accept=".doc,.docx,.pdf,.xls,.xlsx,.csv,.png,.jpg,.jpeg,.zip,.rar,.7z,.tgz" onchange="handleFileUpload(this)">
 
@@ -718,6 +740,21 @@
         // ===== 合同归档功能 =====
         // 存储归档数据: key = resourceId_opId, value = { status: '已归档'|'未归档', files: [{name, url}] }
         const resourceArchives = {};
+        
+        // 存储日志数据: key = resourceId_opId, value = [{ user, time, action }]
+        const archiveLogs = {};
+
+        function addLog(key, user, action) {
+            if (!archiveLogs[key]) archiveLogs[key] = [];
+            const now = new Date();
+            const timeStr = now.getFullYear() + '-' + 
+                            String(now.getMonth()+1).padStart(2, '0') + '-' + 
+                            String(now.getDate()).padStart(2, '0') + ' ' + 
+                            String(now.getHours()).padStart(2, '0') + ':' + 
+                            String(now.getMinutes()).padStart(2, '0') + ':' + 
+                            String(now.getSeconds()).padStart(2, '0');
+            archiveLogs[key].unshift({ user, time: timeStr, action });
+        }
 
         let currentArchiveResourceId = null;
         let currentArchiveResourceName = '';
@@ -768,6 +805,7 @@
                     '<td>' +
                         '<button class="link-btn" onclick="viewAttachments(\'' + item.id + '\', \'' + item.name + '\')">查看附件</button>' +
                         '<button class="link-btn" style="margin-left:12px;" onclick="triggerUpload(\'' + item.id + '\')">上传附件</button>' +
+                        '<button class="link-btn" style="margin-left:12px;" onclick="viewLogs(\'' + item.id + '\', \'' + item.name + '\')">日志</button>' +
                     '</td>' +
                 '</tr>';
             }).join('');
@@ -786,8 +824,12 @@
             if (archive.files.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="2" style="text-align:center;color:rgba(0,0,0,0.25);padding:40px;">暂无附件</td></tr>';
             } else {
-                tbody.innerHTML = archive.files.map(f =>
-                    '<tr><td>' + f.name + '</td><td><button class="link-btn" onclick="downloadFile(\'' + f.name + '\')">下载</button></td></tr>'
+                tbody.innerHTML = archive.files.map((f, idx) =>
+                    '<tr><td style="color:#1890ff;">' + f.name + '</td><td>' +
+                    '<div style="display:flex; align-items:center; gap:12px; white-space:nowrap;">' +
+                    '<button class="link-btn" onclick="downloadFile(\'' + f.name + '\')">下载</button>' +
+                    '<button class="link-btn" style="color:#ff4d4f;" onclick="deleteAttachment(\'' + opId + '\', ' + idx + ')">删除</button>' +
+                    '</div></td></tr>'
                 ).join('');
             }
             document.getElementById('attachModal').classList.add('show');
@@ -799,6 +841,43 @@
 
         function downloadFile(fileName) {
             alert('下载文件：' + fileName);
+        }
+
+        function deleteAttachment(opId, fileIndex) {
+            const key = currentArchiveResourceId + '_' + opId;
+            const archive = resourceArchives[key];
+            if (archive && archive.files && archive.files.length > fileIndex) {
+                const deletedFile = archive.files[fileIndex].name;
+                archive.files.splice(fileIndex, 1);
+                if (archive.files.length === 0) {
+                    archive.status = '未归档';
+                }
+                addLog(key, '刘瑞辰', '删除附件 <span style="color:#1890ff;">' + deletedFile + '</span>');
+                
+                const opName = document.getElementById('attachTitle').textContent.replace('查看附件 - ', '');
+                viewAttachments(opId, opName);
+                renderArchiveList();
+                showToast('删除成功');
+            }
+        }
+
+        function viewLogs(opId, opName) {
+            const key = currentArchiveResourceId + '_' + opId;
+            document.getElementById('logTitle').textContent = '操作日志 - ' + opName;
+            const logs = archiveLogs[key] || [];
+            const tbody = document.getElementById('logTableBody');
+            if (logs.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:rgba(0,0,0,0.25);padding:40px;">暂无日志</td></tr>';
+            } else {
+                tbody.innerHTML = logs.map(log => 
+                    '<tr><td>' + log.user + '</td><td>' + log.time + '</td><td>' + log.action + '</td></tr>'
+                ).join('');
+            }
+            document.getElementById('logModal').classList.add('show');
+        }
+
+        function closeLogModal() {
+            document.getElementById('logModal').classList.remove('show');
         }
 
         // 上传附件
@@ -817,6 +896,7 @@
                 resourceArchives[key].files.push({ name: file.name });
                 resourceArchives[key].status = '已归档';
                 input.value = '';
+                addLog(key, '刘瑞辰', '上传附件 <span style="color:#1890ff;">' + file.name + '</span>');
                 renderArchiveList();
                 showToast('上传成功');
             }
@@ -831,6 +911,9 @@
         });
         document.getElementById('confirmModal').addEventListener('click', function(e) {
             if (e.target === this) closeConfirmModal();
+        });
+        document.getElementById('logModal').addEventListener('click', function(e) {
+            if (e.target === this) closeLogModal();
         });
     </script>
 </body>
