@@ -60,13 +60,19 @@
     border-radius: 2px;
   }
 
-  /* ===== 应用卡片 ===== */
+  /* ===== 应用分区与卡片 ===== */
+  .app-section { margin-bottom: 32px; }
+  .section-title { font-size: 16px; font-weight: 600; color: #303133; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .section-title::before { content: ""; display: inline-block; width: 4px; height: 16px; background: #3d7fff; border-radius: 2px; }
+
   .app-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 360px)); gap: 20px; }
   .app-card { border: 1px solid #ebeef5; border-radius: 6px; overflow: hidden; background: #fff; transition: box-shadow .2s, transform .2s; display: flex; flex-direction: column; }
   .app-card:hover { box-shadow: 0 4px 16px rgba(61,127,255,.12); transform: translateY(-2px); }
   .app-cover { height: 160px; position: relative; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 22px; font-weight: 600; letter-spacing: 2px; overflow: hidden; }
-  .cover-union { background: linear-gradient(135deg, #3d7fff 0%, #6faaff 100%); }
+  .cover-walking { background: linear-gradient(135deg, #10b981 0%, #34d399 100%); }
+  .cover-quiz { background: linear-gradient(135deg, #ff4d4f 0%, #ff7875 100%); }
   .cover-multi { background: linear-gradient(135deg, #ff8a4c 0%, #ffb980 100%); }
+  .cover-pay { background: linear-gradient(135deg, #722ed1 0%, #b37feb 100%); }
 
   .app-cover .deco-1, .app-cover .deco-2 { position: absolute; border-radius: 50%; background: rgba(255,255,255,.14); pointer-events: none; }
   .app-cover .deco-1 { width: 120px; height: 120px; right: -30px; top: -40px; }
@@ -217,40 +223,87 @@
     <div class="page-card">
       <div class="page-tip">如需开通应用请联系平台运营</div>
 
-      <div class="app-grid">
-        <!-- 卡片1：工会营销活动（已开通） -->
-        <div class="app-card">
-          <div class="app-cover cover-union">
-            <span class="status-tag on">已开通</span>
-            <div class="deco-1"></div>
-            <div class="deco-2"></div>
-            <div class="cover-ico">🎯</div>
-            <div class="cover-text">工会营销</div>
+      <!-- 分类一：用户互动应用 -->
+      <div class="app-section">
+        <h3 class="section-title">用户互动应用</h3>
+        <div class="app-grid">
+          <!-- 卡片1：健步走（已开通） -->
+          <div class="app-card">
+            <div class="app-cover cover-walking">
+              <span class="status-tag on">已开通</span>
+              <div class="deco-1"></div>
+              <div class="deco-2"></div>
+              <div class="cover-ico">🏃</div>
+              <div class="cover-text">健步走</div>
+            </div>
+            <div class="app-body">
+              <div class="app-title">健步走</div>
+              <div class="app-desc">鼓励员工绿色出行，倡导健康生活的趣味健步走应用。支持微信步数自动同步、团队竞赛、积分兑换等多种互动玩法，提升员工凝聚力。</div>
+              <div class="app-footer">
+                <button class="btn btn-default" onclick="openModal('walking')">查看详情</button>
+                <button class="btn btn-primary" onclick="showToast('欢迎进入应用，页面跳转中...')">进入应用</button>
+              </div>
+            </div>
           </div>
-          <div class="app-body">
-            <div class="app-title">工会营销活动</div>
-            <div class="app-desc">面向工会场景的专属营销解决方案，支持活动策划、会员福利发放、一键核销等功能，助力提升工会成员活跃度与满意度。</div>
-            <div class="app-footer">
-              <button class="btn btn-default" onclick="openModal('union')">查看详情</button>
-              <button class="btn btn-primary" onclick="showToast('该应用仅限管理员角色访问')">进入应用</button>
+
+          <!-- 卡片2：问卷答题（未开通） -->
+          <div class="app-card">
+            <div class="app-cover cover-quiz">
+              <span class="status-tag off">未开通</span>
+              <div class="deco-1"></div>
+              <div class="deco-2"></div>
+              <div class="cover-ico">📝</div>
+              <div class="cover-text">问卷答题</div>
+            </div>
+            <div class="app-body">
+              <div class="app-title">问卷答题</div>
+              <div class="app-desc">简单易用的在线问卷与答题系统。支持员工满意度调查、党建知识竞赛、安全生产答题等多种场景，自动评分与多维度报表分析。</div>
+              <div class="app-footer">
+                <button class="btn btn-default" onclick="openModal('quiz')">查看详情</button>
+              </div>
             </div>
           </div>
         </div>
+      </div>
 
-        <!-- 卡片2：多主体经营（未开通） -->
-        <div class="app-card">
-          <div class="app-cover cover-multi">
-            <span class="status-tag off">未开通</span>
-            <div class="deco-1"></div>
-            <div class="deco-2"></div>
-            <div class="cover-ico">🏪</div>
-            <div class="cover-text">多主体经营</div>
+      <!-- 分类二：经营支撑应用 -->
+      <div class="app-section">
+        <h3 class="section-title">经营支撑应用</h3>
+        <div class="app-grid">
+          <!-- 卡片3：多主体经营（未开通） -->
+          <div class="app-card">
+            <div class="app-cover cover-multi">
+              <span class="status-tag off">未开通</span>
+              <div class="deco-1"></div>
+              <div class="deco-2"></div>
+              <div class="cover-ico">🏪</div>
+              <div class="cover-text">多主体经营</div>
+            </div>
+            <div class="app-body">
+              <div class="app-title">多主体经营</div>
+              <div class="app-desc">支持多商户、多品牌统一管理，独立结算与权限隔离，帮助企业高效拓展业务线，实现集团化精细运营。</div>
+              <div class="app-footer">
+                <button class="btn btn-default" onclick="openModal('multi')">查看详情</button>
+              </div>
+            </div>
           </div>
-          <div class="app-body">
-            <div class="app-title">多主体经营</div>
-            <div class="app-desc">支持多商户、多品牌统一管理，独立结算与权限隔离，帮助企业高效拓展业务线，实现集团化精细运营。</div>
-            <div class="app-footer">
-              <button class="btn btn-default" onclick="openModal('multi')">查看详情</button>
+
+          <!-- 卡片4：趣满满代收代付（已开通） -->
+          <div class="app-card">
+            <div class="app-cover cover-pay">
+              <span class="status-tag on">已开通</span>
+              <div class="deco-1"></div>
+              <div class="deco-2"></div>
+              <div class="cover-ico">💳</div>
+              <div class="cover-text">趣满满代收代付</div>
+            </div>
+            <div class="app-body">
+              <div class="app-title">趣满满代收代付</div>
+              <div class="app-desc">安全合规的资金代收代付工具。提供快捷的分账结算、代发福利、资金归集及对账报表服务，有效降低企业资金流转合规风险与财务成本。</div>
+              <div class="app-footer">
+                <button class="btn btn-default" onclick="openModal('pay')">查看详情</button>
+                <button class="btn btn-primary" onclick="showToast('欢迎进入应用，页面跳转中...')">进入应用</button>
+              </div>
             </div>
           </div>
         </div>
@@ -295,32 +348,59 @@
   }
 
   const APP_DATA = {
-    union: {
-      title: '工会营销活动',
+    walking: {
+      title: '健步走',
       aspectRatio: '4/3',
       slides: [
-        { bg: 'linear-gradient(135deg,#3d7fff,#6faaff)', ico: '🎯', title: '工会营销活动', sub: '为工会量身打造的营销活动平台' },
-        { bg: 'linear-gradient(135deg,#5b8dff,#89b4ff)', ico: '🎁', title: '会员福利发放', sub: '多种福利形式，精准触达每一位会员' },
-        { bg: 'linear-gradient(135deg,#2a6bff,#4f8eff)', ico: '📊', title: '数据看板', sub: '活动效果实时可见，运营决策有据可依' }
+        { bg: 'linear-gradient(135deg,#10b981,#34d399)', ico: '🏃', title: '健步走活动', sub: '自动同步微信步数，倡导绿色出行与健康生活' },
+        { bg: 'linear-gradient(135deg,#059669,#10b981)', ico: '👥', title: '团队PK赛', sub: '自由组队对决，激发团队协作与运动热情' },
+        { bg: 'linear-gradient(135deg,#047857,#059669)', ico: '🎁', title: '步数兑福利', sub: '运动步数兑换积分，丰富好礼随心选兑' }
       ],
       detail: `
         <div class="detail-section">
           <h4>应用介绍</h4>
-          <p>工会营销活动是面向企业工会场景定制的一站式营销解决方案，帮助工会组织高效开展节日关怀、会员回馈、互动抽奖等活动，提升会员粘性和组织凝聚力。</p>
+          <p>健步走是面向企业员工设计的趣味健康运动应用，通过绿色出行与互动竞赛的结合，帮助企业营造健康向上的文化氛围，提升组织凝聚力。</p>
         </div>
         <div class="detail-section">
           <h4>核心功能</h4>
           <ul>
-            <li>活动策划：多种活动模板，快速发起节日/主题活动</li>
-            <li>福利发放：支持优惠券、实物礼品、积分等多种福利形式</li>
-            <li>一键核销：线上线下核销联动，操作简单高效</li>
-            <li>会员管理：工会会员档案与活动参与数据统一沉淀</li>
-            <li>数据看板：活动效果、参与人数、核销率一目了然</li>
+            <li>自动计步：无感对接微信步数，每日自动同步更新</li>
+            <li>团队PK：支持以部门、小组为单位创建对抗PK，激发团队集体荣誉感</li>
+            <li>步数兑换：步数按比例兑换商城积分，直接购买实物/虚拟福利</li>
+            <li>达标挑战：设置每日步数目标，持续打卡获得徽章荣誉</li>
           </ul>
         </div>
         <div class="detail-section">
           <h4>适用场景</h4>
-          <p>适用于工会节日关怀、职工生日福利、团建活动、技能竞赛、年度评优等多种会员营销场景。</p>
+          <p>适用于企业健康关怀、工会全民健身倡导、团队凝聚力团建、长周期日常打卡活动等。</p>
+        </div>
+      `,
+    },
+    quiz: {
+      title: '问卷答题',
+      aspectRatio: '4/3',
+      slides: [
+        { bg: 'linear-gradient(135deg,#ff4d4f,#ff7875)', ico: '📝', title: '问卷调研', sub: '自定义设计表单，快速收集多维度员工反馈' },
+        { bg: 'linear-gradient(135deg,#d9363e,#ff4d4f)', ico: '🏆', title: '知识竞赛', sub: '限时答题闯关，排名榜单实时更新互动' },
+        { bg: 'linear-gradient(135deg,#cf1322,#d9363e)', ico: '📊', title: '智能统计', sub: '答题数据自动分析，图表化多维度直观呈现' }
+      ],
+      detail: `
+        <div class="detail-section">
+          <h4>应用介绍</h4>
+          <p>问卷答题系统提供灵活、易用的表单与答题配置，支持企业进行内部满意度调查、知识问答以及趣味竞赛，轻松收集数据并自动出具统计报表。</p>
+        </div>
+        <div class="detail-section">
+          <h4>核心功能</h4>
+          <ul>
+            <li>灵活建卷：支持单选、多选、问答等多种题型与逻辑跳转</li>
+            <li>知识考评：自带在线打分系统，答题结束即可展示得分与解析</li>
+            <li>竞赛模式：开启限时答题及排行榜，增加知识学习趣味性</li>
+            <li>数据透视：回收数据一键生成可视化分析图表，支持Excel导出</li>
+          </ul>
+        </div>
+        <div class="detail-section">
+          <h4>适用场景</h4>
+          <p>适用于员工满意度调查、培训效果检验、党建知识竞赛、安全生产宣导问答等场景。</p>
         </div>
       `,
     },
@@ -350,6 +430,34 @@
         <div class="detail-section">
           <h4>适用场景</h4>
           <p>适用于连锁品牌、集团公司、加盟门店、多品牌矩阵运营等需要多组织、多账户统一管理的业务场景。</p>
+        </div>
+      `,
+    },
+    pay: {
+      title: '趣满满代收代付',
+      aspectRatio: '4/3',
+      slides: [
+        { bg: 'linear-gradient(135deg,#722ed1,#b37feb)', ico: '💳', title: '代收代付', sub: '专业安全合规的资金结算引擎' },
+        { bg: 'linear-gradient(135deg,#531dab,#722ed1)', ico: '⚡', title: '极速代收付', sub: '支持多种支付通道，极速打款安全到账' },
+        { bg: 'linear-gradient(135deg,#391085,#531dab)', ico: '📈', title: '智能对账', sub: '自动生成多维度财务对账单，对账无忧' }
+      ],
+      detail: `
+        <div class="detail-section">
+          <h4>应用介绍</h4>
+          <p>趣满满代收代付是面向商户及平台企业设计的资金收付工具，支持多种支付与代付场景，提供敏捷的分账结算与自动对账账单，确保资金安全、合规、快速流转。</p>
+        </div>
+        <div class="detail-section">
+          <h4>核心功能</h4>
+          <ul>
+            <li>多渠道代收：支持微信、支付宝、银行卡等主流通道，一键式收款</li>
+            <li>智能代付：支持批量代付、按规则秒级下发，提现秒级到账</li>
+            <li>清算与分账：支持灵活的分账规则配置，满足多方结算与佣金下发</li>
+            <li>自动对账：系统自动生成对账报表，异常订单主动提醒</li>
+          </ul>
+        </div>
+        <div class="detail-section">
+          <h4>适用场景</h4>
+          <p>适用于平台型电商清算、灵活用工结算、佣金自动下发、加盟连锁分账及高频收付款等业务场景。</p>
         </div>
       `,
     }
