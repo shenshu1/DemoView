@@ -1,0 +1,1545 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>淘福客 - 选券与联合登录演示</title>
+  <style>
+    :root {
+      --primary-red: #c8252c;
+      --primary-red-hover: #b31f25;
+      --auth-orange: #eb4d2d;
+      --auth-orange-hover: #d84122;
+      --text-main: #222222;
+      --text-secondary: #666666;
+      --text-muted: #999999;
+      --bg-page: #f5f5f7;
+      --bg-card: #ffffff;
+      --border-color: #ebebeb;
+      --notice-bg: #fff8ee;
+      --notice-border: #f8e5c8;
+      --notice-text: #b25d19;
+      --font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Segoe UI", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    body {
+      font-family: var(--font-family);
+      background: #121214;
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+      overflow-x: hidden;
+    }
+
+    /* Mobile Frame */
+    .device-wrapper {
+      position: relative;
+      width: 390px;
+      height: 844px;
+      background: #000;
+      border-radius: 48px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5), 0 0 0 10px #2c2c30, 0 0 0 12px #18181b;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Dynamic Island / Notch */
+    .device-notch {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      height: 30px;
+      background: #000;
+      border-radius: 20px;
+      z-index: 999;
+      pointer-events: none;
+    }
+
+    .device-screen {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background: var(--bg-page);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* iOS Status Bar */
+    .status-bar {
+      height: 44px;
+      padding: 12px 24px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+      font-weight: 600;
+      color: #111;
+      z-index: 100;
+      background: #fff;
+    }
+    .status-icons {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .status-icons svg {
+      width: 16px;
+      height: 16px;
+      fill: currentColor;
+    }
+
+    /* Top Webview Browser Bar (始终在最顶层，含关闭和更多) */
+    .webview-header {
+      background: #fff;
+      border-bottom: 1px solid #f0f0f0;
+      padding: 6px 14px 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+      z-index: 90;
+    }
+    .webview-header .left-actions, .webview-header .right-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .webview-header .icon-btn {
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #333;
+    }
+    .webview-header .title-box {
+      text-align: center;
+      flex: 1;
+      margin: 0 8px;
+      overflow: hidden;
+    }
+    .webview-header .title-text {
+      font-size: 15px;
+      font-weight: 600;
+      color: #111;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .webview-header .domain-text {
+      font-size: 10px;
+      color: #999;
+      margin-top: 1px;
+    }
+
+    /* Pages Container (无滑移动画，纯瞬切或微缩放) */
+    .pages-container {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      background: var(--bg-page);
+    }
+
+    .page {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: none;
+      flex-direction: column;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      background: var(--bg-page);
+    }
+
+    .page.active {
+      display: flex;
+      animation: fadeInScale 0.15s ease-out;
+    }
+
+    @keyframes fadeInScale {
+      0% { opacity: 0.85; transform: scale(0.99); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    /* ================= PAGE 1: 首页 ================= */
+    .home-search-bar {
+      background: #fff;
+      padding: 8px 14px 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .location-selector {
+      display: flex;
+      align-items: center;
+      font-size: 14px;
+      font-weight: 500;
+      color: #222;
+      gap: 3px;
+      cursor: pointer;
+    }
+    .search-input-box {
+      flex: 1;
+      background: #f4f4f4;
+      border-radius: 18px;
+      height: 34px;
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      gap: 6px;
+      color: #999;
+      font-size: 13px;
+    }
+    .home-header-icons {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: #333;
+    }
+    .badge-icon {
+      position: relative;
+    }
+    .badge-num {
+      position: absolute;
+      top: -5px;
+      right: -7px;
+      background: var(--primary-red);
+      color: #fff;
+      font-size: 9px;
+      border-radius: 9px;
+      padding: 1px 4px;
+      font-weight: bold;
+    }
+
+    /* Category Tabs */
+    .category-tabs-scroll {
+      background: #fff;
+      display: flex;
+      align-items: center;
+      padding: 0 10px 8px;
+      border-bottom: 1px solid #f5f5f5;
+      overflow-x: auto;
+      gap: 6px;
+      scrollbar-width: none;
+    }
+    .category-tabs-scroll::-webkit-scrollbar {
+      display: none;
+    }
+    .tab-item {
+      padding: 4px 12px;
+      font-size: 13px;
+      color: #555;
+      white-space: nowrap;
+      border-radius: 14px;
+      cursor: pointer;
+    }
+    .tab-item.active {
+      background: #fff1f0;
+      color: var(--primary-red);
+      font-weight: 600;
+    }
+
+    /* Banner */
+    .banner-container {
+      padding: 10px 12px 6px;
+    }
+    .main-banner {
+      position: relative;
+      width: 100%;
+      height: 120px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #1b7a48 0%, #30a267 100%);
+      color: #fff;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(27, 122, 72, 0.2);
+      cursor: pointer;
+    }
+    .banner-bg-graphic {
+      position: absolute;
+      right: -10px;
+      bottom: -15px;
+      opacity: 0.25;
+    }
+    .banner-content {
+      position: relative;
+      z-index: 2;
+      padding: 18px 16px;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .banner-tag {
+      align-self: flex-start;
+      background: rgba(255, 255, 255, 0.25);
+      backdrop-filter: blur(4px);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .banner-title {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    }
+    .banner-sub {
+      font-size: 11px;
+      opacity: 0.9;
+      margin-top: 4px;
+    }
+    .banner-dots {
+      position: absolute;
+      bottom: 8px;
+      right: 12px;
+      display: flex;
+      gap: 4px;
+    }
+    .banner-dots span {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.4);
+    }
+    .banner-dots span.active {
+      background: #fff;
+      width: 12px;
+      border-radius: 3px;
+    }
+
+    /* Section Grids */
+    .section-block {
+      background: #fff;
+      margin: 8px 10px 10px;
+      border-radius: 14px;
+      padding: 12px 10px 14px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+    }
+    .section-title-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .section-title-wrap .diamond {
+      color: var(--primary-red);
+      font-size: 10px;
+    }
+    .section-title {
+      font-size: 14px;
+      font-weight: bold;
+      color: var(--primary-red);
+      letter-spacing: 1px;
+    }
+    .section-title.green {
+      color: #2b7a4b;
+    }
+    .section-title-wrap .diamond.green {
+      color: #2b7a4b;
+    }
+    .section-line {
+      width: 24px;
+      height: 1px;
+      background: #ffd3d5;
+    }
+    .section-line.green {
+      background: #c3e6d2;
+    }
+
+    .icon-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      row-gap: 14px;
+      column-gap: 4px;
+    }
+    .grid-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+    }
+    .grid-item:active {
+      transform: scale(0.94);
+    }
+    .icon-wrapper {
+      width: 46px;
+      height: 46px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 6px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.06);
+    }
+    .icon-label {
+      font-size: 11px;
+      color: #333;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 58px;
+    }
+
+    .icon-yh {
+      background: linear-gradient(135deg, #d32029 0%, #ea3842 100%);
+      color: #fff;
+      font-size: 17px;
+      font-weight: 900;
+      border: 2px solid #fff;
+      box-shadow: 0 4px 10px rgba(211, 32, 41, 0.35);
+      position: relative;
+    }
+    .icon-yh::after {
+      content: "HOT";
+      position: absolute;
+      top: 0;
+      right: 0;
+      background: #ffcf00;
+      color: #d32029;
+      font-size: 7px;
+      font-weight: 900;
+      padding: 1px 3px;
+      border-radius: 0 0 0 4px;
+    }
+
+    /* Bottom Tab Bar */
+    .bottom-tab-bar {
+      background: #fff;
+      border-top: 1px solid #ededed;
+      height: 54px;
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      padding: 4px 0 6px;
+      z-index: 100;
+    }
+    .tab-nav-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: #888;
+      font-size: 10px;
+      gap: 2px;
+      cursor: pointer;
+      width: 25%;
+    }
+    .tab-nav-btn.active {
+      color: var(--primary-red);
+      font-weight: 600;
+    }
+    .tab-nav-btn svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    /* ================= PAGE 2: 选卡券页 ================= */
+    /* H5 内部的导航栏（位于顶部Webview栏下方，包含左侧返回箭头） */
+    .h5-internal-nav {
+      background: #fff;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      padding: 0 14px;
+      position: relative;
+      border-bottom: 1px solid #f2f2f2;
+    }
+    .h5-nav-back {
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #333;
+      width: 32px;
+      height: 32px;
+      margin-left: -6px;
+    }
+    .h5-nav-back:active {
+      opacity: 0.6;
+    }
+
+    /* 横幅提示语 (图二、图三) */
+    .voucher-notice-bar {
+      background: var(--notice-bg);
+      border-top: 1px solid var(--notice-border);
+      border-bottom: 1px solid var(--notice-border);
+      padding: 10px 14px;
+    }
+    .notice-text {
+      font-size: 12px;
+      line-height: 1.55;
+      color: #444;
+    }
+
+    /* Voucher Cards List */
+    .voucher-list-scroll {
+      flex: 1;
+      padding: 12px 14px 90px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      overflow-y: auto;
+    }
+
+    .voucher-card {
+      background: #fff;
+      border-radius: 8px;
+      border: 1.5px solid transparent;
+      padding: 14px 16px;
+      position: relative;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+      transition: border-color 0.15s, background-color 0.15s;
+    }
+    .voucher-card.selected {
+      border-color: var(--primary-red);
+      background: #fffdfd;
+      box-shadow: 0 4px 16px rgba(200, 37, 44, 0.1);
+    }
+
+    /* 右上角顺序数字编号 (图三规范) */
+    .order-badge {
+      position: absolute;
+      top: -1px;
+      right: -1px;
+      width: 24px;
+      height: 24px;
+      background: var(--primary-red);
+      color: #fff;
+      font-size: 13px;
+      font-weight: bold;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      border-top-right-radius: 7px;
+      border-bottom-left-radius: 8px;
+      box-shadow: -1px 2px 4px rgba(200, 37, 44, 0.2);
+    }
+    .voucher-card.selected .order-badge {
+      display: flex;
+    }
+
+    .voucher-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px dashed #efefef;
+    }
+    .voucher-card-type {
+      font-size: 15px;
+      font-weight: bold;
+      color: #222;
+    }
+    .voucher-card-sn {
+      font-size: 13px;
+      color: #555;
+    }
+
+    .voucher-card-body {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+    .voucher-amount-box {
+      display: flex;
+      flex-direction: column;
+    }
+    .voucher-amount {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--primary-red);
+      letter-spacing: -0.5px;
+      display: flex;
+      align-items: baseline;
+      gap: 2px;
+    }
+    .voucher-amount .unit {
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .voucher-extra-desc {
+      font-size: 12px;
+      color: #555;
+      margin-top: 4px;
+    }
+    .voucher-expiry {
+      font-size: 12px;
+      color: #888;
+      margin-top: 6px;
+    }
+    .voucher-details-link {
+      font-size: 12px;
+      color: #888;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+
+    /* Fixed Bottom Action Bar */
+    .fixed-bottom-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: #fff;
+      padding: 10px 16px 20px;
+      border-top: 1px solid #f0f0f0;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 -4px 12px rgba(0,0,0,0.03);
+      z-index: 80;
+    }
+    .btn-confirm {
+      width: 100%;
+      height: 44px;
+      background: var(--primary-red);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      letter-spacing: 2px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 10px rgba(200, 37, 44, 0.25);
+    }
+    .btn-confirm:active {
+      background: var(--primary-red-hover);
+      transform: scale(0.99);
+    }
+    .btn-confirm:disabled, .btn-confirm.disabled {
+      background: #d4d4d8 !important;
+      color: #ffffff !important;
+      box-shadow: none !important;
+      cursor: not-allowed !important;
+      transform: none !important;
+    }
+
+    /* ================= 支付密码弹窗 (图四) ================= */
+    .modal-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.55);
+      z-index: 200;
+      display: none;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .bottom-sheet {
+      background: #fff;
+      border-top-left-radius: 18px;
+      border-top-right-radius: 18px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 -10px 30px rgba(0,0,0,0.15);
+      animation: sheetUp 0.2s ease-out;
+    }
+    @keyframes sheetUp {
+      0% { transform: translateY(100%); }
+      100% { transform: translateY(0); }
+    }
+
+    .sheet-header {
+      padding: 16px 14px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+    }
+    .sheet-header .sheet-back-btn {
+      cursor: pointer;
+      color: #333;
+      padding: 4px;
+    }
+    .sheet-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #222;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .pin-input-section {
+      padding: 18px 20px 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* 6-box Pin Display */
+    .pin-box-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 12px;
+      width: 100%;
+      max-width: 320px;
+      justify-content: space-between;
+    }
+    .pin-box {
+      width: 44px;
+      height: 48px;
+      border: 1px solid #d5d5d5;
+      border-radius: 6px;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .pin-box.filled {
+      border-color: #999;
+    }
+    .pin-dot {
+      width: 10px;
+      height: 10px;
+      background: #111;
+      border-radius: 50%;
+      display: none;
+    }
+    .pin-box.filled .pin-dot {
+      display: block;
+    }
+
+    /* 密码底部链接 (去掉了已选卡券文案，保持干净) */
+    .pin-tips-row {
+      display: flex;
+      justify-content: flex-end;
+      width: 100%;
+      max-width: 320px;
+      font-size: 12px;
+    }
+    .pin-tips-row .link-forgot {
+      color: #1989fa;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    /* Virtual Number Keypad */
+    .virtual-keypad {
+      background: #f2f3f5;
+      padding: 8px 6px 24px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      border-top: 1px solid #e2e4e8;
+    }
+    .key-btn {
+      height: 50px;
+      background: #fff;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      font-weight: 500;
+      color: #111;
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      user-select: none;
+    }
+    .key-btn:active {
+      background: #e2e2e6;
+    }
+    .key-btn.key-empty {
+      background: transparent;
+      box-shadow: none;
+      cursor: default;
+    }
+    .key-btn.key-del {
+      background: #e5e6eb;
+      font-size: 18px;
+      color: #444;
+    }
+
+    /* ================= PAGE 3: 联合登录 / 授权页 (图五) ================= */
+    .auth-page-container {
+      background: #fff;
+      flex: 1;
+      padding: 40px 24px 30px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* 顶部应用方框与图标 (1:1 截图) */
+    .auth-logo-box {
+      border: 2px solid #e03838;
+      border-radius: 2px;
+      padding: 10px 14px 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 36px;
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+    }
+    .auth-avatar-frame {
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      background: #202020;
+      border: 3px solid #1a1a1a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 10px;
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+    }
+    .auth-app-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #222;
+      letter-spacing: 0.5px;
+    }
+
+    /* 授权说明区 */
+    .auth-info-section {
+      width: 100%;
+      text-align: left;
+      margin-bottom: 40px;
+    }
+    .auth-info-heading {
+      font-size: 15px;
+      font-weight: bold;
+      color: #222;
+      margin-bottom: 8px;
+    }
+    .auth-info-desc {
+      font-size: 14px;
+      color: #666;
+      line-height: 1.6;
+    }
+
+    /* 确认授权按钮 (大圆角橘红) */
+    .btn-auth-confirm {
+      width: 100%;
+      height: 48px;
+      background: var(--auth-orange);
+      color: #fff;
+      border: none;
+      border-radius: 24px;
+      font-size: 17px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(235, 77, 45, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 18px;
+    }
+    .btn-auth-confirm:active {
+      background: var(--auth-orange-hover);
+      transform: scale(0.99);
+    }
+
+    /* 用户协议同意栏 */
+    .auth-agreement-row {
+      display: flex;
+      align-items: center;
+      font-size: 12px;
+      color: #666;
+      gap: 6px;
+      cursor: pointer;
+    }
+    .auth-check-circle {
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      background: var(--auth-orange);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      flex-shrink: 0;
+    }
+    .auth-agreement-link {
+      color: #3b82f6;
+      text-decoration: none;
+    }
+
+    /* Toast */
+    .toast-box {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.85);
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 6px;
+      font-size: 13px;
+      z-index: 999;
+      display: none;
+      text-align: center;
+    }
+    .toast-box.show {
+      display: block;
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 0;
+        background: #000;
+      }
+      .device-wrapper {
+        width: 100vw;
+        height: 100vh;
+        border-radius: 0;
+        box-shadow: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 手机壳容器 -->
+  <div class="device-wrapper">
+    <div class="device-notch"></div>
+
+    <div class="device-screen">
+      <!-- iOS 顶部系统状态栏 -->
+      <div class="status-bar">
+        <span>17:31</span>
+        <div class="status-icons">
+          <!-- 信号 -->
+          <svg viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L4.35 18.25c-.2.2-.2.51 0 .71.2.2.51.2.71 0l.64-.64C7.26 19.38 9.51 20.08 12 20.08s4.74-.7 6.3-1.76l.64.64c.2.2.51.2.71 0 .2-.2.2-.51 0-.71l-.62-.64C20.26 16.07 21 14.12 21 12c0-4.97-4.03-9-9-9zm0 15c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z"/></svg>
+          <!-- Wifi -->
+          <svg viewBox="0 0 24 24"><path d="M12 4C7.31 4 3.07 5.9 0 8.98L12 21 24 8.98A17.93 17.93 0 0012 4z"/></svg>
+          <!-- 电池 -->
+          <svg viewBox="0 0 24 24"><path d="M17 5v14H7V5h10m1.5-2h-13C4.67 3 4 3.67 4 4.5v15c0 .83.67 1.5 1.5 1.5h13c.83 0 1.5-.67 1.5-1.5v-15c0-.83-.67-1.5-1.5-1.5zM21 9v6c.55 0 1-.45 1-1v-4c0-.55-.45-1-1-1z"/></svg>
+        </div>
+      </div>
+
+      <!-- 微信/App 顶层 Webview 浏览器栏 (始终固定在顶部，含 × 关闭与 ··· 更多) -->
+      <div class="webview-header">
+        <div class="left-actions">
+          <div class="icon-btn" onclick="navigateToPage('home')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </div>
+        </div>
+        <div class="title-box">
+          <div class="title-text">淘福客 chj 专用</div>
+          <div class="domain-text">m.quanmaigo.com</div>
+        </div>
+        <div class="right-actions">
+          <div class="icon-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- 页面视口 -->
+      <div class="pages-container">
+
+        <!-- ================= 页面 1: 商城首页 ================= -->
+        <div class="page active" id="page-home">
+          <!-- 搜索栏 -->
+          <div class="home-search-bar">
+            <div class="location-selector">
+              <span>深圳</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg>
+            </div>
+            <div class="search-input-box">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+              <span>请输入商品</span>
+            </div>
+            <div class="home-header-icons">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/></svg>
+              <div class="badge-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                <div class="badge-num">21</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 标签分类 -->
+          <div class="category-tabs-scroll">
+            <div class="tab-item active">推荐</div>
+            <div class="tab-item">个护清洁</div>
+            <div class="tab-item">食品</div>
+            <div class="tab-item">家纺服饰</div>
+            <div class="tab-item">户外</div>
+            <div class="tab-item">商超专区</div>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="#999" style="flex-shrink: 0;"><path d="M6 9l6 6 6-6"/></svg>
+          </div>
+
+          <!-- 永辉专属 Banner (点击进入选券) -->
+          <div class="banner-container">
+            <div class="main-banner" onclick="navigateToPage('voucher')">
+              <svg class="banner-bg-graphic" width="140" height="140" viewBox="0 0 200 200" fill="currentColor">
+                <path d="M10,100 C40,40 160,40 190,100 C160,160 40,160 10,100 Z"/>
+              </svg>
+              <div class="banner-content">
+                <div class="banner-tag">★ 专属特权</div>
+                <div class="banner-title">永辉超市 · 尊享卡券</div>
+                <div class="banner-sub">进入资源前先选卡券 · 自动按序抵扣</div>
+              </div>
+              <div class="banner-dots">
+                <span class="active"></span>
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 米面粮油网格 -->
+          <div class="section-block">
+            <div class="section-title-wrap">
+              <span class="section-line"></span>
+              <span class="diamond">◆</span>
+              <span class="section-title">米面粮油</span>
+              <span class="diamond">◆</span>
+              <span class="section-line"></span>
+            </div>
+            <div class="icon-grid">
+              <div class="grid-item">
+                <div class="icon-wrapper" style="background:#e8f4ec;"><span style="font-size:22px;">🍚</span></div>
+                <div class="icon-label">定位类目</div>
+              </div>
+              <div class="grid-item">
+                <div class="icon-wrapper" style="background:#e8f4ec;"><span style="font-size:22px;">🎬</span></div>
+                <div class="icon-label">电影频道</div>
+              </div>
+              <div class="grid-item">
+                <div class="icon-wrapper" style="background:#e8f5fb;"><span style="font-size:22px;">🏙️</span></div>
+                <div class="icon-label">本地服务</div>
+              </div>
+              <div class="grid-item">
+                <div class="icon-wrapper" style="background:#edf4fc;"><span style="font-size:22px;">🧴</span></div>
+                <div class="icon-label">商超频道</div>
+              </div>
+              <div class="grid-item">
+                <div class="icon-wrapper" style="background:#f4f4f4;"><span style="font-size:22px;">🏀</span></div>
+                <div class="icon-label">蛋糕商品</div>
+              </div>
+
+              <div class="grid-item">
+                <div class="icon-wrapper" style="background:#e1251b; color:#fff; font-size:10px; font-weight:bold; padding:4px; text-align:center;">天猫优购</div>
+                <div class="icon-label">天猫优购</div>
+              </div>
+              <div class="grid-item">
+                <div class="icon-wrapper" style="background:#fff2e6;"><span style="font-size:22px;">🏮</span></div>
+                <div class="icon-label">本地服务</div>
+              </div>
+              
+              <!-- 永辉 Icon (点击进入选券) -->
+              <div class="grid-item" onclick="navigateToPage('voucher')">
+                <div class="icon-wrapper icon-yh">YH</div>
+                <div class="icon-label" style="color:var(--primary-red); font-weight:bold;">永辉卡券</div>
+              </div>
+
+              <div class="grid-item">
+                <div class="icon-wrapper" style="background:#fff6e8;"><span style="font-size:22px;">🧧</span></div>
+                <div class="icon-label">慢票</div>
+              </div>
+              <div class="grid-item">
+                <div class="icon-wrapper" style="background:#eaf8f4;"><span style="font-size:22px;">🎫</span></div>
+                <div class="icon-label">快票</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 商超便利网格 -->
+          <div class="section-block">
+            <div class="section-title-wrap">
+              <span class="section-line green"></span>
+              <span class="diamond green">◆</span>
+              <span class="section-title green">商超便利</span>
+              <span class="diamond green">◆</span>
+              <span class="section-line green"></span>
+            </div>
+            <div class="icon-grid">
+              <div class="grid-item">
+                <div class="icon-wrapper" style="background:#f3e8fc;"><span style="font-size:22px;">🛍️</span></div>
+                <div class="icon-label">门店蛋糕</div>
+              </div>
+              <div class="grid-item">
+                <div class="icon-wrapper" style="background:#feeef0;"><span style="font-size:22px;">📹</span></div>
+                <div class="icon-label">微页面...</div>
+              </div>
+              <div class="grid-item">
+                <div class="icon-wrapper" style="background:#edf8f3;"><span style="font-size:22px;">⚡</span></div>
+                <div class="icon-label">淘宝闪购</div>
+              </div>
+              <div class="grid-item">
+                <div class="icon-wrapper" style="background:#fff4e6;"><span style="font-size:22px;">🥤</span></div>
+                <div class="icon-label">Blueglass</div>
+              </div>
+              <div class="grid-item">
+                <div class="icon-wrapper" style="background:#eef6f9;"><span style="font-size:22px;">🎪</span></div>
+                <div class="icon-label">大润发...</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="height: 60px;"></div>
+        </div>
+
+
+        <!-- ================= 页面 2: 选择卡券页 (图二、图三) ================= -->
+        <div class="page" id="page-voucher">
+          
+          <!-- H5 内部导航栏：位于顶部Webview栏下方，左侧包含返回键 < -->
+          <div class="h5-internal-nav">
+            <div class="h5-nav-back" onclick="navigateToPage('home')">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#222" stroke-width="2.4"><path d="M15 18l-6-6 6-6"/></svg>
+            </div>
+          </div>
+
+          <!-- 横幅提示语 (未选中时三点规则，选中时动态折算余额) -->
+          <div class="voucher-notice-bar">
+            <div class="notice-text" id="voucherNoticeText">
+              1、进入资源前请先选择要使用的卡券<br>2、将自动计算并转换该资源可消费余额<br>3、交易完成，会按实际金额，按勾选顺序扣减卡券余额
+            </div>
+          </div>
+
+          <!-- 卡券列表 (带右上角顺序数字 1, 2, 3...) -->
+          <div class="voucher-list-scroll">
+
+            <!-- Card 1 -->
+            <div class="voucher-card" data-id="1" data-amount="98.43" onclick="toggleSelectVoucher(this)">
+              <div class="order-badge"></div>
+              <div class="voucher-card-header">
+                <div class="voucher-card-type">福利券</div>
+                <div class="voucher-card-sn">8000 046720</div>
+              </div>
+              <div class="voucher-card-body">
+                <div class="voucher-amount-box">
+                  <div class="voucher-amount">98.43 <span class="unit">元</span></div>
+                  <div class="voucher-expiry">2027-02-28到期</div>
+                </div>
+                <div class="voucher-details-link">
+                  <span>查看详情</span>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="voucher-card" data-id="2" data-amount="200" onclick="toggleSelectVoucher(this)">
+              <div class="order-badge"></div>
+              <div class="voucher-card-header">
+                <div class="voucher-card-type">福利券</div>
+                <div class="voucher-card-sn">8000 047783</div>
+              </div>
+              <div class="voucher-card-body">
+                <div class="voucher-amount-box">
+                  <div class="voucher-amount">200 <span class="unit">元</span></div>
+                  <div class="voucher-expiry">2027-09-30到期</div>
+                </div>
+                <div class="voucher-details-link">
+                  <span>查看详情</span>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 3 -->
+            <div class="voucher-card" data-id="3" data-amount="0.16" onclick="toggleSelectVoucher(this)">
+              <div class="order-badge"></div>
+              <div class="voucher-card-header">
+                <div class="voucher-card-type">定制类目券</div>
+                <div class="voucher-card-sn">8000 046726</div>
+              </div>
+              <div class="voucher-card-body">
+                <div class="voucher-amount-box">
+                  <div class="voucher-amount">0.16 <span class="unit">元</span></div>
+                  <div class="voucher-extra-desc">兑换其他商品可用0.16人民币</div>
+                  <div class="voucher-expiry">2027-02-28到期</div>
+                </div>
+                <div class="voucher-details-link">
+                  <span>查看详情</span>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 4: 新增测试卡（余额1元，用于模拟折算余额<0置灰场景） -->
+            <div class="voucher-card" data-id="4" data-amount="1.00" onclick="toggleSelectVoucher(this)">
+              <div class="order-badge"></div>
+              <div class="voucher-card-header">
+                <div class="voucher-card-type" style="display: flex; align-items: center; gap: 6px;">
+                  <span>低额测试卡</span>
+                  <span style="font-size: 10px; background: #fff0f0; color: var(--primary-red); border: 1px solid #ffccd0; padding: 0 4px; border-radius: 4px; font-weight: normal;">余额＜服务费</span>
+                </div>
+                <div class="voucher-card-sn">8000 049999</div>
+              </div>
+              <div class="voucher-card-body">
+                <div class="voucher-amount-box">
+                  <div class="voucher-amount">1.00 <span class="unit">元</span></div>
+                  <div class="voucher-extra-desc" style="color: #888;">测试卡（固定服务费2元，单选将折算＜0）</div>
+                  <div class="voucher-expiry">2027-12-31到期</div>
+                </div>
+                <div class="voucher-details-link">
+                  <span>查看详情</span>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- 底部确认按钮 (初始未选或折算余额<=0时置灰) -->
+          <div class="fixed-bottom-bar">
+            <button class="btn-confirm disabled" id="btnConfirmVouchers" disabled onclick="openPasswordModal()">确认</button>
+          </div>
+        </div>
+
+
+        <!-- ================= 页面 3: 联合登录 / 授权页 (图五) ================= -->
+        <div class="page" id="page-auth">
+          <!-- H5 内部导航栏：包含左侧返回键 < -->
+          <div class="h5-internal-nav" style="border-bottom: none;">
+            <div class="h5-nav-back" onclick="navigateToPage('voucher')">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#222" stroke-width="2.4"><path d="M15 18l-6-6 6-6"/></svg>
+            </div>
+          </div>
+
+          <div class="auth-page-container">
+            <!-- 顶部应用红框与水墨人物圆形头像 (1:1 截图五) -->
+            <div class="auth-logo-box">
+              <div class="auth-avatar-frame">
+                <!-- 水墨国风忍者人物 SVG 绘制 -->
+                <svg width="80" height="80" viewBox="0 0 100 100">
+                  <circle cx="50" cy="50" r="46" fill="#e5dfd5"/>
+                  <path d="M20 75 Q50 20 80 75 Z" fill="#2d3032"/>
+                  <circle cx="50" cy="45" r="16" fill="#f6d5b8"/>
+                  <!-- 面罩与武者发带 -->
+                  <path d="M36 44 Q50 49 64 44 Q64 52 50 56 Q36 52 36 44 Z" fill="#222"/>
+                  <circle cx="44" cy="42" r="2.5" fill="#222"/>
+                  <circle cx="56" cy="42" r="2.5" fill="#222"/>
+                  <!-- 飘带 -->
+                  <path d="M60 40 Q80 30 85 45 Q75 42 60 44 Z" fill="#222"/>
+                </svg>
+              </div>
+              <div class="auth-app-title">qm电影H5</div>
+            </div>
+
+            <!-- 授权说明内容 (1:1 截图五) -->
+            <div class="auth-info-section">
+              <div class="auth-info-heading">授权说明：</div>
+              <div class="auth-info-desc">
+                服务内容由qm电影H5提供，请确认授权以下信息获取您的昵称、头像及手机号
+              </div>
+            </div>
+
+            <!-- 确认授权按钮 (大圆角橘红) -->
+            <button class="btn-auth-confirm" onclick="handleAuthConfirm()">确认授权</button>
+
+            <!-- 勾选协议 (1:1 截图五) -->
+            <div class="auth-agreement-row" onclick="toggleAgreement()">
+              <div class="auth-check-circle" id="authCheckIcon">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+              <span>我已阅读并同意 <a href="javascript:void(0)" class="auth-agreement-link" onclick="event.stopPropagation(); showToast('打开用户授权登录协议')">《用户授权登录协议》</a></span>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ================= 支付密码弹窗 (图四) ================= -->
+      <div class="modal-overlay" id="passwordModalOverlay">
+        <div class="bottom-sheet">
+          <div class="sheet-header">
+            <div class="sheet-back-btn" onclick="closePasswordModal()">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+            </div>
+            <div class="sheet-title">输入安全支付密码</div>
+            <div style="width: 24px;"></div>
+          </div>
+
+          <!-- 6 位方格 -->
+          <div class="pin-input-section">
+            <div class="pin-box-row">
+              <div class="pin-box" id="pin-0"><div class="pin-dot"></div></div>
+              <div class="pin-box" id="pin-1"><div class="pin-dot"></div></div>
+              <div class="pin-box" id="pin-2"><div class="pin-dot"></div></div>
+              <div class="pin-box" id="pin-3"><div class="pin-dot"></div></div>
+              <div class="pin-box" id="pin-4"><div class="pin-dot"></div></div>
+              <div class="pin-box" id="pin-5"><div class="pin-dot"></div></div>
+            </div>
+
+            <!-- 干净的底部忘记密码链接 -->
+            <div class="pin-tips-row">
+              <span class="link-forgot" onclick="showToast('请联系客服重置支付密码')">忘记密码</span>
+            </div>
+          </div>
+
+          <!-- 虚拟数字键盘 -->
+          <div class="virtual-keypad">
+            <div class="key-btn" onclick="pressKey('1')">1</div>
+            <div class="key-btn" onclick="pressKey('2')">2</div>
+            <div class="key-btn" onclick="pressKey('3')">3</div>
+            <div class="key-btn" onclick="pressKey('4')">4</div>
+            <div class="key-btn" onclick="pressKey('5')">5</div>
+            <div class="key-btn" onclick="pressKey('6')">6</div>
+            <div class="key-btn" onclick="pressKey('7')">7</div>
+            <div class="key-btn" onclick="pressKey('8')">8</div>
+            <div class="key-btn" onclick="pressKey('9')">9</div>
+            <div class="key-btn key-empty"></div>
+            <div class="key-btn" onclick="pressKey('0')">0</div>
+            <div class="key-btn key-del" onclick="pressKey('DEL')">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/><line x1="18" y1="9" x2="12" y2="15"/><line x1="12" y1="9" x2="18" y2="15"/></svg>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- 底部导航 (仅首页展示) -->
+      <div class="bottom-tab-bar" id="homeBottomBar">
+        <div class="tab-nav-btn active" onclick="navigateToPage('home')">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+          <span>首页</span>
+        </div>
+        <div class="tab-nav-btn">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"/></svg>
+          <span>自定义</span>
+        </div>
+        <div class="tab-nav-btn">
+          <div class="badge-icon">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
+            <div class="badge-num">24</div>
+          </div>
+          <span>购物车</span>
+        </div>
+        <div class="tab-nav-btn">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+          <span>我的</span>
+        </div>
+      </div>
+
+      <!-- Toast 提示 -->
+      <div class="toast-box" id="appToast">提示内容</div>
+    </div>
+  </div>
+
+  <script>
+    let selectedVouchers = [];
+    let enteredPin = '';
+    let isAgreed = true;
+
+    // 页面跳转（直接切换，不使用右侧滑入）
+    function navigateToPage(pageId) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      const target = document.getElementById(`page-${pageId}`);
+      if (target) {
+        target.classList.add('active');
+      }
+
+      const bottomBar = document.getElementById('homeBottomBar');
+      if (pageId === 'home') {
+        bottomBar.style.display = 'flex';
+      } else {
+        bottomBar.style.display = 'none';
+      }
+    }
+
+    // 服务费与折算配置
+    // 公式：（选中金额 - 服务费固定金额）÷（1 + 服务费费率）
+    // 取整规则：保留两位小数，向下取整
+    const SERVICE_FIXED_FEE = 2.00; // 运营商固定服务费 2元
+    const SERVICE_FEE_RATE = 0.00;  // 服务费费率 0%
+
+    function calculateConvertedBalance(amount) {
+      const raw = (amount - SERVICE_FIXED_FEE) / (1 + SERVICE_FEE_RATE);
+      // 避免浮点数精度微差
+      const adjusted = Math.round(raw * 10000) / 10000;
+      return Math.floor(adjusted * 100) / 100;
+    }
+
+    // 卡券点击与顺序数字管理
+    function toggleSelectVoucher(element) {
+      const idx = selectedVouchers.indexOf(element);
+      if (idx > -1) {
+        selectedVouchers.splice(idx, 1);
+        element.classList.remove('selected');
+      } else {
+        selectedVouchers.push(element);
+        element.classList.add('selected');
+      }
+      refreshSequenceBadges();
+    }
+
+    function refreshSequenceBadges() {
+      let totalAmount = 0;
+      const allCards = document.querySelectorAll('.voucher-card');
+      allCards.forEach(card => {
+        const orderBadge = card.querySelector('.order-badge');
+        const pos = selectedVouchers.indexOf(card);
+        if (pos > -1) {
+          card.classList.add('selected');
+          orderBadge.innerText = (pos + 1); // 1, 2, 3...
+          const amt = parseFloat(card.getAttribute('data-amount') || 0);
+          totalAmount += amt;
+        } else {
+          card.classList.remove('selected');
+          orderBadge.innerText = '';
+        }
+      });
+
+      const notice = document.getElementById('voucherNoticeText');
+      const btnConfirm = document.getElementById('btnConfirmVouchers');
+
+      if (selectedVouchers.length > 0) {
+        // 计算折算余额：（选中金额 - 服务费固定金额）÷（1 + 服务费费率），向下取整保留两位小数
+        const converted = calculateConvertedBalance(totalAmount);
+        const convertedStr = converted.toFixed(2);
+
+        // 选中时横幅文案：“已勾选x张，折合余额xx元”
+        if (notice) {
+          notice.innerHTML = `已勾选<span style="color:var(--primary-red); font-weight:600;"> ${selectedVouchers.length} </span>张，折合余额<span style="color:var(--primary-red); font-weight:600;"> ${convertedStr} </span>元`;
+        }
+
+        // 折算余额≤0时，确认键置灰
+        if (btnConfirm) {
+          if (converted <= 0) {
+            btnConfirm.disabled = true;
+            btnConfirm.classList.add('disabled');
+          } else {
+            btnConfirm.disabled = false;
+            btnConfirm.classList.remove('disabled');
+          }
+        }
+      } else {
+        // 未勾选默认提示文案
+        if (notice) {
+          notice.innerHTML = `1、进入资源前请先选择要使用的卡券<br>2、将自动计算并转换该资源可消费余额<br>3、交易完成，会按实际金额，按勾选顺序扣减卡券余额`;
+        }
+        // 未勾选时确认键置灰
+        if (btnConfirm) {
+          btnConfirm.disabled = true;
+          btnConfirm.classList.add('disabled');
+        }
+      }
+    }
+
+    // 密码弹窗控制
+    function openPasswordModal() {
+      if (selectedVouchers.length === 0) {
+        showToast('请至少选择一张卡券');
+        return;
+      }
+      let totalAmount = selectedVouchers.reduce((acc, card) => acc + parseFloat(card.getAttribute('data-amount') || 0), 0);
+      let converted = calculateConvertedBalance(totalAmount);
+      if (converted <= 0) {
+        showToast('折算余额不足（≤0），无法确认');
+        return;
+      }
+      enteredPin = '';
+      updatePinDisplay();
+      document.getElementById('passwordModalOverlay').classList.add('active');
+    }
+
+    function closePasswordModal() {
+      document.getElementById('passwordModalOverlay').classList.remove('active');
+      enteredPin = '';
+      updatePinDisplay();
+    }
+
+    function pressKey(key) {
+      if (key === 'DEL') {
+        if (enteredPin.length > 0) {
+          enteredPin = enteredPin.slice(0, -1);
+        }
+      } else if (enteredPin.length < 6) {
+        enteredPin += key;
+      }
+      updatePinDisplay();
+
+      // 输入满 6 位后，直接切换至联合登录授权页 (截图五)
+      if (enteredPin.length === 6) {
+        setTimeout(() => {
+          closePasswordModal();
+          navigateToPage('auth');
+        }, 180);
+      }
+    }
+
+    function updatePinDisplay() {
+      for (let i = 0; i < 6; i++) {
+        const box = document.getElementById(`pin-${i}`);
+        if (i < enteredPin.length) {
+          box.classList.add('filled');
+        } else {
+          box.classList.remove('filled');
+        }
+      }
+    }
+
+    // 授权页交互
+    function toggleAgreement() {
+      isAgreed = !isAgreed;
+      const icon = document.getElementById('authCheckIcon');
+      if (isAgreed) {
+        icon.style.background = 'var(--auth-orange)';
+        icon.innerHTML = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><polyline points="20 6 9 17 4 12"/></svg>';
+      } else {
+        icon.style.background = '#ccc';
+        icon.innerHTML = '';
+      }
+    }
+
+    function handleAuthConfirm() {
+      if (!isAgreed) {
+        showToast('请先勾选并同意用户协议');
+        return;
+      }
+      showToast('授权成功，正在进入 qm电影H5...');
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('appToast');
+      toast.innerText = msg;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 1800);
+    }
+
+    // 初始状态：未选中任何卡券
+    window.addEventListener('DOMContentLoaded', () => {
+      selectedVouchers = [];
+      refreshSequenceBadges();
+    });
+  </script>
+</body>
+</html>
