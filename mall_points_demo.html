@@ -3,22 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>淘福客 - 选券与联合登录演示</title>
+  <title>淘福客 - 选择积分与联合登录演示</title>
   <style>
     :root {
       --primary-red: #c8252c;
       --primary-red-hover: #b31f25;
+      --gold-amount: #b58c5a;
+      --gold-tag: #b58c5a;
       --auth-orange: #eb4d2d;
       --auth-orange-hover: #d84122;
       --text-main: #222222;
       --text-secondary: #666666;
       --text-muted: #999999;
-      --bg-page: #f5f5f7;
+      --bg-page: #f7f8fa;
       --bg-card: #ffffff;
       --border-color: #ebebeb;
-      --notice-bg: #fff8ee;
-      --notice-border: #f8e5c8;
-      --notice-text: #b25d19;
+      --notice-bg: #fff5f5;
+      --notice-border: #fde8e8;
+      --notice-text: #c8252c;
       --font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Segoe UI", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
     }
 
@@ -103,7 +105,7 @@
       fill: currentColor;
     }
 
-    /* Top Webview Browser Bar (始终在最顶层，含关闭和更多) */
+    /* Top Webview Browser Bar */
     .webview-header {
       background: #fff;
       border-bottom: 1px solid #f0f0f0;
@@ -146,7 +148,7 @@
       margin-top: 1px;
     }
 
-    /* Pages Container (无滑移动画，纯瞬切或微缩放) */
+    /* Pages Container */
     .pages-container {
       flex: 1;
       position: relative;
@@ -227,7 +229,6 @@
       font-weight: bold;
     }
 
-    /* Category Tabs */
     .category-tabs-scroll {
       background: #fff;
       display: flex;
@@ -255,7 +256,6 @@
       font-weight: 600;
     }
 
-    /* Banner */
     .banner-container {
       padding: 10px 12px 6px;
     }
@@ -306,26 +306,7 @@
       opacity: 0.9;
       margin-top: 4px;
     }
-    .banner-dots {
-      position: absolute;
-      bottom: 8px;
-      right: 12px;
-      display: flex;
-      gap: 4px;
-    }
-    .banner-dots span {
-      width: 5px;
-      height: 5px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.4);
-    }
-    .banner-dots span.active {
-      background: #fff;
-      width: 12px;
-      border-radius: 3px;
-    }
 
-    /* Section Grids */
     .section-block {
       background: #fff;
       margin: 8px 10px 10px;
@@ -340,29 +321,20 @@
       gap: 8px;
       margin-bottom: 12px;
     }
-    .section-title-wrap .diamond {
-      color: var(--primary-red);
-      font-size: 10px;
-    }
     .section-title {
       font-size: 14px;
       font-weight: bold;
       color: var(--primary-red);
       letter-spacing: 1px;
     }
-    .section-title.green {
-      color: #2b7a4b;
-    }
-    .section-title-wrap .diamond.green {
-      color: #2b7a4b;
-    }
     .section-line {
       width: 24px;
       height: 1px;
       background: #ffd3d5;
     }
-    .section-line.green {
-      background: #c3e6d2;
+    .diamond {
+      color: var(--primary-red);
+      font-size: 10px;
     }
 
     .icon-grid {
@@ -402,28 +374,6 @@
       max-width: 58px;
     }
 
-    .icon-yh {
-      background: linear-gradient(135deg, #d32029 0%, #ea3842 100%);
-      color: #fff;
-      font-size: 17px;
-      font-weight: 900;
-      border: 2px solid #fff;
-      box-shadow: 0 4px 10px rgba(211, 32, 41, 0.35);
-      position: relative;
-    }
-    .icon-yh::after {
-      content: "HOT";
-      position: absolute;
-      top: 0;
-      right: 0;
-      background: #ffcf00;
-      color: #d32029;
-      font-size: 7px;
-      font-weight: 900;
-      padding: 1px 3px;
-      border-radius: 0 0 0 4px;
-    }
-
     /* Bottom Tab Bar */
     .bottom-tab-bar {
       background: #fff;
@@ -454,11 +404,10 @@
       height: 20px;
     }
 
-    /* ================= PAGE 2: 选卡券页 ================= */
-    /* H5 内部的导航栏（位于顶部Webview栏下方，包含左侧返回箭头及右侧定位组件） */
-    .h5-internal-nav {
+    /* ================= PAGE 2: 选择积分页 (参考截图 1:1 还原) ================= */
+    .points-nav-bar {
       background: #fff;
-      height: 44px;
+      height: 48px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -466,21 +415,30 @@
       position: relative;
       border-bottom: 1px solid #f2f2f2;
     }
-    .h5-nav-back {
+    .points-nav-back {
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #333;
+      color: #111;
       width: 32px;
       height: 32px;
       margin-left: -6px;
     }
-    .h5-nav-back:active {
+    .points-nav-back:active {
       opacity: 0.6;
     }
+    .points-nav-title {
+      font-size: 17px;
+      font-weight: 600;
+      color: #111;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      letter-spacing: 0.5px;
+    }
 
-    /* 顶部右侧定位组件 (参考截图：武汉 ▾) */
+    /* 顶部右侧定位组件 (带下拉箭头) */
     .city-location-btn {
       display: flex;
       align-items: center;
@@ -499,6 +457,315 @@
     }
     .city-location-btn svg {
       margin-top: 1px;
+    }
+
+    /* 顶部横幅说明文案 (淡粉背景) */
+    .points-notice-bar {
+      background: #fff5f5;
+      border-bottom: 1px solid #fae5e5;
+      padding: 10px 16px;
+      min-height: 40px;
+      display: flex;
+      align-items: center;
+      transition: all 0.2s ease;
+    }
+    .points-notice-text {
+      font-size: 12px;
+      line-height: 1.6;
+      color: #666;
+      width: 100%;
+    }
+    .points-notice-text.selected-state {
+      font-size: 14px;
+      color: var(--primary-red);
+      font-weight: 600;
+    }
+
+    /* 积分卡券列表容器 */
+    .points-list-scroll {
+      flex: 1;
+      padding: 16px 14px 90px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      overflow-y: auto;
+    }
+
+    /* 单个积分卡项行结构：左侧勾选圆圈 + 右侧卡片主体 */
+    .points-row-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+    }
+
+    /* 左侧单选/多选勾选圈 (截图 1:1 圆环与红色对勾) */
+    .points-check-circle {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 1.5px solid #8e8e93;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.15s ease;
+      background: #fff;
+    }
+    .points-row-item.selected .points-check-circle {
+      border-color: var(--primary-red);
+      background: var(--primary-red);
+    }
+    .points-check-circle svg {
+      width: 13px;
+      height: 13px;
+      stroke: #fff;
+      stroke-width: 3.2;
+      display: none;
+    }
+    .points-row-item.selected .points-check-circle svg {
+      display: block;
+    }
+
+    /* 右侧积分卡片主体 (1:1 还原截图设计：纯净卡面 + 水果暗纹浮雕效果) */
+    .points-card-card {
+      flex: 1;
+      height: 154px;
+      background: #ffffff;
+      border-radius: 16px;
+      position: relative;
+      overflow: hidden;
+      padding: 24px 22px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      border: 1px solid rgba(0, 0, 0, 0.03);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .points-row-item:active .points-card-card {
+      transform: scale(0.99);
+    }
+
+    /* 水果暗纹水印背景 (SVG 柠檬切片、苹果、葡萄、西瓜切片轮廓) */
+    .points-fruit-watermark {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      pointer-events: none;
+      opacity: 0.45;
+      z-index: 1;
+    }
+
+    /* 卡片内部头部：左侧大字金额，右侧通用积分标签 */
+    .points-card-header {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    /* 大字金额 (金色/暖棕色) */
+    .points-amount-val {
+      font-size: 34px;
+      font-weight: 500;
+      color: var(--gold-amount);
+      letter-spacing: -0.5px;
+      line-height: 1;
+      font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+    }
+
+    /* 右上角积分类型：通用积分 */
+    .points-type-tag {
+      font-size: 15px;
+      color: var(--gold-tag);
+      font-weight: 500;
+      letter-spacing: 0.5px;
+    }
+
+    /* 底部固定确认按钮栏 */
+    .fixed-bottom-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: #fff;
+      padding: 10px 16px 20px;
+      border-top: 1px solid #f0f0f0;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 -4px 12px rgba(0,0,0,0.03);
+      z-index: 80;
+    }
+    .btn-confirm {
+      width: 100%;
+      height: 46px;
+      background: var(--primary-red);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      letter-spacing: 2px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 10px rgba(200, 37, 44, 0.25);
+      transition: all 0.15s ease;
+    }
+    .btn-confirm:active {
+      background: var(--primary-red-hover);
+      transform: scale(0.99);
+    }
+    .btn-confirm:disabled, .btn-confirm.disabled {
+      background: #d4d4d8 !important;
+      color: #ffffff !important;
+      box-shadow: none !important;
+      cursor: not-allowed !important;
+      transform: none !important;
+    }
+
+    /* ================= 支付密码弹窗 ================= */
+    .modal-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.55);
+      z-index: 200;
+      display: none;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .bottom-sheet {
+      background: #fff;
+      border-top-left-radius: 18px;
+      border-top-right-radius: 18px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 -10px 30px rgba(0,0,0,0.15);
+      animation: sheetUp 0.2s ease-out;
+    }
+    @keyframes sheetUp {
+      0% { transform: translateY(100%); }
+      100% { transform: translateY(0); }
+    }
+
+    .sheet-header {
+      padding: 16px 14px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+    }
+    .sheet-header .sheet-back-btn {
+      cursor: pointer;
+      color: #333;
+      padding: 4px;
+    }
+    .sheet-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #222;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .pin-input-section {
+      padding: 18px 20px 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .pin-box-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 12px;
+      width: 100%;
+      max-width: 320px;
+      justify-content: space-between;
+    }
+    .pin-box {
+      width: 44px;
+      height: 48px;
+      border: 1px solid #d5d5d5;
+      border-radius: 6px;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .pin-box.filled {
+      border-color: #999;
+    }
+    .pin-dot {
+      width: 10px;
+      height: 10px;
+      background: #111;
+      border-radius: 50%;
+      display: none;
+    }
+    .pin-box.filled .pin-dot {
+      display: block;
+    }
+    .pin-tips-row {
+      display: flex;
+      justify-content: flex-end;
+      width: 100%;
+      max-width: 320px;
+      font-size: 12px;
+    }
+    .pin-tips-row .link-forgot {
+      color: #1989fa;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .virtual-keypad {
+      background: #f2f3f5;
+      padding: 8px 6px 24px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      border-top: 1px solid #e2e4e8;
+    }
+    .key-btn {
+      height: 50px;
+      background: #fff;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      font-weight: 500;
+      color: #111;
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      user-select: none;
+    }
+    .key-btn:active {
+      background: #e2e2e6;
+    }
+    .key-btn.key-empty {
+      background: transparent;
+      box-shadow: none;
+      cursor: default;
+    }
+    .key-btn.key-del {
+      background: #e5e6eb;
+      font-size: 18px;
+      color: #444;
     }
 
     /* ================= 城市选择弹窗 (从下往上弹出) ================= */
@@ -569,7 +836,6 @@
       height: 14px;
     }
 
-    /* 城市搜索框 */
     .city-search-wrap {
       padding: 0 16px 8px;
     }
@@ -595,7 +861,6 @@
       color: #999;
     }
 
-    /* 城市内容滚动区 */
     .city-scroll-content {
       flex: 1;
       overflow-y: auto;
@@ -607,7 +872,6 @@
       display: none;
     }
 
-    /* 热门城市 */
     .city-hot-title {
       font-size: 14px;
       font-weight: bold;
@@ -642,7 +906,6 @@
       font-weight: 600;
     }
 
-    /* 字母分组城市列表 */
     .city-group-title {
       font-size: 12px;
       color: #888;
@@ -667,7 +930,6 @@
       font-weight: 600;
     }
 
-    /* 右侧字母快速索引栏 */
     .city-index-sidebar {
       position: absolute;
       right: 4px;
@@ -693,311 +955,8 @@
       color: #1989fa;
       font-weight: bold;
     }
-    .voucher-notice-bar {
-      background: var(--notice-bg);
-      border-top: 1px solid var(--notice-border);
-      border-bottom: 1px solid var(--notice-border);
-      padding: 10px 14px;
-    }
-    .notice-text {
-      font-size: 12px;
-      line-height: 1.55;
-      color: #444;
-    }
 
-    /* Voucher Cards List */
-    .voucher-list-scroll {
-      flex: 1;
-      padding: 12px 14px 90px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      overflow-y: auto;
-    }
-
-    .voucher-card {
-      background: #fff;
-      border-radius: 8px;
-      border: 1.5px solid transparent;
-      padding: 14px 16px;
-      position: relative;
-      cursor: pointer;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-      transition: border-color 0.15s, background-color 0.15s;
-    }
-    .voucher-card.selected {
-      border-color: var(--primary-red);
-      background: #fffdfd;
-      box-shadow: 0 4px 16px rgba(200, 37, 44, 0.1);
-    }
-
-    /* 右上角顺序数字编号 (图三规范) */
-    .order-badge {
-      position: absolute;
-      top: -1px;
-      right: -1px;
-      width: 24px;
-      height: 24px;
-      background: var(--primary-red);
-      color: #fff;
-      font-size: 13px;
-      font-weight: bold;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      border-top-right-radius: 7px;
-      border-bottom-left-radius: 8px;
-      box-shadow: -1px 2px 4px rgba(200, 37, 44, 0.2);
-    }
-    .voucher-card.selected .order-badge {
-      display: flex;
-    }
-
-    .voucher-card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
-      padding-bottom: 8px;
-      border-bottom: 1px dashed #efefef;
-    }
-    .voucher-card-type {
-      font-size: 15px;
-      font-weight: bold;
-      color: #222;
-    }
-    .voucher-card-sn {
-      font-size: 13px;
-      color: #555;
-    }
-
-    .voucher-card-body {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-end;
-    }
-    .voucher-amount-box {
-      display: flex;
-      flex-direction: column;
-    }
-    .voucher-amount {
-      font-size: 22px;
-      font-weight: 700;
-      color: var(--primary-red);
-      letter-spacing: -0.5px;
-      display: flex;
-      align-items: baseline;
-      gap: 2px;
-    }
-    .voucher-amount .unit {
-      font-size: 14px;
-      font-weight: 500;
-    }
-    .voucher-extra-desc {
-      font-size: 12px;
-      color: #555;
-      margin-top: 4px;
-    }
-    .voucher-expiry {
-      font-size: 12px;
-      color: #888;
-      margin-top: 6px;
-    }
-    .voucher-details-link {
-      font-size: 12px;
-      color: #888;
-      display: flex;
-      align-items: center;
-      gap: 2px;
-    }
-
-    /* Fixed Bottom Action Bar */
-    .fixed-bottom-bar {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      background: #fff;
-      padding: 10px 16px 20px;
-      border-top: 1px solid #f0f0f0;
-      display: flex;
-      flex-direction: column;
-      box-shadow: 0 -4px 12px rgba(0,0,0,0.03);
-      z-index: 80;
-    }
-    .btn-confirm {
-      width: 100%;
-      height: 44px;
-      background: var(--primary-red);
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      font-weight: bold;
-      letter-spacing: 2px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 4px 10px rgba(200, 37, 44, 0.25);
-    }
-    .btn-confirm:active {
-      background: var(--primary-red-hover);
-      transform: scale(0.99);
-    }
-    .btn-confirm:disabled, .btn-confirm.disabled {
-      background: #d4d4d8 !important;
-      color: #ffffff !important;
-      box-shadow: none !important;
-      cursor: not-allowed !important;
-      transform: none !important;
-    }
-
-    /* ================= 支付密码弹窗 (图四) ================= */
-    .modal-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.55);
-      z-index: 200;
-      display: none;
-      flex-direction: column;
-      justify-content: flex-end;
-    }
-    .modal-overlay.active {
-      display: flex;
-    }
-
-    .bottom-sheet {
-      background: #fff;
-      border-top-left-radius: 18px;
-      border-top-right-radius: 18px;
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      box-shadow: 0 -10px 30px rgba(0,0,0,0.15);
-      animation: sheetUp 0.2s ease-out;
-    }
-    @keyframes sheetUp {
-      0% { transform: translateY(100%); }
-      100% { transform: translateY(0); }
-    }
-
-    .sheet-header {
-      padding: 16px 14px 12px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: relative;
-    }
-    .sheet-header .sheet-back-btn {
-      cursor: pointer;
-      color: #333;
-      padding: 4px;
-    }
-    .sheet-title {
-      font-size: 16px;
-      font-weight: 600;
-      color: #222;
-      position: absolute;
-      left: 50%;
-      transform: translateX(-50%);
-    }
-
-    .pin-input-section {
-      padding: 18px 20px 16px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    /* 6-box Pin Display */
-    .pin-box-row {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 12px;
-      width: 100%;
-      max-width: 320px;
-      justify-content: space-between;
-    }
-    .pin-box {
-      width: 44px;
-      height: 48px;
-      border: 1px solid #d5d5d5;
-      border-radius: 6px;
-      background: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .pin-box.filled {
-      border-color: #999;
-    }
-    .pin-dot {
-      width: 10px;
-      height: 10px;
-      background: #111;
-      border-radius: 50%;
-      display: none;
-    }
-    .pin-box.filled .pin-dot {
-      display: block;
-    }
-
-    /* 密码底部链接 (去掉了已选卡券文案，保持干净) */
-    .pin-tips-row {
-      display: flex;
-      justify-content: flex-end;
-      width: 100%;
-      max-width: 320px;
-      font-size: 12px;
-    }
-    .pin-tips-row .link-forgot {
-      color: #1989fa;
-      cursor: pointer;
-      text-decoration: none;
-    }
-
-    /* Virtual Number Keypad */
-    .virtual-keypad {
-      background: #f2f3f5;
-      padding: 8px 6px 24px;
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 6px;
-      border-top: 1px solid #e2e4e8;
-    }
-    .key-btn {
-      height: 50px;
-      background: #fff;
-      border-radius: 6px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 22px;
-      font-weight: 500;
-      color: #111;
-      cursor: pointer;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-      user-select: none;
-    }
-    .key-btn:active {
-      background: #e2e2e6;
-    }
-    .key-btn.key-empty {
-      background: transparent;
-      box-shadow: none;
-      cursor: default;
-    }
-    .key-btn.key-del {
-      background: #e5e6eb;
-      font-size: 18px;
-      color: #444;
-    }
-
-    /* ================= PAGE 3: 联合登录 / 授权页 (图五) ================= */
+    /* ================= PAGE 3: 联合登录 / 授权页 ================= */
     .auth-page-container {
       background: #fff;
       flex: 1;
@@ -1006,8 +965,6 @@
       flex-direction: column;
       align-items: center;
     }
-
-    /* 顶部应用方框与图标 (1:1 截图) */
     .auth-logo-box {
       border: 2px solid #e03838;
       border-radius: 2px;
@@ -1039,8 +996,6 @@
       color: #222;
       letter-spacing: 0.5px;
     }
-
-    /* 授权说明区 */
     .auth-info-section {
       width: 100%;
       text-align: left;
@@ -1057,8 +1012,6 @@
       color: #666;
       line-height: 1.6;
     }
-
-    /* 确认授权按钮 (大圆角橘红) */
     .btn-auth-confirm {
       width: 100%;
       height: 48px;
@@ -1079,8 +1032,6 @@
       background: var(--auth-orange-hover);
       transform: scale(0.99);
     }
-
-    /* 用户协议同意栏 */
     .auth-agreement-row {
       display: flex;
       align-items: center;
@@ -1252,6 +1203,7 @@
       z-index: 999;
       display: none;
       text-align: center;
+      pointer-events: none;
     }
     .toast-box.show {
       display: block;
@@ -1273,7 +1225,7 @@
 </head>
 <body>
 
-  <!-- 手机壳容器 -->
+  <!-- 手机外壳容器 -->
   <div class="device-wrapper">
     <div class="device-notch"></div>
 
@@ -1291,7 +1243,7 @@
         </div>
       </div>
 
-      <!-- 微信/App 顶层 Webview 浏览器栏 (始终固定在顶部，含 × 关闭与 ··· 更多) -->
+      <!-- 顶层 Webview 浏览器栏 (包含 × 与 ···) -->
       <div class="webview-header">
         <div class="left-actions">
           <div class="icon-btn" onclick="navigateToPage('home')">
@@ -1299,7 +1251,7 @@
           </div>
         </div>
         <div class="title-box">
-          <div class="title-text">淘福客 chj 专用</div>
+          <div class="title-text">淘福客 - 积分专区</div>
           <div class="domain-text">m.quanmaigo.com</div>
         </div>
         <div class="right-actions">
@@ -1309,7 +1261,7 @@
         </div>
       </div>
 
-      <!-- 页面视口 -->
+      <!-- 页面视口容器 -->
       <div class="pages-container">
 
         <!-- ================= 页面 1: 商城首页 ================= -->
@@ -1339,117 +1291,56 @@
             <div class="tab-item">个护清洁</div>
             <div class="tab-item">食品</div>
             <div class="tab-item">家纺服饰</div>
-            <div class="tab-item">户外</div>
+            <div class="tab-item">积分兑换</div>
             <div class="tab-item">商超专区</div>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="#999" style="flex-shrink: 0;"><path d="M6 9l6 6 6-6"/></svg>
           </div>
 
-          <!-- 永辉专属 Banner (点击进入选券) -->
+          <!-- 专属积分横幅 (点击直接进入“选择积分页”) -->
           <div class="banner-container">
-            <div class="main-banner" onclick="navigateToPage('voucher')">
+            <div class="main-banner" onclick="navigateToPage('points')">
               <svg class="banner-bg-graphic" width="140" height="140" viewBox="0 0 200 200" fill="currentColor">
                 <path d="M10,100 C40,40 160,40 190,100 C160,160 40,160 10,100 Z"/>
               </svg>
               <div class="banner-content">
-                <div class="banner-tag">★ 专属特权</div>
-                <div class="banner-title">永辉超市 · 尊享卡券</div>
-                <div class="banner-sub">进入资源前先选卡券 · 自动按序抵扣</div>
-              </div>
-              <div class="banner-dots">
-                <span class="active"></span>
-                <span></span>
-                <span></span>
-                <span></span>
+                <div class="banner-tag">★ 特色资源</div>
+                <div class="banner-title">积分专享 · 自由兑换</div>
+                <div class="banner-sub">进入资源前勾选积分 · 有效期由近及远扣减</div>
               </div>
             </div>
           </div>
 
-          <!-- 米面粮油网格 -->
+          <!-- 核心金刚区网格 -->
           <div class="section-block">
             <div class="section-title-wrap">
               <span class="section-line"></span>
               <span class="diamond">◆</span>
-              <span class="section-title">米面粮油</span>
+              <span class="section-title">精选服务与积分</span>
               <span class="diamond">◆</span>
               <span class="section-line"></span>
             </div>
             <div class="icon-grid">
-              <div class="grid-item">
-                <div class="icon-wrapper" style="background:#e8f4ec;"><span style="font-size:22px;">🍚</span></div>
-                <div class="icon-label">定位类目</div>
+              <!-- 积分入口 (点击进入选择积分页) -->
+              <div class="grid-item" onclick="navigateToPage('points')">
+                <div class="icon-wrapper" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color:#fff; font-size: 22px; font-weight: bold; box-shadow: 0 4px 10px rgba(245, 158, 11, 0.35);">🪙</div>
+                <div class="icon-label" style="color:#d97706; font-weight:bold;">选择积分</div>
               </div>
-              <div class="grid-item">
+
+              <div class="grid-item" onclick="navigateToPage('points')">
                 <div class="icon-wrapper" style="background:#e8f4ec;"><span style="font-size:22px;">🎬</span></div>
                 <div class="icon-label">电影频道</div>
               </div>
-              <div class="grid-item">
+              <div class="grid-item" onclick="navigateToPage('points')">
                 <div class="icon-wrapper" style="background:#e8f5fb;"><span style="font-size:22px;">🏙️</span></div>
-                <div class="icon-label">本地服务</div>
+                <div class="icon-label">本地生活</div>
               </div>
-              <div class="grid-item">
+              <div class="grid-item" onclick="navigateToPage('points')">
                 <div class="icon-wrapper" style="background:#edf4fc;"><span style="font-size:22px;">🧴</span></div>
-                <div class="icon-label">商超频道</div>
+                <div class="icon-label">商超便利</div>
               </div>
-              <div class="grid-item">
+              <div class="grid-item" onclick="navigateToPage('points')">
                 <div class="icon-wrapper" style="background:#f4f4f4;"><span style="font-size:22px;">🏀</span></div>
-                <div class="icon-label">蛋糕商品</div>
-              </div>
-
-              <div class="grid-item">
-                <div class="icon-wrapper" style="background:#e1251b; color:#fff; font-size:10px; font-weight:bold; padding:4px; text-align:center;">天猫优购</div>
-                <div class="icon-label">天猫优购</div>
-              </div>
-              <div class="grid-item">
-                <div class="icon-wrapper" style="background:#fff2e6;"><span style="font-size:22px;">🏮</span></div>
-                <div class="icon-label">本地服务</div>
-              </div>
-              
-              <!-- 永辉 Icon (点击进入选券) -->
-              <div class="grid-item" onclick="navigateToPage('voucher')">
-                <div class="icon-wrapper icon-yh">YH</div>
-                <div class="icon-label" style="color:var(--primary-red); font-weight:bold;">永辉卡券</div>
-              </div>
-
-              <div class="grid-item">
-                <div class="icon-wrapper" style="background:#fff6e8;"><span style="font-size:22px;">🧧</span></div>
-                <div class="icon-label">慢票</div>
-              </div>
-              <div class="grid-item">
-                <div class="icon-wrapper" style="background:#eaf8f4;"><span style="font-size:22px;">🎫</span></div>
-                <div class="icon-label">快票</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 商超便利网格 -->
-          <div class="section-block">
-            <div class="section-title-wrap">
-              <span class="section-line green"></span>
-              <span class="diamond green">◆</span>
-              <span class="section-title green">商超便利</span>
-              <span class="diamond green">◆</span>
-              <span class="section-line green"></span>
-            </div>
-            <div class="icon-grid">
-              <div class="grid-item">
-                <div class="icon-wrapper" style="background:#f3e8fc;"><span style="font-size:22px;">🛍️</span></div>
-                <div class="icon-label">门店蛋糕</div>
-              </div>
-              <div class="grid-item">
-                <div class="icon-wrapper" style="background:#feeef0;"><span style="font-size:22px;">📹</span></div>
-                <div class="icon-label">微页面...</div>
-              </div>
-              <div class="grid-item">
-                <div class="icon-wrapper" style="background:#edf8f3;"><span style="font-size:22px;">⚡</span></div>
-                <div class="icon-label">淘宝闪购</div>
-              </div>
-              <div class="grid-item">
-                <div class="icon-wrapper" style="background:#fff4e6;"><span style="font-size:22px;">🥤</span></div>
-                <div class="icon-label">Blueglass</div>
-              </div>
-              <div class="grid-item">
-                <div class="icon-wrapper" style="background:#eef6f9;"><span style="font-size:22px;">🎪</span></div>
-                <div class="icon-label">大润发...</div>
+                <div class="icon-label">蛋糕烘焙</div>
               </div>
             </div>
           </div>
@@ -1458,177 +1349,147 @@
         </div>
 
 
-        <!-- ================= 页面 2: 选择卡券页 (图二、图三) ================= -->
-        <div class="page" id="page-voucher">
+        <!-- ================= 页面 2: 选择积分页 (核心实现) ================= -->
+        <div class="page" id="page-points">
           
-          <!-- H5 内部导航栏：位于顶部Webview栏下方，左侧包含返回键 <，右侧包含定位组件 (参考截图：武汉 ▾) -->
-          <div class="h5-internal-nav">
-            <div class="h5-nav-back" onclick="navigateToPage('home')">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#222" stroke-width="2.4"><path d="M15 18l-6-6 6-6"/></svg>
+          <!-- H5 顶部导航栏：左侧返回箭头 <，居中“选择积分”，右侧带定位组件“武汉 ▾” -->
+          <div class="points-nav-bar">
+            <div class="points-nav-back" onclick="navigateToPage('home')">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
             </div>
+            <div class="points-nav-title">选择积分</div>
             <div class="city-location-btn" onclick="openCityModal()">
-              <span id="voucherLocationText">武汉</span>
+              <span id="pointsLocationText">武汉</span>
               <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg>
             </div>
           </div>
 
-          <!-- 横幅提示语 (未选中时三点规则，选中时动态折算余额) -->
-          <div class="voucher-notice-bar">
-            <div class="notice-text" id="voucherNoticeText">
-              1、进入资源前请先选择要使用的卡券<br>2、将自动计算并转换该资源可消费余额<br>3、交易完成，会按实际金额，按勾选顺序扣减卡券余额
+          <!-- 顶部横幅说明文案 (未勾选时三点规则，勾选时展示“折合余额xx”) -->
+          <div class="points-notice-bar">
+            <div class="points-notice-text" id="pointsNoticeText">
+              1、进入资源前请先勾选要使用的积分<br>2、将自动计算并转换该资源可消费余额<br>3、交易完成，会按实际金额，根据积分有效期由近及远顺序扣减
             </div>
           </div>
 
-          <!-- 卡券列表 (带右上角顺序数字 1, 2, 3...) -->
-          <div class="voucher-list-scroll">
+          <!-- 积分列表 (圆圈 + 水果暗纹卡片) -->
+          <div class="points-list-scroll">
 
-            <!-- Card 1 -->
-            <div class="voucher-card" data-id="1" data-amount="98.43" onclick="toggleSelectVoucher(this)">
-              <div class="order-badge"></div>
-              <div class="voucher-card-header">
-                <div class="voucher-card-type">福利券</div>
-                <div class="voucher-card-sn">8000 046720</div>
+            <!-- 仅展示一种通用积分类型 (1:1 还原截图设计) -->
+            <div class="points-row-item" id="onlyPointsItem" data-id="p1" data-amount="35.00" onclick="toggleSelectPoint(this)">
+              <!-- 左侧单选/勾选圆圈 -->
+              <div class="points-check-circle">
+                <svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg>
               </div>
-              <div class="voucher-card-body">
-                <div class="voucher-amount-box">
-                  <div class="voucher-amount">98.43 <span class="unit">元</span></div>
-                  <div class="voucher-expiry">2027-02-28到期</div>
-                </div>
-                <div class="voucher-details-link">
-                  <span>查看详情</span>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
-                </div>
-              </div>
-            </div>
 
-            <!-- Card 2 -->
-            <div class="voucher-card" data-id="2" data-amount="200" onclick="toggleSelectVoucher(this)">
-              <div class="order-badge"></div>
-              <div class="voucher-card-header">
-                <div class="voucher-card-type">福利券</div>
-                <div class="voucher-card-sn">8000 047783</div>
-              </div>
-              <div class="voucher-card-body">
-                <div class="voucher-amount-box">
-                  <div class="voucher-amount">200 <span class="unit">元</span></div>
-                  <div class="voucher-expiry">2027-09-30到期</div>
-                </div>
-                <div class="voucher-details-link">
-                  <span>查看详情</span>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
-                </div>
-              </div>
-            </div>
+              <!-- 右侧卡片主体：纯净卡面，仅大字金额 + 通用积分 + 水果暗纹水印 -->
+              <div class="points-card-card">
+                <!-- SVG 水果暗纹背景 (1:1 还原截图质感：切片柠檬、西瓜、苹果、葡萄轮廓) -->
+                <svg class="points-fruit-watermark" viewBox="0 0 320 146" preserveAspectRatio="xMidYMid slice" fill="none" stroke="#e8dfd1" stroke-width="1.6">
+                  <!-- 顶部柠檬/橙子轮廓 -->
+                  <g transform="translate(135, -5) scale(0.95)">
+                    <circle cx="28" cy="28" r="24" stroke-dasharray="2 0"/>
+                    <circle cx="28" cy="28" r="18" stroke-dasharray="3 2"/>
+                    <path d="M28 15 C31 20 33 22 35 24 M28 41 C31 36 33 34 35 32"/>
+                    <path d="M15 28 C20 31 22 33 24 35 M41 28 C36 31 34 33 32 35"/>
+                    <circle cx="28" cy="28" r="3.5" fill="#f4ece1"/>
+                  </g>
+                  
+                  <!-- 右上方西瓜切片轮廓 -->
+                  <g transform="translate(240, -18) scale(1.1)">
+                    <path d="M10 20 Q50 6 90 20 Q50 55 10 20 Z"/>
+                    <path d="M16 22 Q50 11 84 22"/>
+                    <circle cx="40" cy="24" r="1.5" fill="#e8dfd1"/>
+                    <circle cx="55" cy="22" r="1.5" fill="#e8dfd1"/>
+                    <circle cx="68" cy="25" r="1.5" fill="#e8dfd1"/>
+                  </g>
 
-            <!-- Card 3 -->
-            <div class="voucher-card" data-id="3" data-amount="0.16" onclick="toggleSelectVoucher(this)">
-              <div class="order-badge"></div>
-              <div class="voucher-card-header">
-                <div class="voucher-card-type">定制类目券</div>
-                <div class="voucher-card-sn">8000 046726</div>
-              </div>
-              <div class="voucher-card-body">
-                <div class="voucher-amount-box">
-                  <div class="voucher-amount">0.16 <span class="unit">元</span></div>
-                  <div class="voucher-extra-desc">兑换其他商品可用0.16人民币</div>
-                  <div class="voucher-expiry">2027-02-28到期</div>
-                </div>
-                <div class="voucher-details-link">
-                  <span>查看详情</span>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
-                </div>
-              </div>
-            </div>
+                  <!-- 中部苹果轮廓 -->
+                  <g transform="translate(200, 36) scale(0.9)">
+                    <path d="M22 10 C14 2 6 2 2 12 C-3 24 3 36 12 40 C17 42 20 40 22 38 C24 40 27 42 32 40 C41 36 47 24 42 12 C38 2 30 2 22 10 Z"/>
+                    <path d="M22 10 Q24 3 29 1" stroke-linecap="round"/>
+                    <path d="M25 4 Q32 2 34 6 Q29 8 25 4 Z"/>
+                  </g>
 
-            <!-- Card 4: 新增测试卡（余额1元，用于模拟折算余额<0置灰场景） -->
-            <div class="voucher-card" data-id="4" data-amount="1.00" onclick="toggleSelectVoucher(this)">
-              <div class="order-badge"></div>
-              <div class="voucher-card-header">
-                <div class="voucher-card-type" style="display: flex; align-items: center; gap: 6px;">
-                  <span>低额测试卡</span>
-                  <span style="font-size: 10px; background: #fff0f0; color: var(--primary-red); border: 1px solid #ffccd0; padding: 0 4px; border-radius: 4px; font-weight: normal;">余额＜服务费</span>
-                </div>
-                <div class="voucher-card-sn">8000 049999</div>
-              </div>
-              <div class="voucher-card-body">
-                <div class="voucher-amount-box">
-                  <div class="voucher-amount">1.00 <span class="unit">元</span></div>
-                  <div class="voucher-extra-desc" style="color: #888;">测试卡（固定服务费2元，单选将折算＜0）</div>
-                  <div class="voucher-expiry">2027-12-31到期</div>
-                </div>
-                <div class="voucher-details-link">
-                  <span>查看详情</span>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+                  <!-- 左下方樱桃/小水果轮廓 -->
+                  <g transform="translate(20, 68) scale(0.85)">
+                    <circle cx="16" cy="30" r="11"/>
+                    <circle cx="34" cy="32" r="11"/>
+                    <path d="M16 19 Q25 8 32 4 M34 21 Q33 12 32 4" stroke-linecap="round"/>
+                  </g>
+
+                  <!-- 底部葡萄串轮廓 -->
+                  <g transform="translate(120, 78) scale(0.8)">
+                    <circle cx="20" cy="12" r="7"/><circle cx="33" cy="12" r="7"/><circle cx="46" cy="12" r="7"/>
+                    <circle cx="26" cy="22" r="7"/><circle cx="39" cy="22" r="7"/>
+                    <circle cx="32" cy="32" r="7"/>
+                    <path d="M33 5 Q35 0 38 -4" stroke-linecap="round"/>
+                  </g>
+                </svg>
+
+                <div class="points-card-header">
+                  <div class="points-amount-val" id="cardPointsAmount">35.00</div>
+                  <div class="points-type-tag">通用积分</div>
                 </div>
               </div>
             </div>
 
           </div>
 
-          <!-- 底部确认按钮 (初始未选或折算余额<=0时置灰) -->
+          <!-- 底部确认按钮 (折算余额 ≤ 0 时置灰) -->
           <div class="fixed-bottom-bar">
-            <button class="btn-confirm disabled" id="btnConfirmVouchers" disabled onclick="openPasswordModal()">确认</button>
+            <button class="btn-confirm disabled" id="btnConfirmPoints" disabled onclick="openPasswordModal()">确认</button>
           </div>
         </div>
 
 
-        <!-- ================= 页面 3: 联合登录 / 授权页 (图五) ================= -->
+        <!-- ================= 页面 3: 联合登录 / 授权页 ================= -->
         <div class="page" id="page-auth">
-          <!-- H5 内部导航栏：包含左侧返回键 < -->
-          <div class="h5-internal-nav" style="border-bottom: none;">
-            <div class="h5-nav-back" onclick="navigateToPage('voucher')">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#222" stroke-width="2.4"><path d="M15 18l-6-6 6-6"/></svg>
+          <div class="points-nav-bar" style="border-bottom: none;">
+            <div class="points-nav-back" onclick="navigateToPage('points')">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
             </div>
           </div>
 
           <div class="auth-page-container">
-            <!-- 顶部应用红框与水墨人物圆形头像 (1:1 截图五) -->
             <div class="auth-logo-box">
               <div class="auth-avatar-frame">
-                <!-- 水墨国风忍者人物 SVG 绘制 -->
                 <svg width="80" height="80" viewBox="0 0 100 100">
                   <circle cx="50" cy="50" r="46" fill="#e5dfd5"/>
                   <path d="M20 75 Q50 20 80 75 Z" fill="#2d3032"/>
                   <circle cx="50" cy="45" r="16" fill="#f6d5b8"/>
-                  <!-- 面罩与武者发带 -->
                   <path d="M36 44 Q50 49 64 44 Q64 52 50 56 Q36 52 36 44 Z" fill="#222"/>
                   <circle cx="44" cy="42" r="2.5" fill="#222"/>
                   <circle cx="56" cy="42" r="2.5" fill="#222"/>
-                  <!-- 飘带 -->
                   <path d="M60 40 Q80 30 85 45 Q75 42 60 44 Z" fill="#222"/>
                 </svg>
               </div>
-              <div class="auth-app-title">qm电影H5</div>
+              <div class="auth-app-title">qm积分专属商城</div>
             </div>
 
-            <!-- 授权说明内容 (1:1 截图五) -->
             <div class="auth-info-section">
               <div class="auth-info-heading">授权说明：</div>
               <div class="auth-info-desc">
-                服务内容由qm电影H5提供，请确认授权以下信息获取您的昵称、头像及手机号
+                服务内容由qm电影/商超平台提供，请确认授权使用选中的积分资产抵扣消费额度
               </div>
             </div>
 
-            <!-- 确认授权按钮 (大圆角橘红) -->
             <button class="btn-auth-confirm" onclick="handleAuthConfirm()">确认授权</button>
 
-            <!-- 勾选协议 (1:1 截图五) -->
             <div class="auth-agreement-row" onclick="toggleAgreement()">
               <div class="auth-check-circle" id="authCheckIcon">
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><polyline points="20 6 9 17 4 12"/></svg>
               </div>
               <span>我已阅读并同意 <a href="javascript:void(0)" class="auth-agreement-link" onclick="event.stopPropagation(); showToast('打开用户授权登录协议')">《用户授权登录协议》</a></span>
             </div>
-
           </div>
         </div>
 
 
         <!-- ================= 页面 4: 输入验证码页 ================= -->
         <div class="page" id="page-verify">
-          <div class="h5-internal-nav" style="border-bottom: none;">
-            <div class="h5-nav-back" onclick="closePasswordModal(); navigateToPage('voucher')">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#222" stroke-width="2.4"><path d="M15 18l-6-6 6-6"/></svg>
+          <div class="points-nav-bar" style="border-bottom: none;">
+            <div class="points-nav-back" onclick="closePasswordModal(); navigateToPage('points')">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
             </div>
           </div>
 
@@ -1659,9 +1520,9 @@
 
         <!-- ================= 页面 5: 设置支付密码页 ================= -->
         <div class="page" id="page-setpwd">
-          <div class="h5-internal-nav" style="border-bottom: none;">
-            <div class="h5-nav-back" onclick="navigateToPage('verify'); resetSetPwdInput()">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#222" stroke-width="2.4"><path d="M15 18l-6-6 6-6"/></svg>
+          <div class="points-nav-bar" style="border-bottom: none;">
+            <div class="points-nav-back" onclick="navigateToPage('verify'); resetSetPwdInput()">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
             </div>
           </div>
 
@@ -1683,7 +1544,7 @@
 
       </div>
 
-      <!-- ================= 支付密码弹窗 (图四) ================= -->
+      <!-- ================= 支付密码弹窗 ================= -->
       <div class="modal-overlay" id="passwordModalOverlay">
         <div class="bottom-sheet">
           <div class="sheet-header">
@@ -1694,7 +1555,6 @@
             <div style="width: 24px;"></div>
           </div>
 
-          <!-- 6 位方格 -->
           <div class="pin-input-section">
             <div class="pin-box-row">
               <div class="pin-box" id="pin-0"><div class="pin-dot"></div></div>
@@ -1705,13 +1565,11 @@
               <div class="pin-box" id="pin-5"><div class="pin-dot"></div></div>
             </div>
 
-            <!-- 干净的底部忘记密码链接 -->
             <div class="pin-tips-row">
               <span class="link-forgot" onclick="openVerifyPage()">忘记密码</span>
             </div>
           </div>
 
-          <!-- 虚拟数字键盘 -->
           <div class="virtual-keypad">
             <div class="key-btn" onclick="pressKey('1')">1</div>
             <div class="key-btn" onclick="pressKey('2')">2</div>
@@ -1728,21 +1586,18 @@
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/><line x1="18" y1="9" x2="12" y2="15"/><line x1="12" y1="9" x2="18" y2="15"/></svg>
             </div>
           </div>
-
         </div>
       </div>
 
-      <!-- ================= 城市选择弹窗 (参考截图：从下往上弹出) ================= -->
+      <!-- ================= 城市选择弹窗 (从下往上弹出) ================= -->
       <div class="city-modal-overlay" id="cityModalOverlay" onclick="handleCityOverlayClick(event)">
         <div class="city-bottom-sheet" id="cityBottomSheet" onclick="event.stopPropagation()">
           
-          <!-- 弹窗顶部栏：当前城市 + 重新定位 -->
           <div class="city-sheet-header">
             <div class="city-current-label">
               当前：<span class="city-current-name" id="modalCurrentCityText">武汉</span>
             </div>
             <div class="city-reposition-btn" onclick="reLocateCity()">
-              <!-- 重新定位靶心图标 -->
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
                 <circle cx="12" cy="12" r="8"/>
                 <circle cx="12" cy="12" r="3" fill="currentColor"/>
@@ -1755,7 +1610,6 @@
             </div>
           </div>
 
-          <!-- 城市搜索框 -->
           <div class="city-search-wrap">
             <div class="city-search-box">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
@@ -1763,10 +1617,8 @@
             </div>
           </div>
 
-          <!-- 城市列表滚动区 -->
           <div class="city-scroll-content" id="cityScrollContent">
-            
-            <!-- 热门城市 (1:1 截图二) -->
+            <!-- 热门城市 -->
             <div id="hotCitiesSection">
               <div class="city-hot-title">热门城市</div>
               <div class="city-hot-grid">
@@ -1779,10 +1631,8 @@
               </div>
             </div>
 
-            <!-- 字母分组城市列表 (1:1 截图二) -->
+            <!-- 字母分组城市列表 -->
             <div id="cityAlphabetList">
-              
-              <!-- A -->
               <div class="city-group-block" id="city-group-A">
                 <div class="city-group-title" id="city-anchor-A">A</div>
                 <div class="city-item-row" data-pinyin="alashenmeng" onclick="selectCity('阿拉善盟')">阿拉善盟</div>
@@ -1795,7 +1645,6 @@
                 <div class="city-item-row" data-pinyin="alidiqu" onclick="selectCity('阿里地区')">阿里地区</div>
               </div>
 
-              <!-- B -->
               <div class="city-group-block" id="city-group-B">
                 <div class="city-group-title" id="city-anchor-B">B</div>
                 <div class="city-item-row" data-pinyin="beijingshi" onclick="selectCity('北京市')">北京市</div>
@@ -1803,241 +1652,68 @@
                 <div class="city-item-row" data-pinyin="baotoushi" onclick="selectCity('包头市')">包头市</div>
                 <div class="city-item-row" data-pinyin="benxishi" onclick="selectCity('本溪市')">本溪市</div>
                 <div class="city-item-row" data-pinyin="bengbushi" onclick="selectCity('蚌埠市')">蚌埠市</div>
-                <div class="city-item-row" data-pinyin="bozhoushi" onclick="selectCity('亳州市')">亳州市</div>
-                <div class="city-item-row" data-pinyin="binzhoushi" onclick="selectCity('滨州市')">滨州市</div>
               </div>
 
-              <!-- C -->
               <div class="city-group-block" id="city-group-C">
                 <div class="city-group-title" id="city-anchor-C">C</div>
                 <div class="city-item-row" data-pinyin="chengdushi" onclick="selectCity('成都市')">成都市</div>
                 <div class="city-item-row" data-pinyin="chongqingshi" onclick="selectCity('重庆市')">重庆市</div>
                 <div class="city-item-row" data-pinyin="changshashi" onclick="selectCity('长沙市')">长沙市</div>
                 <div class="city-item-row" data-pinyin="changchunshi" onclick="selectCity('长春市')">长春市</div>
-                <div class="city-item-row" data-pinyin="changzhoushi" onclick="selectCity('常州市')">常州市</div>
-                <div class="city-item-row" data-pinyin="cangzhoushi" onclick="selectCity('沧州市')">沧州市</div>
               </div>
 
-              <!-- D -->
-              <div class="city-group-block" id="city-group-D">
-                <div class="city-group-title" id="city-anchor-D">D</div>
-                <div class="city-item-row" data-pinyin="dalianshi" onclick="selectCity('大连市')">大连市</div>
-                <div class="city-item-row" data-pinyin="dongguanshi" onclick="selectCity('东莞市')">东莞市</div>
-                <div class="city-item-row" data-pinyin="datongshi" onclick="selectCity('大同市')">大同市</div>
-                <div class="city-item-row" data-pinyin="dandongshi" onclick="selectCity('丹东市')">丹东市</div>
-                <div class="city-item-row" data-pinyin="dezhoushi" onclick="selectCity('德州市')">德州市</div>
-              </div>
-
-              <!-- E -->
-              <div class="city-group-block" id="city-group-E">
-                <div class="city-group-title" id="city-anchor-E">E</div>
-                <div class="city-item-row" data-pinyin="eerduosishi" onclick="selectCity('鄂尔多斯市')">鄂尔多斯市</div>
-                <div class="city-item-row" data-pinyin="enshishi" onclick="selectCity('恩施土家族苗族自治州')">恩施土家族苗族自治州</div>
-                <div class="city-item-row" data-pinyin="ezhoushi" onclick="selectCity('鄂州市')">鄂州市</div>
-              </div>
-
-              <!-- F -->
-              <div class="city-group-block" id="city-group-F">
-                <div class="city-group-title" id="city-anchor-F">F</div>
-                <div class="city-item-row" data-pinyin="fuzhoushi" onclick="selectCity('福州市')">福州市</div>
-                <div class="city-item-row" data-pinyin="foshanshi" onclick="selectCity('佛山市')">佛山市</div>
-                <div class="city-item-row" data-pinyin="fushunshi" onclick="selectCity('抚顺市')">抚顺市</div>
-                <div class="city-item-row" data-pinyin="fuyangshi" onclick="selectCity('阜阳市')">阜阳市</div>
-              </div>
-
-              <!-- G -->
               <div class="city-group-block" id="city-group-G">
                 <div class="city-group-title" id="city-anchor-G">G</div>
                 <div class="city-item-row" data-pinyin="guangzhoushi" onclick="selectCity('广州市')">广州市</div>
                 <div class="city-item-row" data-pinyin="guiyangshi" onclick="selectCity('贵阳市')">贵阳市</div>
                 <div class="city-item-row" data-pinyin="guilinshi" onclick="selectCity('桂林市')">桂林市</div>
-                <div class="city-item-row" data-pinyin="ganzhoushi" onclick="selectCity('赣州市')">赣州市</div>
               </div>
 
-              <!-- H -->
               <div class="city-group-block" id="city-group-H">
                 <div class="city-group-title" id="city-anchor-H">H</div>
                 <div class="city-item-row" data-pinyin="hangzhoushi" onclick="selectCity('杭州市')">杭州市</div>
                 <div class="city-item-row" data-pinyin="hefeishi" onclick="selectCity('合肥市')">合肥市</div>
                 <div class="city-item-row" data-pinyin="haerbinshi" onclick="selectCity('哈尔滨市')">哈尔滨市</div>
-                <div class="city-item-row" data-pinyin="haikoushi" onclick="selectCity('海口市')">海口市</div>
-                <div class="city-item-row" data-pinyin="huhehaoteshi" onclick="selectCity('呼和浩特市')">呼和浩特市</div>
-                <div class="city-item-row" data-pinyin="huizhoushi" onclick="selectCity('惠州市')">惠州市</div>
               </div>
 
-              <!-- J -->
-              <div class="city-group-block" id="city-group-J">
-                <div class="city-group-title" id="city-anchor-J">J</div>
-                <div class="city-item-row" data-pinyin="jinanshi" onclick="selectCity('济南市')">济南市</div>
-                <div class="city-item-row" data-pinyin="jiaxingshi" onclick="selectCity('嘉兴市')">嘉兴市</div>
-                <div class="city-item-row" data-pinyin="jinhuashi" onclick="selectCity('金华市')">金华市</div>
-                <div class="city-item-row" data-pinyin="jiujiangshi" onclick="selectCity('九江市')">九江市</div>
-                <div class="city-item-row" data-pinyin="jingzhoushi" onclick="selectCity('荆州市')">荆州市</div>
-              </div>
-
-              <!-- K -->
-              <div class="city-group-block" id="city-group-K">
-                <div class="city-group-title" id="city-anchor-K">K</div>
-                <div class="city-item-row" data-pinyin="kunmingshi" onclick="selectCity('昆明市')">昆明市</div>
-                <div class="city-item-row" data-pinyin="kaifengshi" onclick="selectCity('开封市')">开封市</div>
-                <div class="city-item-row" data-pinyin="kelamayishi" onclick="selectCity('克拉玛依市')">克拉玛依市</div>
-              </div>
-
-              <!-- L -->
-              <div class="city-group-block" id="city-group-L">
-                <div class="city-group-title" id="city-anchor-L">L</div>
-                <div class="city-item-row" data-pinyin="lanzhoushi" onclick="selectCity('兰州市')">兰州市</div>
-                <div class="city-item-row" data-pinyin="luoyangshi" onclick="selectCity('洛阳市')">洛阳市</div>
-                <div class="city-item-row" data-pinyin="lianyungangshi" onclick="selectCity('连云港市')">连云港市</div>
-                <div class="city-item-row" data-pinyin="linyishi" onclick="selectCity('临沂市')">临沂市</div>
-                <div class="city-item-row" data-pinyin="liuzhoushi" onclick="selectCity('柳州市')">柳州市</div>
-              </div>
-
-              <!-- M -->
-              <div class="city-group-block" id="city-group-M">
-                <div class="city-group-title" id="city-anchor-M">M</div>
-                <div class="city-item-row" data-pinyin="mianyangshi" onclick="selectCity('绵阳市')">绵阳市</div>
-                <div class="city-item-row" data-pinyin="mudanjiangshi" onclick="selectCity('牡丹江市')">牡丹江市</div>
-                <div class="city-item-row" data-pinyin="maanshanshi" onclick="selectCity('马鞍山市')">马鞍山市</div>
-              </div>
-
-              <!-- N -->
-              <div class="city-group-block" id="city-group-N">
-                <div class="city-group-title" id="city-anchor-N">N</div>
-                <div class="city-item-row" data-pinyin="nanjingshi" onclick="selectCity('南京市')">南京市</div>
-                <div class="city-item-row" data-pinyin="ningboshi" onclick="selectCity('宁波市')">宁波市</div>
-                <div class="city-item-row" data-pinyin="nanningshi" onclick="selectCity('南宁市')">南宁市</div>
-                <div class="city-item-row" data-pinyin="nanchangshi" onclick="selectCity('南昌市')">南昌市</div>
-                <div class="city-item-row" data-pinyin="nantongshi" onclick="selectCity('南通市')">南通市</div>
-              </div>
-
-              <!-- P -->
-              <div class="city-group-block" id="city-group-P">
-                <div class="city-group-title" id="city-anchor-P">P</div>
-                <div class="city-item-row" data-pinyin="pingdingshanshi" onclick="selectCity('平顶山市')">平顶山市</div>
-                <div class="city-item-row" data-pinyin="panjinshi" onclick="selectCity('盘锦市')">盘锦市</div>
-                <div class="city-item-row" data-pinyin="putianshi" onclick="selectCity('莆田市')">莆田市</div>
-              </div>
-
-              <!-- Q -->
-              <div class="city-group-block" id="city-group-Q">
-                <div class="city-group-title" id="city-anchor-Q">Q</div>
-                <div class="city-item-row" data-pinyin="qingdaoshi" onclick="selectCity('青岛市')">青岛市</div>
-                <div class="city-item-row" data-pinyin="quanzhoushi" onclick="selectCity('泉州市')">泉州市</div>
-                <div class="city-item-row" data-pinyin="qinhuangdaoshi" onclick="selectCity('秦皇岛市')">秦皇岛市</div>
-                <div class="city-item-row" data-pinyin="qiqihaershi" onclick="selectCity('齐齐哈尔市')">齐齐哈尔市</div>
-              </div>
-
-              <!-- R -->
-              <div class="city-group-block" id="city-group-R">
-                <div class="city-group-title" id="city-anchor-R">R</div>
-                <div class="city-item-row" data-pinyin="rizhaoshi" onclick="selectCity('日照市')">日照市</div>
-                <div class="city-item-row" data-pinyin="rikazeshi" onclick="selectCity('日喀则市')">日喀则市</div>
-              </div>
-
-              <!-- S -->
               <div class="city-group-block" id="city-group-S">
                 <div class="city-group-title" id="city-anchor-S">S</div>
                 <div class="city-item-row" data-pinyin="shanghaishi" onclick="selectCity('上海市')">上海市</div>
                 <div class="city-item-row" data-pinyin="shenzhenshi" onclick="selectCity('深圳市')">深圳市</div>
-                <div class="city-item-row" data-pinyin="shenyangshi" onclick="selectCity('沈阳市')">沈阳市</div>
-                <div class="city-item-row" data-pinyin="shijiazhuangshi" onclick="selectCity('石家庄市')">石家庄市</div>
                 <div class="city-item-row" data-pinyin="suzhoushi" onclick="selectCity('苏州市')">苏州市</div>
-                <div class="city-item-row" data-pinyin="sanyashi" onclick="selectCity('三亚市')">三亚市</div>
-                <div class="city-item-row" data-pinyin="shaoxingshi" onclick="selectCity('绍兴市')">绍兴市</div>
-                <div class="city-item-row" data-pinyin="shantoushi" onclick="selectCity('汕头市')">汕头市</div>
               </div>
 
-              <!-- T -->
-              <div class="city-group-block" id="city-group-T">
-                <div class="city-group-title" id="city-anchor-T">T</div>
-                <div class="city-item-row" data-pinyin="tianjinshi" onclick="selectCity('天津市')">天津市</div>
-                <div class="city-item-row" data-pinyin="taiyuanshi" onclick="selectCity('太原市')">太原市</div>
-                <div class="city-item-row" data-pinyin="tangshanshi" onclick="selectCity('唐山市')">唐山市</div>
-                <div class="city-item-row" data-pinyin="taizhoushi" onclick="selectCity('台州市')">台州市</div>
-                <div class="city-item-row" data-pinyin="taianshi" onclick="selectCity('泰安市')">泰安市</div>
-              </div>
-
-              <!-- W -->
               <div class="city-group-block" id="city-group-W">
                 <div class="city-group-title" id="city-anchor-W">W</div>
                 <div class="city-item-row selected" data-pinyin="wuhanshi" onclick="selectCity('武汉市')">武汉市</div>
                 <div class="city-item-row" data-pinyin="wuxishi" onclick="selectCity('无锡市')">无锡市</div>
                 <div class="city-item-row" data-pinyin="wenzhoushi" onclick="selectCity('温州市')">温州市</div>
-                <div class="city-item-row" data-pinyin="wulumuqishi" onclick="selectCity('乌鲁木齐市')">乌鲁木齐市</div>
-                <div class="city-item-row" data-pinyin="weifangshi" onclick="selectCity('潍坊市')">潍坊市</div>
-                <div class="city-item-row" data-pinyin="weihaishi" onclick="selectCity('威海市')">威海市</div>
-                <div class="city-item-row" data-pinyin="wuhushi" onclick="selectCity('芜湖市')">芜湖市</div>
               </div>
 
-              <!-- X -->
-              <div class="city-group-block" id="city-group-X">
-                <div class="city-group-title" id="city-anchor-X">X</div>
-                <div class="city-item-row" data-pinyin="xianshi" onclick="selectCity('西安市')">西安市</div>
-                <div class="city-item-row" data-pinyin="xiamenshi" onclick="selectCity('厦门市')">厦门市</div>
-                <div class="city-item-row" data-pinyin="xuzhoushi" onclick="selectCity('徐州市')">徐州市</div>
-                <div class="city-item-row" data-pinyin="xiangyangshi" onclick="selectCity('襄阳市')">襄阳市</div>
-                <div class="city-item-row" data-pinyin="xingtaishi" onclick="selectCity('邢台市')">邢台市</div>
-                <div class="city-item-row" data-pinyin="xiningshi" onclick="selectCity('西宁市')">西宁市</div>
-              </div>
-
-              <!-- Y -->
-              <div class="city-group-block" id="city-group-Y">
-                <div class="city-group-title" id="city-anchor-Y">Y</div>
-                <div class="city-item-row" data-pinyin="yinchuanshi" onclick="selectCity('银川市')">银川市</div>
-                <div class="city-item-row" data-pinyin="yantaishi" onclick="selectCity('烟台市')">烟台市</div>
-                <div class="city-item-row" data-pinyin="yangzhoushi" onclick="selectCity('扬州市')">扬州市</div>
-                <div class="city-item-row" data-pinyin="yanchengshi" onclick="selectCity('盐城市')">盐城市</div>
-                <div class="city-item-row" data-pinyin="yichangshi" onclick="selectCity('宜昌市')">宜昌市</div>
-                <div class="city-item-row" data-pinyin="yueyangshi" onclick="selectCity('岳阳市')">岳阳市</div>
-              </div>
-
-              <!-- Z -->
               <div class="city-group-block" id="city-group-Z">
                 <div class="city-group-title" id="city-anchor-Z">Z</div>
                 <div class="city-item-row" data-pinyin="zhengzhoushi" onclick="selectCity('郑州市')">郑州市</div>
                 <div class="city-item-row" data-pinyin="zhuhaishi" onclick="selectCity('珠海市')">珠海市</div>
-                <div class="city-item-row" data-pinyin="zhongshanshi" onclick="selectCity('中山市')">中山市</div>
-                <div class="city-item-row" data-pinyin="ziboshi" onclick="selectCity('淄博市')">淄博市</div>
-                <div class="city-item-row" data-pinyin="zhenjiangshi" onclick="selectCity('镇江市')">镇江市</div>
-                <div class="city-item-row" data-pinyin="zhanjiangshi" onclick="selectCity('湛江市')">湛江市</div>
-                <div class="city-item-row" data-pinyin="zunyishi" onclick="selectCity('遵义市')">遵义市</div>
               </div>
-
             </div>
-
           </div>
 
-          <!-- 右侧字母索引栏 (1:1 截图二：A B C D E F G H J K L M N P Q R S T W X Y Z) -->
+          <!-- 右侧字母快速索引栏 -->
           <div class="city-index-sidebar" id="cityIndexSidebar">
             <span class="city-index-letter" onclick="scrollToLetter('A')">A</span>
             <span class="city-index-letter" onclick="scrollToLetter('B')">B</span>
             <span class="city-index-letter" onclick="scrollToLetter('C')">C</span>
-            <span class="city-index-letter" onclick="scrollToLetter('D')">D</span>
-            <span class="city-index-letter" onclick="scrollToLetter('E')">E</span>
-            <span class="city-index-letter" onclick="scrollToLetter('F')">F</span>
             <span class="city-index-letter" onclick="scrollToLetter('G')">G</span>
             <span class="city-index-letter" onclick="scrollToLetter('H')">H</span>
-            <span class="city-index-letter" onclick="scrollToLetter('J')">J</span>
-            <span class="city-index-letter" onclick="scrollToLetter('K')">K</span>
-            <span class="city-index-letter" onclick="scrollToLetter('L')">L</span>
-            <span class="city-index-letter" onclick="scrollToLetter('M')">M</span>
-            <span class="city-index-letter" onclick="scrollToLetter('N')">N</span>
-            <span class="city-index-letter" onclick="scrollToLetter('P')">P</span>
-            <span class="city-index-letter" onclick="scrollToLetter('Q')">Q</span>
-            <span class="city-index-letter" onclick="scrollToLetter('R')">R</span>
             <span class="city-index-letter" onclick="scrollToLetter('S')">S</span>
-            <span class="city-index-letter" onclick="scrollToLetter('T')">T</span>
             <span class="city-index-letter" onclick="scrollToLetter('W')">W</span>
-            <span class="city-index-letter" onclick="scrollToLetter('X')">X</span>
-            <span class="city-index-letter" onclick="scrollToLetter('Y')">Y</span>
             <span class="city-index-letter" onclick="scrollToLetter('Z')">Z</span>
           </div>
 
         </div>
       </div>
 
-      <!-- 底部导航 (仅首页展示) -->
+      <!-- 底部全局导航 (仅首页展示) -->
       <div class="bottom-tab-bar" id="homeBottomBar">
         <div class="tab-nav-btn active" onclick="navigateToPage('home')">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
@@ -2045,7 +1721,7 @@
         </div>
         <div class="tab-nav-btn">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"/></svg>
-          <span>自定义</span>
+          <span>分类</span>
         </div>
         <div class="tab-nav-btn">
           <div class="badge-icon">
@@ -2060,17 +1736,18 @@
         </div>
       </div>
 
-      <!-- Toast 提示 -->
+      <!-- Toast 提示容器 -->
       <div class="toast-box" id="appToast">提示内容</div>
     </div>
   </div>
 
   <script>
-    let selectedVouchers = [];
+    let selectedPoints = [];
     let enteredPin = '';
     let isAgreed = true;
+    let currentSelectedCity = '武汉';
 
-    // 页面跳转（直接切换，不使用右侧滑入）
+    // 页面跳转
     function navigateToPage(pageId) {
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
       const target = document.getElementById(`page-${pageId}`);
@@ -2089,60 +1766,52 @@
     // 服务费与折算配置
     // 公式：（选中金额 - 服务费固定金额）÷（1 + 服务费费率）
     // 取整规则：保留两位小数，向下取整
+    // 例如：固定服务费 2 元，费率 5%：选中 35 元 => (35-2)/1.05 = 31.42857 => 31.42
     const SERVICE_FIXED_FEE = 2.00; // 运营商固定服务费 2元
-    const SERVICE_FEE_RATE = 0.00;  // 服务费费率 0%
+    const SERVICE_FEE_RATE = 0.05;  // 服务费费率 5%
 
     function calculateConvertedBalance(amount) {
       const raw = (amount - SERVICE_FIXED_FEE) / (1 + SERVICE_FEE_RATE);
-      // 避免浮点数精度微差
       const adjusted = Math.round(raw * 10000) / 10000;
       return Math.floor(adjusted * 100) / 100;
     }
 
-    // 卡券点击与顺序数字管理
-    function toggleSelectVoucher(element) {
-      const idx = selectedVouchers.indexOf(element);
+    // 积分点击选择交互
+    function toggleSelectPoint(element) {
+      const idx = selectedPoints.indexOf(element);
       if (idx > -1) {
-        selectedVouchers.splice(idx, 1);
+        selectedPoints.splice(idx, 1);
         element.classList.remove('selected');
       } else {
-        selectedVouchers.push(element);
+        selectedPoints.push(element);
         element.classList.add('selected');
       }
-      refreshSequenceBadges();
+      refreshPointsState();
     }
 
-    function refreshSequenceBadges() {
+    // 刷新积分选中状态与计算折算余额
+    function refreshPointsState() {
       let totalAmount = 0;
-      const allCards = document.querySelectorAll('.voucher-card');
-      allCards.forEach(card => {
-        const orderBadge = card.querySelector('.order-badge');
-        const pos = selectedVouchers.indexOf(card);
-        if (pos > -1) {
-          card.classList.add('selected');
-          orderBadge.innerText = (pos + 1); // 1, 2, 3...
-          const amt = parseFloat(card.getAttribute('data-amount') || 0);
-          totalAmount += amt;
-        } else {
-          card.classList.remove('selected');
-          orderBadge.innerText = '';
-        }
+      selectedPoints.forEach(item => {
+        const amt = parseFloat(item.getAttribute('data-amount') || 0);
+        totalAmount += amt;
       });
 
-      const notice = document.getElementById('voucherNoticeText');
-      const btnConfirm = document.getElementById('btnConfirmVouchers');
+      const notice = document.getElementById('pointsNoticeText');
+      const btnConfirm = document.getElementById('btnConfirmPoints');
 
-      if (selectedVouchers.length > 0) {
-        // 计算折算余额：（选中金额 - 服务费固定金额）÷（1 + 服务费费率），向下取整保留两位小数
+      if (selectedPoints.length > 0) {
+        // 计算折算余额：（选中金额 - 服务费固定金额）÷（1 + 服务费费率），向下取整
         const converted = calculateConvertedBalance(totalAmount);
         const convertedStr = converted.toFixed(2);
 
-        // 选中时横幅文案：“已勾选x张，折合余额xx元”
+        // 选中时横幅展示：“折合余额xx” (积分无单位)
         if (notice) {
-          notice.innerHTML = `已勾选<span style="color:var(--primary-red); font-weight:600;"> ${selectedVouchers.length} </span>张，折合余额<span style="color:var(--primary-red); font-weight:600;"> ${convertedStr} </span>元`;
+          notice.className = 'points-notice-text selected-state';
+          notice.innerHTML = `折合余额 <span style="font-size: 17px; font-weight: 800;">${convertedStr}</span>`;
         }
 
-        // 折算余额≤0时，确认键置灰
+        // 折算余额 ≤ 0 时，确认键置灰
         if (btnConfirm) {
           if (converted <= 0) {
             btnConfirm.disabled = true;
@@ -2153,11 +1822,11 @@
           }
         }
       } else {
-        // 未勾选默认提示文案
+        // 未勾选默认三点提示文案
         if (notice) {
-          notice.innerHTML = `1、进入资源前请先选择要使用的卡券<br>2、将自动计算并转换该资源可消费余额<br>3、交易完成，会按实际金额，按勾选顺序扣减卡券余额`;
+          notice.className = 'points-notice-text';
+          notice.innerHTML = `1、进入资源前请先勾选要使用的积分<br>2、将自动计算并转换该资源可消费余额<br>3、交易完成，会按实际金额，根据积分有效期由近及远顺序扣减`;
         }
-        // 未勾选时确认键置灰
         if (btnConfirm) {
           btnConfirm.disabled = true;
           btnConfirm.classList.add('disabled');
@@ -2167,11 +1836,11 @@
 
     // 密码弹窗控制
     function openPasswordModal() {
-      if (selectedVouchers.length === 0) {
-        showToast('请至少选择一张卡券');
+      if (selectedPoints.length === 0) {
+        showToast('请至少选择一项积分');
         return;
       }
-      let totalAmount = selectedVouchers.reduce((acc, card) => acc + parseFloat(card.getAttribute('data-amount') || 0), 0);
+      let totalAmount = selectedPoints.reduce((acc, item) => acc + parseFloat(item.getAttribute('data-amount') || 0), 0);
       let converted = calculateConvertedBalance(totalAmount);
       if (converted <= 0) {
         showToast('折算余额不足（≤0），无法确认');
@@ -2198,7 +1867,6 @@
       }
       updatePinDisplay();
 
-      // 输入满 6 位后，直接切换至联合登录授权页 (截图五)
       if (enteredPin.length === 6) {
         setTimeout(() => {
           closePasswordModal();
@@ -2236,12 +1904,10 @@
         showToast('请先勾选并同意用户协议');
         return;
       }
-      showToast('授权成功，正在进入 qm电影H5...');
+      showToast('授权成功，正在进入特色消费资源...');
     }
 
     // ================= 城市选择弹窗逻辑 =================
-    let currentSelectedCity = '武汉';
-
     function openCityModal() {
       const overlay = document.getElementById('cityModalOverlay');
       if (overlay) {
@@ -2268,13 +1934,12 @@
     }
 
     function selectCity(cityName) {
-      // 导航栏展示精简城市名（如“武汉”），弹窗头部保留完整名（如“武汉市”）
       const shortName = cityName.replace(/市|地区|藏族羌族自治州|土家族苗族自治州|盟/g, '');
       const displayName = shortName.length > 4 ? shortName.slice(0, 4) : shortName;
       currentSelectedCity = displayName;
 
-      const voucherLoc = document.getElementById('voucherLocationText');
-      if (voucherLoc) voucherLoc.innerText = displayName;
+      const pointsLoc = document.getElementById('pointsLocationText');
+      if (pointsLoc) pointsLoc.innerText = displayName;
 
       const homeLoc = document.getElementById('homeLocationText');
       if (homeLoc) homeLoc.innerText = displayName;
@@ -2282,7 +1947,6 @@
       const modalLoc = document.getElementById('modalCurrentCityText');
       if (modalLoc) modalLoc.innerText = cityName;
 
-      // 更新热门城市高亮状态
       document.querySelectorAll('.city-hot-pill').forEach(pill => {
         if (pill.innerText === cityName || pill.innerText === displayName || pill.innerText === (displayName + '市')) {
           pill.classList.add('active');
@@ -2291,7 +1955,6 @@
         }
       });
 
-      // 更新列表项选中高亮
       document.querySelectorAll('.city-item-row').forEach(row => {
         if (row.innerText === cityName) {
           row.classList.add('selected');
@@ -2505,7 +2168,7 @@
             showToast('支付密码设置成功');
             if (resendTimer) { clearInterval(resendTimer); resendTimer = null; }
             setTimeout(() => {
-              navigateToPage('voucher');
+              navigateToPage('points');
             }, 800);
           }, 200);
         }
@@ -2539,7 +2202,7 @@
               showToast('支付密码设置成功');
               if (resendTimer) { clearInterval(resendTimer); resendTimer = null; }
               setTimeout(() => {
-                navigateToPage('voucher');
+                navigateToPage('points');
               }, 800);
             }, 200);
           }
@@ -2578,10 +2241,10 @@
       }, 1800);
     }
 
-    // 初始状态：未选中任何卡券
+    // 默认初始状态：未选中任何积分
     window.addEventListener('DOMContentLoaded', () => {
-      selectedVouchers = [];
-      refreshSequenceBadges();
+      selectedPoints = [];
+      refreshPointsState();
       initVerifyTouchInput();
     });
   </script>
