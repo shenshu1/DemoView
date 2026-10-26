@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>订单详情页 - 淘福客特色商超扫码购 (新模式)</title>
+  <style>
+    :root {
+      --primary-red: #ba1e24;
+      --primary-red-hover: #9c151b;
+      --bg-page: #f5f5f7;
+      --bg-card: #ffffff;
+      --text-main: #222222;
+      --text-secondary: #666666;
+      --text-muted: #999999;
+      --border-color: #f0f0f0;
+      --font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Segoe UI", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    body {
+      font-family: var(--font-family);
+      background-color: #e2e8f0;
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 16px 8px 30px;
+    }
+
+    /* 顶部原型操作控制台 */
+    .prototype-controller {
+      width: 100%;
+      max-width: 412px;
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 14px 16px;
+      margin-bottom: 14px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+      border: 1px solid #cbd5e1;
+    }
+
+    .controller-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .controller-tag {
+      background: #f1f5f9;
+      color: #475569;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .control-group {
+      margin-bottom: 10px;
+    }
+    .control-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .control-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #64748b;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .pill-tabs {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .pill-btn {
+      padding: 6px 12px;
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      color: #334155;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .pill-btn:hover {
+      background: #e2e8f0;
+    }
+
+    .pill-btn.active {
+      background: #0f172a;
+      color: #ffffff;
+      border-color: #0f172a;
+    }
+
+    .pill-btn.pill-highlight {
+      background: #fef2f2;
+      color: #b91c1c;
+      border-color: #fca5a5;
+    }
+    .pill-btn.pill-highlight.active {
+      background: #b91c1c;
+      color: #ffffff;
+      border-color: #b91c1c;
+    }
+
+    /* 手机真机容器 (1:1 还原图 1) */
+    .phone-wrapper {
+      width: 100%;
+      max-width: 412px;
+      height: 740px;
+      background: var(--bg-page);
+      border-radius: 36px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.18), 0 0 0 10px #1e293b, 0 0 0 12px #0f172a;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* 顶部灵动岛与系统栏 */
+    .status-bar {
+      height: 38px;
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #000;
+      flex-shrink: 0;
+      z-index: 10;
+    }
+
+    .status-icons {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .status-icons svg {
+      width: 15px;
+      height: 15px;
+      fill: currentColor;
+    }
+
+    /* 订单顶部导航栏 (1:1 图 1) */
+    .order-navbar {
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 14px;
+      background: transparent;
+      flex-shrink: 0;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+    }
+
+    .nav-back-btn {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .nav-order-title {
+      font-size: 17px;
+      font-weight: 600;
+      color: #111;
+      letter-spacing: -0.2px;
+    }
+
+    /* 滚动主体区域 */
+    .order-scroll-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px 14px 80px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* 状态说明横幅 */
+    .status-alert-banner {
+      background: #fff8eb;
+      border: 1px solid #fee3b8;
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .status-alert-banner svg {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .status-alert-text {
+      font-size: 12px;
+      line-height: 1.5;
+      color: #b45309;
+      font-weight: 500;
+    }
+
+    .status-alert-banner.completed {
+      background: #f0fdf4;
+      border-color: #bbf7d0;
+    }
+    .status-alert-banner.completed .status-alert-text {
+      color: #15803d;
+    }
+
+    .status-alert-banner.closed {
+      background: #f8fafc;
+      border-color: #e2e8f0;
+    }
+    .status-alert-banner.closed .status-alert-text {
+      color: #64748b;
+    }
+
+    /* 卡片通用样式 (1:1 图 1 白底圆角卡片) */
+    .order-detail-card {
+      background: var(--bg-card);
+      border-radius: 12px;
+      padding: 16px 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+    }
+
+    /* 卡片 1 头部：品牌 Logo + 扫码购-麦德龙 (图 1) */
+    .merchant-card-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid #f5f5f5;
+      margin-bottom: 12px;
+    }
+
+    .brand-logo-frame {
+      width: 58px;
+      height: 58px;
+      border-radius: 10px;
+      overflow: hidden;
+      flex-shrink: 0;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    }
+
+    .merchant-name-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #111;
+      letter-spacing: -0.2px;
+    }
+
+    /* 费用明细列表 (1:1 图 1) */
+    .fee-list-box {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .fee-item-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 14px;
+      color: var(--text-main);
+    }
+
+    .fee-item-row.actual-pay-row {
+      padding-bottom: 4px;
+    }
+
+    .fee-item-row.actual-pay-row .row-label {
+      font-size: 15px;
+      font-weight: 500;
+      color: #222;
+    }
+
+    .fee-item-row.actual-pay-row .row-val {
+      font-size: 20px;
+      font-weight: 800;
+      color: #e53935;
+      letter-spacing: -0.5px;
+    }
+
+    /* 实际核销与退款高亮行 (完成态展示) */
+    .fee-item-row.verify-actual-row {
+      background: #fff8f8;
+      padding: 6px 8px;
+      border-radius: 6px;
+      border: 1px dashed #ffcdd2;
+    }
+    .fee-item-row.verify-actual-row .row-label {
+      font-weight: 600;
+      color: #b71c1c;
+    }
+    .fee-item-row.verify-actual-row .row-val {
+      font-weight: 700;
+      color: #b71c1c;
+    }
+
+    .fee-item-row.auto-refund-row {
+      background: #f0fdf4;
+      padding: 6px 8px;
+      border-radius: 6px;
+      border: 1px dashed #bbf7d0;
+    }
+    .fee-item-row.auto-refund-row .row-label {
+      font-weight: 600;
+      color: #15803d;
+    }
+    .fee-item-row.auto-refund-row .row-val {
+      font-weight: 700;
+      color: #15803d;
+    }
+
+    .row-label {
+      color: #4b5563;
+      font-size: 13px;
+    }
+
+    .row-val {
+      font-size: 14px;
+      font-weight: 500;
+      color: #1f2937;
+    }
+
+    .row-val.discount {
+      color: #4b5563;
+    }
+
+    /* 卡片 2：订单基础信息 (1:1 图 1) */
+    .order-info-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .order-info-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 13px;
+    }
+
+    .info-line-label {
+      color: #4b5563;
+    }
+
+    .info-line-val {
+      color: #1f2937;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .copy-action-btn {
+      color: #222;
+      font-size: 12px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      padding-left: 6px;
+      border-left: 1px solid #d1d5db;
+      font-weight: 500;
+    }
+    .copy-action-btn:hover {
+      color: #e53935;
+    }
+
+    /* 底部提示说明文案 (1:1 图 1 底部浅灰文字) */
+    .order-footer-notice {
+      font-size: 12px;
+      line-height: 1.6;
+      color: #9ca3af;
+      padding: 4px 6px 20px;
+    }
+
+    /* 底部固定操作栏 (1:1 图 1 + 图 2 最新规范) */
+    .order-fixed-bottom-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: #ffffff;
+      border-top: 1px solid #eeeeee;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      z-index: 20;
+    }
+
+    /* 左侧客服耳机图标 (1:1 图 1) */
+    .customer-service-icon-btn {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #374151;
+      border-radius: 50%;
+      transition: background 0.15s;
+    }
+    .customer-service-icon-btn:hover {
+      background: #f3f4f6;
+    }
+
+    /* 右侧动作按钮区 (随状态流转：待核销展示【整单售后】+【出示付款码】；完成态隐藏【整单售后】) */
+    .bottom-action-buttons-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* 按钮 1：整单售后 (次级白色描边圆角按钮，图 2 最新铁律) */
+    .btn-action-outline {
+      padding: 8px 16px;
+      border: 1px solid #d1d5db;
+      background: #ffffff;
+      color: #374151;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .btn-action-outline:hover {
+      background: #f9fafb;
+      border-color: #9ca3af;
+    }
+
+    /* 按钮 2：出示付款码 (主色大红渐变圆角按钮，图 2 最新铁律) */
+    .btn-action-primary {
+      padding: 8px 18px;
+      background: linear-gradient(135deg, #e53935, #c62828);
+      color: #ffffff;
+      border: none;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(229, 57, 53, 0.3);
+      transition: all 0.15s ease;
+    }
+    .btn-action-primary:hover {
+      box-shadow: 0 4px 12px rgba(229, 57, 53, 0.4);
+    }
+
+    .btn-action-disabled {
+      padding: 8px 16px;
+      background: #f3f4f6;
+      border: 1px solid #e5e7eb;
+      color: #9ca3af;
+      border-radius: 20px;
+      font-size: 13px;
+      cursor: not-allowed;
+    }
+
+    .offline-aftersales-hint {
+      font-size: 12px;
+      color: #6b7280;
+      margin-right: 4px;
+    }
+
+    /* 二次确认弹窗 */
+    .modal-backdrop {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.55);
+      backdrop-filter: blur(2px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 24px;
+    }
+
+    .modal-window {
+      width: 100%;
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 20px 20px 16px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+      animation: modalFadeIn 0.2s ease-out;
+    }
+
+    @keyframes modalFadeIn {
+      from { transform: scale(0.92); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .modal-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #111;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .modal-desc {
+      font-size: 13px;
+      color: #666;
+      line-height: 1.5;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .modal-btn-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .modal-btn {
+      flex: 1;
+      padding: 10px 0;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      text-align: center;
+    }
+
+    .modal-btn.btn-cancel {
+      background: #f1f5f9;
+      color: #475569;
+    }
+
+    .modal-btn.btn-confirm {
+      background: #e53935;
+      color: #fff;
+    }
+
+    /* Toast 浮层 */
+    .toast-overlay {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.85);
+      color: #ffffff;
+      font-size: 13px;
+      padding: 10px 18px;
+      border-radius: 20px;
+      z-index: 200;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      white-space: nowrap;
+    }
+    .toast-overlay.active {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 顶部交互控制台 (专门供 Ryan 和评审人员切换核对状态) -->
+  <div class="prototype-controller">
+    <div class="controller-title">
+      <span>⚙️ 订单详情页交互控制</span>
+      <span class="controller-tag">飞书文档 6.2 规范</span>
+    </div>
+
+    <!-- 状态切换 -->
+    <div class="control-group">
+      <div class="control-label">1. 订单状态流转测试：</div>
+      <div class="pill-tabs">
+        <button class="pill-btn pill-highlight active" id="btnStatusWaiting" onclick="switchState('waiting')">
+          待核销 (图 1·展示【整单售后】+【出示付款码】)
+        </button>
+        <button class="pill-btn pill-highlight" id="btnStatusCompleted" onclick="switchState('completed_refund')">
+          交易完成 (图 2 铁律·隐藏【整单售后】)
+        </button>
+        <button class="pill-btn" id="btnStatusClosed" onclick="switchState('closed')">
+          交易关闭 (整单全退)
+        </button>
+      </div>
+    </div>
+
+    <!-- 品牌切换 -->
+    <div class="control-group">
+      <div class="control-label">2. 资源品牌切换：</div>
+      <div class="pill-tabs">
+        <button class="pill-btn active" id="btnBrandMetro" onclick="switchBrand('metro')">麦德龙 (图 1 默认)</button>
+        <button class="pill-btn" id="btnBrandYonghui" onclick="switchBrand('yonghui')">永辉超市</button>
+        <button class="pill-btn" id="btnBrandJingkelong" onclick="switchBrand('jingkelong')">京客隆</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 手机真机展示 (1:1 还原图 1) -->
+  <div class="phone-wrapper">
+
+    <!-- 顶部状态栏 -->
+    <div class="status-bar">
+      <span>9:41</span>
+      <div class="status-icons">
+        <svg viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L4.35 18.25c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l.64-.64C8.03 20.26 9.93 21 12 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm0 16c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.66-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M17 4h-3V2h-4v2H7c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H7V6h10v14z"/></svg>
+      </div>
+    </div>
+
+    <!-- 导航栏：返回箭 + 状态标题 (图 1 发货中) -->
+    <div class="order-navbar">
+      <div class="nav-back-btn" onclick="showToast('返回商城首页')">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#222" stroke-width="2.4"><path d="M15 18l-6-6 6-6"/></svg>
+      </div>
+      <div class="nav-order-title" id="pageNavStatusTitle">发货中</div>
+      <div style="width: 28px;"></div>
+    </div>
+
+    <!-- 页面可滚动主体 -->
+    <div class="order-scroll-content">
+
+      <!-- 状态横幅提示条 -->
+      <div class="status-alert-banner" id="statusAlertBanner">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+        <div class="status-alert-text" id="statusAlertText">
+          待到店核销：请在 24 小时内出示付款码核销，超时将自动全额退款。
+        </div>
+      </div>
+
+      <!-- 卡片 1：商家品牌与费用明细卡片 (1:1 图 1) -->
+      <div class="order-detail-card">
+        <!-- 商家信息 (图 1: 麦德龙黄色小熊Logo + 扫码购-麦德龙) -->
+        <div class="merchant-card-header">
+          <div class="brand-logo-frame" id="merchantBrandLogo">
+            <!-- 麦德龙矢量 Logo -->
+            <svg width="100%" height="100%" viewBox="0 0 100 100">
+              <rect width="100" height="100" rx="12" fill="#003882"/>
+              <path d="M22 62 L22 36 L34 50 L46 36 L46 62 L39 62 L39 46 L34 53 L29 46 L29 62 Z" fill="#ffcc00"/>
+              <circle cx="70" cy="46" r="14" fill="#ffcc00"/>
+              <circle cx="65" cy="42" r="2.5" fill="#003882"/>
+              <circle cx="75" cy="42" r="2.5" fill="#003882"/>
+              <text x="50" y="88" fill="#fff" font-size="14" font-weight="bold" text-anchor="middle">麦德龙</text>
+            </svg>
+          </div>
+          <div class="merchant-name-title" id="merchantBrandName">扫码购-麦德龙</div>
+        </div>
+
+        <!-- 费用明细列表 (1:1 图 1) -->
+        <div class="fee-list-box">
+          <!-- 实付 (图 1 大红粗体: 0美元/0元) -->
+          <div class="fee-item-row actual-pay-row">
+            <span class="row-label">实付</span>
+            <span class="row-val" id="feeActualPayVal">0元</span>
+          </div>
+
+          <!-- 仅在完成态展示：门店实际核销金额 -->
+          <div class="fee-item-row verify-actual-row" id="rowVerifyActual" style="display: none;">
+            <span class="row-label">门店实际核销金额</span>
+            <span class="row-val" id="feeVerifyVal">8.00元</span>
+          </div>
+
+          <!-- 仅在完成态展示：自动退款金额 (原路已退还) -->
+          <div class="fee-item-row auto-refund-row" id="rowAutoRefund" style="display: none;">
+            <span class="row-label">自动退款金额 (原路已退还)</span>
+            <span class="row-val" id="feeRefundVal">2.00元</span>
+          </div>
+
+          <!-- 商品金额 -->
+          <div class="fee-item-row">
+            <span class="row-label">商品金额</span>
+            <span class="row-val" id="feeGoodsAmountVal">10.00元</span>
+          </div>
+
+          <!-- 服务费 -->
+          <div class="fee-item-row">
+            <span class="row-label">服务费</span>
+            <span class="row-val" id="feeServiceAmountVal">0.00元</span>
+          </div>
+
+          <!-- 优惠券 -->
+          <div class="fee-item-row">
+            <span class="row-label">优惠券</span>
+            <span class="row-val discount">-0元</span>
+          </div>
+
+          <!-- 来福优选券 -->
+          <div class="fee-item-row">
+            <span class="row-label">来福优选券</span>
+            <span class="row-val discount" id="feeCouponDeductVal">-10.00元</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 卡片 2：订单基础信息 (1:1 图 1) -->
+      <div class="order-detail-card">
+        <div class="order-info-group">
+          <!-- 订单编号 -->
+          <div class="order-info-line">
+            <span class="info-line-label">订单编号</span>
+            <div class="info-line-val">
+              <span id="orderSnDisplay">2026 1009 2047 4512 043</span>
+              <span class="copy-action-btn" onclick="copyOrderNumber()">复制</span>
+            </div>
+          </div>
+
+          <!-- 下单时间 -->
+          <div class="order-info-line">
+            <span class="info-line-label">下单时间</span>
+            <span class="info-line-val">2026/10/09 20:47:45</span>
+          </div>
+
+          <!-- 支付时间 -->
+          <div class="order-info-line">
+            <span class="info-line-label">支付时间</span>
+            <span class="info-line-val">2026/10/09 20:47:46</span>
+          </div>
+
+          <!-- 核销时间 (核销后出现) -->
+          <div class="order-info-line" id="lineVerifyTime" style="display: none;">
+            <span class="info-line-label">核销时间</span>
+            <span class="info-line-val" id="valVerifyTime">2026/10/09 21:05:12</span>
+          </div>
+
+          <!-- 福星单号 (核销后出现) -->
+          <div class="order-info-line" id="lineFxSn" style="display: none;">
+            <span class="info-line-label">福星单号</span>
+            <span class="info-line-val" style="font-family: monospace;">FX20261009998231</span>
+          </div>
+
+          <!-- 退款时间 (退款后出现) -->
+          <div class="order-info-line" id="lineRefundTime" style="display: none;">
+            <span class="info-line-label">退款时间</span>
+            <span class="info-line-val" id="valRefundTime">2026/10/09 21:05:13</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 底部说明文案 (1:1 图 1) -->
+      <div class="order-footer-notice">
+        点击更多订单详情查看商品明细、取餐码、取票码等服务，如对订单有疑问，请点击订单编号或更多订单详情咨询进行售后或联系商家客服处理
+      </div>
+
+    </div>
+
+    <!-- 底部固定操作栏 (1:1 图 1 耳机图标 + 图 2 最新铁律按钮) -->
+    <div class="order-fixed-bottom-bar">
+      <!-- 左侧客服耳机图标 (1:1 图 1) -->
+      <div class="customer-service-icon-btn" onclick="showToast('正在为您转接在线人工客服...')">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>
+      </div>
+
+      <!-- 右侧动作按钮区 (根据 6.2 铁律随状态变化) -->
+      <div class="bottom-action-buttons-wrap" id="bottomActionArea">
+        <!-- 待核销状态：右下角展示【整单售后】+【出示付款码】两个按钮 (1:1 图 2 最新要求) -->
+        <button class="btn-action-outline" onclick="openRefundModal()">整单售后</button>
+        <button class="btn-action-primary" onclick="handleShowPayCode()">出示付款码</button>
+      </div>
+    </div>
+
+    <!-- 整单售后二次确认弹窗 (飞书文档 6.2 规范) -->
+    <div class="modal-backdrop" id="refundConfirmModal">
+      <div class="modal-window">
+        <div class="modal-title">确定申请整单售后？</div>
+        <div class="modal-desc">
+          申请整单售后后，当前福星到店付款码将立即失效，已支付预付款项将全额原路退回到原支付卡券中。
+        </div>
+        <div class="modal-btn-row">
+          <button class="modal-btn btn-cancel" onclick="closeRefundModal()">暂不申请</button>
+          <button class="modal-btn btn-confirm" onclick="confirmRefundAction()">确认整单售后</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 模拟付款码浮层 (点击出示付款码唤起) -->
+    <div class="modal-backdrop" id="payCodeModal">
+      <div class="modal-window" style="padding-top:24px;">
+        <div class="modal-title" style="margin-bottom:6px;">门店付款码</div>
+        <div style="font-size:12px; color:#888; text-align:center; margin-bottom:14px;">到店结账向收银员出示此条码/二维码</div>
+        <div style="background:#f8fafc; border:1px dashed #cbd5e1; border-radius:10px; padding:16px; display:flex; flex-direction:column; align-items:center; gap:8px;">
+          <!-- 模拟条形码 -->
+          <svg width="220" height="50" viewBox="0 0 220 50">
+            <rect width="220" height="50" fill="#fff"/>
+            <path d="M10 5 h3 v40 h-3 Z M16 5 h2 v40 h-2 Z M22 5 h5 v40 h-5 Z M30 5 h2 v40 h-2 Z M35 5 h4 v40 h-4 Z M42 5 h2 v40 h-2 Z M47 5 h6 v40 h-6 Z M56 5 h2 v40 h-2 Z M62 5 h3 v40 h-3 Z M68 5 h5 v40 h-5 Z M76 5 h2 v40 h-2 Z M82 5 h4 v40 h-4 Z M90 5 h2 v40 h-2 Z M96 5 h5 v40 h-5 Z M104 5 h3 v40 h-3 Z M110 5 h2 v40 h-2 Z M115 5 h6 v40 h-6 Z M124 5 h2 v40 h-2 Z M130 5 h4 v40 h-4 Z M138 5 h2 v40 h-2 Z M144 5 h5 v40 h-5 Z M152 5 h3 v40 h-3 Z M158 5 h2 v40 h-2 Z M164 5 h4 v40 h-4 Z M172 5 h2 v40 h-2 Z M178 5 h6 v40 h-6 Z M188 5 h3 v40 h-3 Z M194 5 h2 v40 h-2 Z M200 5 h5 v40 h-5 Z M208 5 h2 v40 h-2 Z" fill="#111"/>
+          </svg>
+          <div style="font-family:monospace; font-size:13px; font-weight:700; color:#333; letter-spacing:2px;">8890 2841 9920 1832</div>
+        </div>
+        <div style="margin-top:16px;">
+          <button class="modal-btn btn-cancel" style="width:100%;" onclick="closePayCodeModal()">关闭付款码</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 全局 Toast -->
+    <div class="toast-overlay" id="appToast">提示</div>
+
+  </div>
+
+  <script>
+    const BRAND_DATA = {
+      metro: {
+        name: '扫码购-麦德龙',
+        slogan: '【福星到店】',
+        logoSvg: `<svg width="100%" height="100%" viewBox="0 0 100 100"><rect width="100" height="100" rx="12" fill="#003882"/><path d="M22 62 L22 36 L34 50 L46 36 L46 62 L39 62 L39 46 L34 53 L29 46 L29 62 Z" fill="#ffcc00"/><circle cx="70" cy="46" r="14" fill="#ffcc00"/><circle cx="65" cy="42" r="2.5" fill="#003882"/><circle cx="75" cy="42" r="2.5" fill="#003882"/><text x="50" y="88" fill="#fff" font-size="14" font-weight="bold" text-anchor="middle">麦德龙</text></svg>`
+      },
+      yonghui: {
+        name: '扫码购-永辉超市',
+        slogan: '【福星祥鲤】',
+        logoSvg: `<svg width="100%" height="100%" viewBox="0 0 100 100"><rect width="100" height="100" rx="12" fill="#c8102e"/><path d="M24 28 L38 56 L38 74 L46 74 L46 56 L60 28 L51 28 L42 48 L33 28 Z" fill="#fff"/><circle cx="68" cy="42" r="12" fill="#ffcc00"/><text x="68" y="47" fill="#c8102e" font-size="12" font-weight="900" text-anchor="middle">YH</text><text x="50" y="90" fill="#fff" font-size="14" font-weight="bold" text-anchor="middle">永辉超市</text></svg>`
+      },
+      jingkelong: {
+        name: '扫码购-京客隆',
+        slogan: '【国中好货】',
+        logoSvg: `<svg width="100%" height="100%" viewBox="0 0 100 100"><rect width="100" height="100" rx="12" fill="#e60012"/><circle cx="50" cy="44" r="30" fill="#fff"/><text x="50" y="52" fill="#e60012" font-size="22" font-weight="900" text-anchor="middle">JKL</text><text x="50" y="90" fill="#fff" font-size="14" font-weight="bold" text-anchor="middle">京客隆</text></svg>`
+      }
+    };
+
+    let currentStatus = 'waiting';
+    let currentBrandKey = 'metro';
+
+    function switchBrand(brandKey) {
+      currentBrandKey = brandKey;
+      const b = BRAND_DATA[brandKey] || BRAND_DATA.metro;
+      document.getElementById('merchantBrandLogo').innerHTML = b.logoSvg;
+      document.getElementById('merchantBrandName').innerText = b.name;
+
+      document.querySelectorAll('#btnBrandMetro, #btnBrandYonghui, #btnBrandJingkelong').forEach(btn => btn.classList.remove('active'));
+      const activeBtn = document.getElementById(`btnBrand${brandKey.charAt(0).toUpperCase() + brandKey.slice(1)}`);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      showToast(`已切换至：${b.name}`);
+    }
+
+    function switchState(status) {
+      currentStatus = status;
+
+      // 更新控制器高亮
+      document.querySelectorAll('#btnStatusWaiting, #btnStatusCompleted, #btnStatusClosed').forEach(btn => btn.classList.remove('active'));
+      if (status === 'waiting') document.getElementById('btnStatusWaiting').classList.add('active');
+      if (status === 'completed_refund') document.getElementById('btnStatusCompleted').classList.add('active');
+      if (status === 'closed') document.getElementById('btnStatusClosed').classList.add('active');
+
+      const titleEl = document.getElementById('pageNavStatusTitle');
+      const bannerEl = document.getElementById('statusAlertBanner');
+      const bannerTextEl = document.getElementById('statusAlertText');
+      const rowVerify = document.getElementById('rowVerifyActual');
+      const rowRefund = document.getElementById('rowAutoRefund');
+      const lineVerifyTime = document.getElementById('lineVerifyTime');
+      const lineFxSn = document.getElementById('lineFxSn');
+      const lineRefundTime = document.getElementById('lineRefundTime');
+      const actionArea = document.getElementById('bottomActionArea');
+
+      if (status === 'waiting') {
+        // 待核销状态 (图 1 发货中)
+        titleEl.innerText = '发货中';
+        bannerEl.className = 'status-alert-banner';
+        bannerTextEl.innerText = '待到店核销：请在 24 小时内出示付款码核销，超时将自动全额退款。';
+
+        rowVerify.style.display = 'none';
+        rowRefund.style.display = 'none';
+        lineVerifyTime.style.display = 'none';
+        lineFxSn.style.display = 'none';
+        lineRefundTime.style.display = 'none';
+
+        // 飞书文档 6.2 铁律：右下角展示【整单售后】+【出示付款码】
+        actionArea.innerHTML = `
+          <button class="btn-action-outline" onclick="openRefundModal()">整单售后</button>
+          <button class="btn-action-primary" onclick="handleShowPayCode()">出示付款码</button>
+        `;
+      } else if (status === 'completed_refund') {
+        // 交易完成状态 (图 2 铁律：隐藏【整单售后】)
+        titleEl.innerText = '交易完成';
+        bannerEl.className = 'status-alert-banner completed';
+        bannerTextEl.innerText = '到店核销成功！实际消费 ￥8.00，未用完金额 ￥2.00 已原路退回。';
+
+        rowVerify.style.display = 'flex';
+        rowRefund.style.display = 'flex';
+        lineVerifyTime.style.display = 'flex';
+        lineFxSn.style.display = 'flex';
+        lineRefundTime.style.display = 'flex';
+
+        // 飞书文档 6.2 铁律：右下角严格隐藏【整单售后】按钮
+        actionArea.innerHTML = `
+          <span class="offline-aftersales-hint">线下售后请凭小票至门店沟通</span>
+          <button class="btn-action-outline" onclick="showToast('已查看门店消费核销凭据')">查看凭据</button>
+        `;
+      } else if (status === 'closed') {
+        // 交易关闭 (整单售后退款成功)
+        titleEl.innerText = '交易关闭';
+        bannerEl.className = 'status-alert-banner closed';
+        bannerTextEl.innerText = '订单已整单全额退款：预付 ￥10.00 已全额原路退回至您的支付卡券。';
+
+        rowVerify.style.display = 'none';
+        rowRefund.style.display = 'none';
+        lineVerifyTime.style.display = 'none';
+        lineFxSn.style.display = 'none';
+        lineRefundTime.style.display = 'flex';
+
+        actionArea.innerHTML = `
+          <button class="btn-action-disabled">已整单全额退款</button>
+        `;
+      }
+    }
+
+    // 复制订单编号
+    function copyOrderNumber() {
+      const sn = document.getElementById('orderSnDisplay').innerText;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(sn.replace(/\s+/g, ''));
+      }
+      showToast('订单编号已复制');
+    }
+
+    // 打开/关闭整单售后二次确认弹窗
+    function openRefundModal() {
+      document.getElementById('refundConfirmModal').style.display = 'flex';
+    }
+    function closeRefundModal() {
+      document.getElementById('refundConfirmModal').style.display = 'none';
+    }
+
+    // 确认整单售后
+    function confirmRefundAction() {
+      closeRefundModal();
+      showToast('整单售后申请成功！订单已关闭');
+      setTimeout(() => {
+        switchState('closed');
+      }, 400);
+    }
+
+    // 出示付款码
+    function handleShowPayCode() {
+      document.getElementById('payCodeModal').style.display = 'flex';
+    }
+    function closePayCodeModal() {
+      document.getElementById('payCodeModal').style.display = 'none';
+    }
+
+    // Toast 提示
+    let toastTimer = null;
+    function showToast(msg) {
+      const toast = document.getElementById('appToast');
+      toast.innerText = msg;
+      toast.classList.add('active');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toast.classList.remove('active');
+      }, 1800);
+    }
+
+    // 初始状态
+    switchBrand('metro');
+    switchState('waiting');
+  </script>
+</body>
+</html>
