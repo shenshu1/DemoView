@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>淘福客 - 选择积分与联合登录演示</title>
+  <title>API商城 - 选择资产与联合登录演示</title>
   <style>
     :root {
       --primary-red: #c8252c;
@@ -1251,7 +1251,7 @@
           </div>
         </div>
         <div class="title-box">
-          <div class="title-text">淘福客 - 积分专区</div>
+          <div class="title-text">API商城</div>
           <div class="domain-text">m.quanmaigo.com</div>
         </div>
         <div class="right-actions">
@@ -1291,7 +1291,7 @@
             <div class="tab-item">个护清洁</div>
             <div class="tab-item">食品</div>
             <div class="tab-item">家纺服饰</div>
-            <div class="tab-item">积分兑换</div>
+            <div class="tab-item">资产兑换</div>
             <div class="tab-item">商超专区</div>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="#999" style="flex-shrink: 0;"><path d="M6 9l6 6 6-6"/></svg>
           </div>
@@ -1304,8 +1304,8 @@
               </svg>
               <div class="banner-content">
                 <div class="banner-tag">★ 特色资源</div>
-                <div class="banner-title">积分专享 · 自由兑换</div>
-                <div class="banner-sub">进入资源前勾选积分 · 有效期由近及远扣减</div>
+                <div class="banner-title">资产专享 · 自由兑换</div>
+                <div class="banner-sub">进入资源前勾选资产 · 有效期由近及远扣减</div>
               </div>
             </div>
           </div>
@@ -1315,7 +1315,7 @@
             <div class="section-title-wrap">
               <span class="section-line"></span>
               <span class="diamond">◆</span>
-              <span class="section-title">精选服务与积分</span>
+              <span class="section-title">精选服务与资产</span>
               <span class="diamond">◆</span>
               <span class="section-line"></span>
             </div>
@@ -1323,7 +1323,7 @@
               <!-- 积分入口 (点击进入选择积分页) -->
               <div class="grid-item" onclick="navigateToPage('points')">
                 <div class="icon-wrapper" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color:#fff; font-size: 22px; font-weight: bold; box-shadow: 0 4px 10px rgba(245, 158, 11, 0.35);">🪙</div>
-                <div class="icon-label" style="color:#d97706; font-weight:bold;">选择积分</div>
+                <div class="icon-label" style="color:#d97706; font-weight:bold;">选择资产</div>
               </div>
 
               <div class="grid-item" onclick="navigateToPage('points')">
@@ -1352,22 +1352,22 @@
         <!-- ================= 页面 2: 选择积分页 (核心实现) ================= -->
         <div class="page" id="page-points">
           
-          <!-- H5 顶部导航栏：左侧返回箭头 <，居中“选择积分”，右侧带定位组件“武汉 ▾” -->
+          <!-- H5 顶部导航栏：左侧返回箭头 <，居中“选择资产”，右侧带定位组件“武汉 ▾” -->
           <div class="points-nav-bar">
             <div class="points-nav-back" onclick="navigateToPage('home')">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
             </div>
-            <div class="points-nav-title">选择积分</div>
+            <div class="points-nav-title">选择资产</div>
             <div class="city-location-btn" onclick="openCityModal()">
               <span id="pointsLocationText">武汉</span>
               <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg>
             </div>
           </div>
 
-          <!-- 顶部横幅说明文案 (未勾选时三点规则，勾选时展示“折合余额xx”) -->
+          <!-- 顶部横幅说明文案 (未勾选时说明规则，勾选时展示“折合余额xx”) -->
           <div class="points-notice-bar">
             <div class="points-notice-text" id="pointsNoticeText">
-              1、进入资源前请先勾选要使用的积分<br>2、将自动计算并转换该资源可消费余额<br>3、交易完成，会按实际金额，根据积分有效期由近及远顺序扣减
+              核销时请报【企业福利】；含服务费，实际可用余额以页面显示为准；售后请携带小票与门店工作人员沟通；胖东来及烟酒类商品不可用。
             </div>
           </div>
 
@@ -1428,7 +1428,6 @@
 
                 <div class="points-card-header">
                   <div class="points-amount-val" id="cardPointsAmount">35.00</div>
-                  <div class="points-type-tag">通用积分</div>
                 </div>
               </div>
             </div>
@@ -1822,10 +1821,10 @@
           }
         }
       } else {
-        // 未勾选默认三点提示文案
+        // 未勾选默认提示文案
         if (notice) {
           notice.className = 'points-notice-text';
-          notice.innerHTML = `1、进入资源前请先勾选要使用的积分<br>2、将自动计算并转换该资源可消费余额<br>3、交易完成，会按实际金额，根据积分有效期由近及远顺序扣减`;
+          notice.innerHTML = `核销时请报【企业福利】；含服务费，实际可用余额以页面显示为准；售后请携带小票与门店工作人员沟通；胖东来及烟酒类商品不可用。`;
         }
         if (btnConfirm) {
           btnConfirm.disabled = true;
@@ -1837,7 +1836,7 @@
     // 密码弹窗控制
     function openPasswordModal() {
       if (selectedPoints.length === 0) {
-        showToast('请至少选择一项积分');
+        showToast('请至少选择一项资产');
         return;
       }
       let totalAmount = selectedPoints.reduce((acc, item) => acc + parseFloat(item.getAttribute('data-amount') || 0), 0);
@@ -2241,11 +2240,17 @@
       }, 1800);
     }
 
-    // 默认初始状态：未选中任何积分
+    // 默认初始状态：未选中任何资产
     window.addEventListener('DOMContentLoaded', () => {
       selectedPoints = [];
       refreshPointsState();
       initVerifyTouchInput();
+      if (window.location.hash) {
+        const pageId = window.location.hash.replace('#', '');
+        if (document.getElementById(`page-${pageId}`)) {
+          navigateToPage(pageId);
+        }
+      }
     });
   </script>
 </body>
