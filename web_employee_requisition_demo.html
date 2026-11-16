@@ -1,0 +1,2372 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>淘福客开放平台 - 订单中心 - 商品订单</title>
+  <style>
+    :root {
+      --primary-color: #1B9AEE;
+      --primary-hover: #40A9FF;
+      --primary-active: #096DD9;
+      --primary-bg: #E8FAFF;
+      --text-main: rgba(0, 0, 0, 0.85);
+      --text-regular: rgba(0, 0, 0, 0.70);
+      --text-secondary: rgba(0, 0, 0, 0.45);
+      --border-color: #EBEDF0;
+      --border-input: #D9D9D9;
+      --bg-page: #F5F5F5;
+      --font-family: -apple-system, BlinkMacSystemFont, "HelveticaNeue Helvetica PingFangSC-Regular", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-family);
+      font-size: 14px;
+      color: var(--text-regular);
+      background-color: var(--bg-page);
+      line-height: 1.5715;
+      user-select: none;
+    }
+
+    /* 左右两栏固定框架布局 (完全对齐真实系统：仅右侧内容区 .operator-content 独立滚动) */
+    .operator-container { display: flex; height: 100vh; overflow: hidden; background-color: var(--bg-page); }
+
+    /* 侧边栏 */
+    .web-operator-sider {
+      width: 200px;
+      min-width: 200px;
+      height: 100vh;
+      overflow-y: auto;
+      background: #FFFFFF;
+      border-right: 1px solid #F0F0F0;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      z-index: 95;
+    }
+
+    .mz-new-aside-logo {
+      height: 72px;
+      display: flex;
+      align-items: center;
+      padding-left: 20px;
+      border-bottom: 1px solid #F0F0F0;
+      background: #FFFFFF;
+      flex-shrink: 0;
+    }
+    .mz-new-aside-logo img { width: 130px; height: 28px; object-fit: contain; }
+
+    .menu-item-lv1 {
+      height: 50px;
+      line-height: 50px;
+      padding: 0 16px 0 24px;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      color: rgba(0, 0, 0, 0.85);
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    .menu-item-lv1:hover { color: var(--primary-color); background: #FAFAFA; }
+    .menu-item-lv1 .icon { margin-right: 10px; width: 16px; display: inline-flex; align-items: center; fill: currentColor; }
+
+    .menu-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 5px;
+      font-size: 11px;
+      color: #fff;
+      background: #E62412;
+      border-radius: 9px;
+      margin-left: 6px;
+      font-weight: 500;
+    }
+
+    .submenu-title {
+      height: 50px;
+      line-height: 50px;
+      padding: 0 16px 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      color: rgba(0, 0, 0, 0.85);
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    .submenu-title:hover { color: var(--primary-color); }
+    .submenu-title.open { color: var(--primary-color); font-weight: 500; }
+    .submenu-title .arrow { transition: transform 0.2s; font-size: 10px; color: #bfbfbf; }
+    .submenu-title.open .arrow { transform: rotate(180deg); }
+
+    .sub-menu-list { list-style: none; background: #FAFAFA; }
+    .menu-item-lv2 {
+      height: 46px;
+      line-height: 46px;
+      padding-left: 48px;
+      font-size: 14px;
+      color: rgba(0, 0, 0, 0.7);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .menu-item-lv2:hover { color: var(--primary-color); }
+    .menu-item-lv2.is-active {
+      background: var(--primary-bg);
+      color: var(--primary-color);
+      font-weight: 500;
+      border-right: 3px solid var(--primary-color);
+    }
+
+    /* 主界面 */
+    .operator-main { flex: 1; height: 100vh; overflow: hidden; display: flex; flex-direction: column; min-width: 0; background: var(--bg-page); }
+
+    /* Header */
+    .mz-common-header {
+      height: 72px;
+      flex-shrink: 0;
+      background: #FFFFFF;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #F0F0F0;
+      z-index: 85;
+    }
+    .breadcrumb-title { font-size: 14px; color: var(--text-secondary); display: flex; align-items: center; gap: 6px; }
+    .breadcrumb-title .clickable { cursor: pointer; color: var(--text-secondary); transition: color 0.2s; }
+    .breadcrumb-title .clickable:hover { color: var(--primary-color); }
+    .breadcrumb-title .current { color: var(--text-main); font-weight: 500; }
+    .header-user-actions { display: flex; align-items: center; gap: 20px; font-size: 14px; color: var(--text-regular); }
+    .header-link { cursor: pointer; display: flex; align-items: center; gap: 4px; transition: color 0.2s; }
+    .header-link:hover { color: var(--primary-color); }
+    .user-avatar {
+      width: 28px; height: 28px; border-radius: 50%; background: #E6F7FF; color: var(--primary-color);
+      display: flex; align-items: center; justify-content: center; font-weight: 500; font-size: 13px;
+    }
+
+    /* 内容区 (独立纵向滚动) */
+    .operator-content { padding: 16px; flex: 1; overflow-y: auto; position: relative; }
+
+    /* 筛选卡片 */
+    .search-card {
+      background: #FFFFFF;
+      border-radius: 4px;
+      padding: 24px 24px 16px 24px;
+      margin-bottom: 16px;
+    }
+
+    .filter-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      column-gap: 32px;
+      row-gap: 16px;
+    }
+
+    .form-item { display: flex; align-items: center; position: relative; }
+    .form-item label {
+      width: 92px; min-width: 92px; white-space: nowrap; text-align: right; padding-right: 12px; font-size: 14px; color: var(--text-regular);
+    }
+    .form-control { flex: 1; position: relative; }
+
+    /* 标准 Ant Design 输入框 */
+    .ant-input {
+      width: 100%; height: 32px; padding: 4px 11px; font-size: 14px; color: var(--text-main);
+      background-color: #fff; border: 1px solid var(--border-input); border-radius: 4px; outline: none; transition: all 0.2s;
+    }
+    .ant-input:focus, .ant-input:hover { border-color: var(--primary-color); }
+    .ant-input.ant-input-disabled {
+      background-color: #f5f5f5;
+      color: rgba(0, 0, 0, 0.45);
+      border-color: #d9d9d9;
+      cursor: not-allowed;
+    }
+
+    /* 标准 Ant Design 选择框触发器 */
+    .ant-select-trigger {
+      width: 100%; min-height: 32px; padding: 2px 8px; font-size: 14px; color: var(--text-main);
+      background-color: #fff; border: 1px solid var(--border-input); border-radius: 4px;
+      cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: all 0.2s;
+    }
+    .ant-select-trigger:hover, .ant-select-trigger.active { border-color: var(--primary-color); box-shadow: 0 0 0 2px rgba(27, 154, 238, 0.2); }
+    .ant-select-arrow { color: #BFBFBF; font-size: 10px; transition: transform 0.2s; margin-left: 8px; }
+    .ant-select-trigger.active .ant-select-arrow { transform: rotate(180deg); }
+
+    /* Ant Design Tag */
+    .ant-tag {
+      display: inline-flex; align-items: center; height: 22px; padding: 0 7px; font-size: 12px;
+      color: var(--primary-color); background: var(--primary-bg); border: 1px solid #91d5ff;
+      border-radius: 2px; margin: 2px 4px 2px 0;
+    }
+    .ant-tag .ant-tag-close { margin-left: 4px; cursor: pointer; color: rgba(0, 0, 0, 0.45); font-weight: bold; }
+    .ant-tag .ant-tag-close:hover { color: var(--primary-color); }
+
+    /* 真实 Ant Design 下拉弹窗层 */
+    .ant-dropdown-popup {
+      position: absolute; top: calc(100% + 4px); left: 0; min-width: 100%; z-index: 1050;
+      background: #FFFFFF; border-radius: 4px; box-shadow: 0 3px 6px -4px rgba(0,0,0,0.12), 0 6px 16px 0 rgba(0,0,0,0.08), 0 9px 28px 8px rgba(0,0,0,0.05);
+      border: 1px solid #F0F0F0; display: none; overflow: hidden;
+    }
+    .ant-dropdown-popup.open { display: block; animation: antFadeIn 0.15s ease-out; }
+
+    @keyframes antFadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* 树形多选下拉项 (TreeSelect) */
+    .tree-node-item {
+      display: flex; align-items: center; padding: 6px 12px; cursor: pointer; font-size: 14px;
+      color: var(--text-main); transition: background 0.2s;
+    }
+    .tree-node-item:hover { background: #F5F7FA; }
+    .ant-checkbox {
+      width: 16px; height: 16px; border: 1px solid var(--border-input); border-radius: 2px;
+      margin-right: 8px; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s;
+      position: relative;
+    }
+    .ant-checkbox.checked {
+      background: var(--primary-color); border-color: var(--primary-color);
+    }
+    .ant-checkbox.checked::after {
+      position: absolute;
+      top: 1px;
+      left: 5px;
+      width: 4px;
+      height: 8px;
+      border: 2px solid #fff;
+      border-top: 0;
+      border-left: 0;
+      transform: rotate(45deg);
+      content: "";
+    }
+
+    /* 单选菜单选项 */
+    .select-option-item {
+      padding: 6px 12px; cursor: pointer; font-size: 14px; color: var(--text-main);
+      display: flex; align-items: center; justify-content: space-between; transition: background 0.2s;
+    }
+    .select-option-item:hover { background: #F5F7FA; }
+    .select-option-item.selected { background: var(--primary-bg); color: var(--primary-color); font-weight: 500; }
+
+    /* 真实 Ant Design DateRangePicker 双月日历面板 */
+    .ant-picker-range-popup {
+      position: absolute; top: calc(100% + 4px); left: 0; z-index: 1050; width: 540px;
+      background: #FFFFFF; border-radius: 4px; box-shadow: 0 3px 6px -4px rgba(0,0,0,0.12), 0 6px 16px 0 rgba(0,0,0,0.08), 0 9px 28px 8px rgba(0,0,0,0.05);
+      border: 1px solid #F0F0F0; display: none; padding: 12px 16px;
+    }
+    .ant-picker-range-popup.open { display: block; animation: antFadeIn 0.15s ease-out; }
+
+    .calendar-panels { display: flex; gap: 20px; }
+    .calendar-panel { flex: 1; }
+    .calendar-header {
+      display: flex; align-items: center; justify-content: space-between; height: 36px;
+      border-bottom: 1px solid #F0F0F0; margin-bottom: 8px; font-weight: 500; font-size: 14px;
+    }
+    .calendar-table { width: 100%; border-collapse: collapse; text-align: center; font-size: 12px; }
+    .calendar-table th { color: var(--text-secondary); height: 28px; font-weight: normal; }
+    .calendar-table td { height: 28px; cursor: pointer; transition: background 0.15s; border-radius: 2px; }
+    .calendar-table td:hover { background: #F0F5FF; }
+    .calendar-table td.in-range { background: #E6F7FF; }
+    .calendar-table td.range-start { background: var(--primary-color) !important; color: #fff !important; border-radius: 2px 0 0 2px; }
+    .calendar-table td.range-end { background: var(--primary-color) !important; color: #fff !important; border-radius: 0 2px 2px 0; }
+    .calendar-table td.other-month { color: #BFBFBF; }
+
+    .range-presets {
+      display: flex; gap: 8px; border-top: 1px solid #F0F0F0; padding-top: 10px; margin-top: 8px; justify-content: flex-end;
+    }
+    .range-preset-btn {
+      font-size: 12px; color: var(--primary-color); cursor: pointer; padding: 2px 8px; border-radius: 2px; background: #F5F7FA;
+    }
+    .range-preset-btn:hover { background: var(--primary-bg); }
+
+    /* 按钮样式 */
+    .btn {
+      height: 32px; padding: 0 16px; font-size: 14px; border-radius: 4px; cursor: pointer;
+      display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s; border: 1px solid transparent;
+    }
+    .btn-primary { background: var(--primary-color); border-color: var(--primary-color); color: #FFFFFF; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-default { background: #FFFFFF; border-color: var(--border-input); color: var(--text-regular); }
+    .btn-default:hover { color: var(--primary-color); border-color: var(--primary-color); }
+
+    /* 表格卡片 */
+    .table-card { background: #FFFFFF; border-radius: 4px; padding: 24px; }
+    .order-table { width: 100%; border-collapse: collapse; text-align: left; }
+    .order-table th {
+      height: 56px; padding: 0 12px; background: #FAFAFA; color: var(--text-main); font-weight: 500; font-size: 14px; border: 1px solid var(--border-color);
+    }
+    .order-group-spacer { height: 16px; border: none !important; }
+    .order-header-row td {
+      background: rgba(235, 245, 255, 0.55); border: 1px solid var(--border-color); padding: 12px 16px; font-size: 13px; color: var(--text-regular);
+    }
+    .order-header-meta { display: flex; flex-wrap: wrap; gap: 32px; }
+    .order-data-row td {
+      border: 1px solid var(--border-color); padding: 14px 12px; font-size: 14px; color: var(--text-main); vertical-align: middle; background: #FFFFFF;
+    }
+
+    .action-link { font-size: 13px; color: var(--primary-color); cursor: pointer; margin-right: 10px; text-decoration: none; }
+    .action-link:hover { text-decoration: underline; }
+    .action-link.warm { color: #FA8C15; }
+    .action-link.primary { color: #1B9AEE; font-weight: 500; }
+
+    /* ========================================================
+       标准 Ant Design 4 / 淘福客详情页 1:1 复刻样式 (.order-details)
+       ======================================================== */
+    .order-details.common-detail-container {
+      box-sizing: border-box;
+      padding: 0 0 72px 0;
+    }
+    .detail-cards-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    .ant-card {
+      background: #FFFFFF;
+      border-radius: 4px;
+      margin-bottom: 16px;
+      border: none;
+    }
+    .order-details .ant-card {
+      margin-bottom: 0;
+      border-radius: 4px;
+      color: rgba(0, 0, 0, 0.9);
+    }
+    .ant-card-head {
+      min-height: 48px;
+      padding: 0 24px;
+      border-bottom: 1px solid #F0F0F0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .ant-card-head-wrapper {
+      display: flex;
+      align-items: center;
+      width: 100%;
+    }
+    .ant-card-head-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: rgba(0, 0, 0, 0.9);
+      line-height: 24px;
+      padding: 14px 0;
+      flex: 1;
+    }
+    .ant-card-body {
+      padding: 24px;
+      font-size: 14px;
+      color: rgba(0, 0, 0, 0.9);
+      line-height: 1.5715;
+    }
+
+    /* 生产真实三列无边框键值对网格 (.detail-kv-grid) */
+    .detail-kv-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      column-gap: 16px;
+      row-gap: 16px;
+    }
+    @media (max-width: 1120px) {
+      .detail-kv-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+    .detail-kv-item {
+      font-size: 14px;
+      line-height: 22px;
+      color: rgba(0, 0, 0, 0.9);
+      word-break: break-word;
+    }
+    .second-font-color {
+      color: rgba(0, 0, 0, 0.5);
+      word-break: break-all;
+    }
+    .detail-kv-flex {
+      display: flex;
+      align-items: flex-start;
+    }
+    .detail-kv-flex-label {
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .detail-link {
+      color: #1B9AEE;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .detail-link:hover {
+      text-decoration: underline;
+    }
+    .ml20 { margin-left: 20px; }
+    .mr8 { margin-right: 8px; }
+    .mr10 { margin-right: 10px; }
+
+    /* 详情页横向滚动 Ant Table */
+    .order-details .ant-table-content {
+      overflow-x: auto;
+      overflow-y: hidden;
+    }
+    .order-details .ant-table-content table {
+      min-width: 100%;
+      width: max-content;
+      border-collapse: collapse;
+    }
+    .order-details .ant-table-thead > tr > th {
+      white-space: nowrap;
+      padding: 14px 16px;
+      font-weight: 500;
+      background: #FAFAFA;
+      color: rgba(0, 0, 0, 0.85);
+      border: 1px solid #F0F0F0;
+    }
+    .order-details .ant-table-tbody > tr > td {
+      padding: 14px 16px;
+      border: 1px solid #F0F0F0;
+      color: rgba(0, 0, 0, 0.85);
+      font-size: 14px;
+      background: #FFFFFF;
+      vertical-align: middle;
+    }
+
+    /* 申请售后小蓝按钮 */
+    .reply-sealing {
+      height: 32px;
+      padding: 0 15px;
+      font-size: 14px;
+      font-weight: 400;
+      border-radius: 2px;
+      background: #1B9AEE;
+      border: 1px solid #1B9AEE;
+      color: #FFFFFF;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    .reply-sealing:hover {
+      background: #40A9FF;
+      border-color: #40A9FF;
+    }
+
+    /* 生产真实吸底操作栏 (.common-detail-container__footer) */
+    .common-detail-container__footer {
+      position: fixed;
+      left: 200px;
+      right: 0;
+      bottom: 0;
+      height: 56px;
+      background: #FFFFFF;
+      box-shadow: 0 -1px 4px rgba(0, 0, 0, 0.06);
+      border-top: 1px solid #F0F0F0;
+      padding: 0 40px 0 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 90;
+    }
+    .footer-left-actions {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+    .super-back {
+      display: inline-flex;
+      align-items: center;
+      color: #1B9AEE;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .super-back:hover {
+      color: #40A9FF;
+    }
+    .back-button .btn {
+      min-width: 72px;
+      border-radius: 2px;
+    }
+
+    /* 审批表单与单选框 (完全复刻生产系统) */
+    .erp-approve-form .ant-form-item {
+      margin-bottom: 20px;
+    }
+    .erp-approve-form .ant-form-item-label label {
+      font-size: 14px;
+      color: rgba(0, 0, 0, 0.85);
+      display: inline-block;
+      margin-bottom: 8px;
+    }
+    .erp-approve-form .ant-form-item-required::before {
+      display: inline-block;
+      margin-right: 4px;
+      color: #ff4d4f;
+      font-size: 14px;
+      font-family: SimSun, sans-serif;
+      line-height: 1;
+      content: "*";
+    }
+
+    .ant-radio-wrapper {
+      box-sizing: border-box;
+      margin: 0 16px 0 0;
+      padding: 0;
+      color: rgba(0, 0, 0, 0.85);
+      font-size: 14px;
+      line-height: inherit;
+      white-space: nowrap;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+    }
+    .ant-radio {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      color: rgba(0, 0, 0, 0.85);
+      font-size: 14px;
+      line-height: 1;
+      white-space: nowrap;
+      vertical-align: sub;
+      outline: none;
+      cursor: pointer;
+      position: relative;
+      display: inline-block;
+    }
+    .ant-radio-inner {
+      position: relative;
+      top: 0;
+      left: 0;
+      display: block;
+      width: 16px;
+      height: 16px;
+      background-color: #fff;
+      border: 1px solid #d9d9d9;
+      border-radius: 50%;
+      transition: all 0.2s;
+    }
+    .ant-radio-checked .ant-radio-inner {
+      border-color: #1B9AEE;
+      background-color: #fff;
+    }
+    .ant-radio-checked .ant-radio-inner::after {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      display: block;
+      width: 8px;
+      height: 8px;
+      background-color: #1B9AEE;
+      border-radius: 50%;
+      content: "";
+      transition: all 0.2s cubic-bezier(0.78, 0.14, 0.15, 0.86);
+    }
+    .ant-radio-input {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      z-index: 1;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    /* 流程节点表格 (完全复刻生产系统) */
+    .ant-table-wrapper {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-size: 14px;
+      line-height: 1.5715;
+    }
+    .ant-table {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      color: rgba(0, 0, 0, 0.85);
+      font-size: 14px;
+      background: #fff;
+      border-radius: 2px;
+    }
+    .ant-table-bordered table {
+      border: 1px solid #f0f0f0;
+      border-collapse: collapse;
+      width: 100%;
+    }
+    .ant-table-cell {
+      padding: 12px 16px;
+      border: 1px solid #f0f0f0;
+      font-size: 13px;
+      color: rgba(0, 0, 0, 0.85);
+    }
+    .ant-table-thead > tr > th {
+      background: #fafafa;
+      font-weight: 500;
+      color: rgba(0, 0, 0, 0.85);
+      border: 1px solid #f0f0f0;
+      text-align: left;
+    }
+
+    /* 弹窗 Modal */
+    .ant-modal-mask {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.45);
+      z-index: 2000; display: none; align-items: center; justify-content: center;
+    }
+    .ant-modal-mask.open { display: flex; animation: antFadeIn 0.2s; }
+    .ant-modal-card {
+      width: 580px; background: #FFFFFF; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); overflow: hidden;
+    }
+    .ant-modal-header {
+      height: 52px; padding: 0 24px; border-bottom: 1px solid #F0F0F0; display: flex; align-items: center; justify-content: space-between; font-weight: 500; font-size: 16px; color: var(--text-main);
+    }
+    .ant-modal-body { padding: 24px; font-size: 14px; line-height: 1.8; color: var(--text-regular); }
+    .ant-modal-footer {
+      height: 56px; padding: 0 24px; border-top: 1px solid #F0F0F0; display: flex; align-items: center; justify-content: flex-end; gap: 8px; background: #FAFAFA;
+    }
+
+    /* Toast 提示 */
+    .ant-toast {
+      position: fixed; top: 24px; left: 50%; transform: translateX(-50%); z-index: 3000;
+      background: #FFFFFF; border-radius: 4px; padding: 10px 18px; box-shadow: 0 3px 6px -4px rgba(0,0,0,0.12), 0 6px 16px 0 rgba(0,0,0,0.08);
+      display: none; align-items: center; gap: 8px; font-size: 14px; color: var(--text-main);
+      border: 1px solid #F0F0F0;
+    }
+    .ant-toast.open { display: flex; animation: antFadeIn 0.2s; }
+
+    .status-badge-dot {
+      display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 6px; vertical-align: middle;
+    }
+    .dot-warning { background: #FAAD14; }
+    .dot-danger { background: #FF4D4F; }
+    .dot-success { background: #52C41A; }
+    .dot-info { background: #1B9AEE; }
+    .dot-default { background: #BFBFBF; }
+  </style>
+</head>
+<body>
+  <!-- 官方 SVG 图标符号表 -->
+  <svg aria-hidden="true" style="position: absolute; width: 0px; height: 0px; overflow: hidden;">
+    <symbol id="icon-home" viewBox="0 0 1024 1024"><path d="M946.5 505L534.6 93.4a31.93 31.93 0 0 0-45.2 0L77.5 505c-12 12-18.8 28.3-18.8 45.3 0 35.3 28.7 64 64 64h43.4V912c0 17.7 14.3 32 32 32h200c17.7 0 32-14.3 32-32V704h160v208c0 17.7 14.3 32 32 32h200c17.7 0 32-14.3 32-32V614.3h43.4c17 0 33.3-6.7 45.3-18.8 24.9-25 24.9-65.5-0.1-90.5z"></path></symbol>
+    <symbol id="icon-shop" viewBox="0 0 1024 1024"><path d="M880 184H712v-64c0-17.7-14.3-32-32-32h-336c-17.7 0-32 14.3-32 32v64H144c-17.7 0-32 14.3-32 32v664c0 17.7 14.3 32 32 32h736c17.7 0 32-14.3 32-32V216c0-17.7-14.3-32-32-32zM376 152h272v32H376v-32z m472 696H176V248h672v600z"></path></symbol>
+    <symbol id="icon-goods" viewBox="0 0 1024 1024"><path d="M848 359.3H627.7L825.8 109c4.1-5.3 0.4-13-6.3-13H704c-4.2 0-8.1 2.1-10.4 5.5L469.5 359.3H176c-44.2 0-80 35.8-80 80v432c0 44.2 35.8 80 80 80h672c44.2 0 80-35.8 80-80v-432c0-44.2-35.8-80-80-80zM320 157.5L479.2 359.3H160.8l159.2-201.8z m536 713.8c0 4.4-3.6 8-8 8H176c-4.4 0-8-3.6-8-8v-432c0-4.4 3.6-8 8-8h672c4.4 0 8 3.6 8 8v432z"></path></symbol>
+    <symbol id="icon-card" viewBox="0 0 1024 1024"><path d="M928 160H96c-17.7 0-32 14.3-32 32v640c0 17.7 14.3 32 32 32h832c17.7 0 32-14.3 32-32V192c0-17.7-14.3-32-32-32zm-40 112H136v-40h752v40zm0 496H136V432h752v336z"></path></symbol>
+    <symbol id="icon-order" viewBox="0 0 1024 1024"><path d="M880 112H144c-17.7 0-32 14.3-32 32v736c0 17.7 14.3 32 32 32h736c17.7 0 32-14.3 32-32V144c0-17.7-14.3-32-32-32zm-40 728H184V184h656v656zM304 312h416c4.4 0 8-3.6 8-8v-48c0-4.4-3.6-8-8-8H304c-4.4 0-8 3.6-8 8v48c0 4.4 3.6 8 8 8zm0 184h416c4.4 0 8-3.6 8-8v-48c0-4.4-3.6-8-8-8H304c-4.4 0-8 3.6-8 8v48c0 4.4 3.6 8 8 8zm0 184h416c4.4 0 8-3.6 8-8v-48c0-4.4-3.6-8-8-8H304c-4.4 0-8 3.6-8 8v48c0 4.4 3.6 8 8 8z"></path></symbol>
+    <symbol id="icon-check" viewBox="0 0 1024 1024"><path d="M512 64C264.6 64 64 264.6 64 512s200.6 448 448 448 448-200.6 448-448S759.4 64 512 64zm193.5 301.7l-210.6 292a31.8 31.8 0 0 1-51.7 0L318.6 484.9c-6-8.3-2.2-20.2 7.7-23.4 9.9-3.2 21.1 1.7 25.9 10.1l96.9 134.4 186.7-258.9c5.2-7.2 15.3-9 22.7-3.9 7.4 5.2 9.2 15.3 4 22.7z" fill="#52C41A"></path></symbol>
+    <symbol id="icon-alert" viewBox="0 0 1024 1024"><path d="M512 64C264.6 64 64 264.6 64 512s200.6 448 448 448 448-200.6 448-448S759.4 64 512 64zm0 820c-205.4 0-372-166.6-372-372s166.6-372 372-372 372 166.6 372 372-166.6 372-372 372z" fill="#FF4D4F"></path><path d="M464 688a48 48 0 1 0 96 0 48 48 0 1 0-96 0zm0-416h96v320h-96z" fill="#FF4D4F"></path></symbol>
+  </svg>
+
+  <div class="operator-container">
+    <!-- 侧边栏 (严格复刻淘福客开放平台原生结构) -->
+    <aside class="web-operator-sider">
+      <div class="mz-new-aside-logo">
+        <img src="data:image/png;base64,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" alt="淘福客开放平台">
+      </div>
+      <ul>
+        <li class="menu-item-lv1"><span class="icon"><svg class="svg-icon" style="width:16px;height:16px;"><use xlink:href="#icon-home"></use></svg></span><span>概况</span></li>
+        <li class="menu-item-lv1"><span class="icon"><svg class="svg-icon" style="width:16px;height:16px;"><use xlink:href="#icon-shop"></use></svg></span><span>商城管理</span></li>
+        <li class="menu-item-lv1"><span class="icon"><svg class="svg-icon" style="width:16px;height:16px;"><use xlink:href="#icon-goods"></use></svg></span><span>商品中心</span></li>
+        <li class="menu-item-lv1"><span class="icon"><svg class="svg-icon" style="width:16px;height:16px;"><use xlink:href="#icon-card"></use></svg></span><span>卡券积分</span><span class="menu-badge">25</span></li>
+        <li class="menu-item-lv1"><span class="icon"><svg class="svg-icon" style="width:16px;height:16px;"><use xlink:href="#icon-shop"></use></svg></span><span>客户管理</span></li>
+        
+        <!-- 展开菜单: 订单中心 -->
+        <li class="submenu-wrapper">
+          <div class="submenu-title open" id="menuOrderCenter">
+            <div style="display: flex; align-items: center;">
+              <span class="icon"><svg class="svg-icon" style="width:16px;height:16px;"><use xlink:href="#icon-order"></use></svg></span>
+              <span>订单中心</span>
+            </div>
+            <span class="arrow">&#9660;</span>
+          </div>
+          <ul class="sub-menu-list" id="subMenuList">
+            <li class="menu-item-lv2 is-active" onclick="backToOrderList()">商品订单</li>
+            <li class="menu-item-lv2">集配订单</li>
+            <li class="menu-item-lv2">订座票订单</li>
+            <li class="menu-item-lv2">订座票手续费订单</li>
+            <li class="menu-item-lv2">电子票订单</li>
+            <li class="menu-item-lv2">线下核销订单</li>
+          </ul>
+        </li>
+
+        <li class="menu-item-lv1"><span class="icon"><svg class="svg-icon" style="width:16px;height:16px;"><use xlink:href="#icon-shop"></use></svg></span><span>企业集配</span></li>
+        <li class="menu-item-lv1"><span class="icon"><svg class="svg-icon" style="width:16px;height:16px;"><use xlink:href="#icon-shop"></use></svg></span><span>客服中心</span><span class="menu-badge">8</span></li>
+        <li class="menu-item-lv1"><span class="icon"><svg class="svg-icon" style="width:16px;height:16px;"><use xlink:href="#icon-shop"></use></svg></span><span>数据中心</span></li>
+        <li class="menu-item-lv1"><span class="icon"><svg class="svg-icon" style="width:16px;height:16px;"><use xlink:href="#icon-shop"></use></svg></span><span>资产中心</span></li>
+        <li class="menu-item-lv1"><span class="icon"><svg class="svg-icon" style="width:16px;height:16px;"><use xlink:href="#icon-shop"></use></svg></span><span>自有供应商</span></li>
+      </ul>
+    </aside>
+
+    <!-- 主界面 -->
+    <main class="operator-main">
+      <!-- 顶部 Header -->
+      <header class="mz-common-header">
+        <div class="breadcrumb-title" id="topBreadcrumb">
+          <span class="clickable" onclick="backToOrderList()">订单中心</span>
+          <span>/</span>
+          <span class="clickable" onclick="backToOrderList()">商品订单</span>
+          <span id="bcDetailSeparator" style="display: none;">/</span>
+          <span class="current" id="bcDetailText" style="display: none;">订单详情</span>
+        </div>
+        <div class="header-user-actions">
+          <div class="header-link" onclick="showToast('已跳转商城前台页面')">访问商城</div>
+          <div class="header-link" onclick="showToast('已为您打开帮助文档')">帮助中心</div>
+          <div style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+            <div class="user-avatar">刘</div>
+            <span>刘瑞辰</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- 核心内容区 -->
+      <div class="operator-content">
+
+        <!-- ========================================================
+             视图 1: 完整的商品订单列表页 (一模一样复刻现有系统)
+             ======================================================== -->
+        <div id="viewOrderList">
+          <!-- 筛选卡片 -->
+          <div class="search-card">
+            <div class="filter-grid">
+              <!-- Row 1 -->
+              <div class="form-item">
+                <label>订单编号</label>
+                <div class="form-control"><input class="ant-input" id="inputOrderId" placeholder="请输入订单编号" /></div>
+              </div>
+              <div class="form-item">
+                <label>支付号</label>
+                <div class="form-control"><input class="ant-input" id="inputPayId" placeholder="请输入支付号" /></div>
+              </div>
+              <div class="form-item">
+                <label>商品名称</label>
+                <div class="form-control"><input class="ant-input" id="inputProductName" placeholder="请输入商品名称" /></div>
+              </div>
+
+              <!-- Row 2 -->
+              <div class="form-item">
+                <label>供应商类型</label>
+                <div class="form-control">
+                  <div class="ant-select-trigger" id="triggerSupplierType" onclick="toggleDropdown('popupSupplierType')">
+                    <span id="labelSupplierType" style="color: #BFBFBF;">请选择供应商类型</span>
+                    <span class="ant-select-arrow">&#9660;</span>
+                  </div>
+                  <div class="ant-dropdown-popup" id="popupSupplierType">
+                    <div class="select-option-item" onclick="selectOption('SupplierType', '全部', false)">全部</div>
+                    <div class="select-option-item" onclick="selectOption('SupplierType', '自有供应商', true)">自有供应商</div>
+                    <div class="select-option-item" onclick="selectOption('SupplierType', '平台供应商', true)">平台供应商</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-item">
+                <label>供应商</label>
+                <div class="form-control">
+                  <div class="ant-select-trigger" id="triggerSupplier" onclick="toggleDropdown('popupSupplier')">
+                    <span id="labelSupplier" style="color: #BFBFBF;">请选择供应商</span>
+                    <span class="ant-select-arrow">&#9660;</span>
+                  </div>
+                  <div class="ant-dropdown-popup" id="popupSupplier">
+                    <div class="select-option-item" onclick="selectOption('Supplier', '全部', false)">全部</div>
+                    <div class="select-option-item" onclick="selectOption('Supplier', 'Apple中国企业直供', true)">Apple中国企业直供</div>
+                    <div class="select-option-item" onclick="selectOption('Supplier', '戴尔企业自营旗舰店', true)">戴尔企业自营旗舰店</div>
+                    <div class="select-option-item" onclick="selectOption('Supplier', '苏打优选', true)">苏打优选</div>
+                    <div class="select-option-item" onclick="selectOption('Supplier', '苏打直供', true)">苏打直供</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-item">
+                <label>联系方式</label>
+                <div class="form-control"><input class="ant-input" id="inputPhone" placeholder="请输入联系方式" /></div>
+              </div>
+
+              <!-- Row 3: 真实 TreeSelect (订单状态，含 待审核、已驳回) -->
+              <div class="form-item">
+                <label>订单状态</label>
+                <div class="form-control">
+                  <div class="ant-select-trigger" id="triggerOrderState" onclick="toggleDropdown('popupOrderState')" style="min-height: 32px; padding: 2px 6px;">
+                    <div id="tagsContainer" style="display: flex; flex-wrap: wrap; gap: 4px; align-items: center;">
+                      <span class="ant-tag" id="tagWaitAudit">待审核 <span class="ant-tag-close" onclick="removeTag(event, 'WAIT_AUDIT')">x</span></span>
+                      <span class="ant-tag" id="tagWaitShip">等待发货 <span class="ant-tag-close" onclick="removeTag(event, 'WAIT_SHIP')">x</span></span>
+                    </div>
+                    <span class="ant-select-arrow">&#9660;</span>
+                  </div>
+
+                  <!-- 树形多选下拉层 -->
+                  <div class="ant-dropdown-popup" id="popupOrderState" style="width: 275px; max-height: 280px; overflow-y: auto;">
+                    <div class="tree-node-item" onclick="toggleAllStatus(event)" style="border-bottom: 1px solid #F0F0F0; font-weight: 500;">
+                      <div class="ant-checkbox" id="chkAll"></div>
+                      <span>全选</span>
+                    </div>
+                    <div class="tree-node-item" onclick="toggleStatusItem('WAIT_AUDIT', '待审核')">
+                      <div class="ant-checkbox checked" id="chk_WAIT_AUDIT"></div>
+                      <span>待审核 (员工请购)</span>
+                    </div>
+                    <div class="tree-node-item" onclick="toggleStatusItem('REJECTED', '已驳回')">
+                      <div class="ant-checkbox" id="chk_REJECTED"></div>
+                      <span>已驳回</span>
+                    </div>
+                    <div class="tree-node-item" onclick="toggleStatusItem('WAIT_SHIP', '等待发货')">
+                      <div class="ant-checkbox checked" id="chk_WAIT_SHIP"></div>
+                      <span>等待发货</span>
+                    </div>
+                    <div class="tree-node-item" onclick="toggleStatusItem('WAIT_PAY', '等待支付')">
+                      <div class="ant-checkbox" id="chk_WAIT_PAY"></div>
+                      <span>等待支付</span>
+                    </div>
+                    <div class="tree-node-item" onclick="toggleStatusItem('USER_CANCEL', '用户取消')">
+                      <div class="ant-checkbox" id="chk_USER_CANCEL"></div>
+                      <span>用户取消</span>
+                    </div>
+                    <div class="tree-node-item" onclick="toggleStatusItem('INVALID', '订单失效')">
+                      <div class="ant-checkbox" id="chk_INVALID"></div>
+                      <span>订单失效</span>
+                    </div>
+                    <div class="tree-node-item" onclick="toggleStatusItem('SHIPPED', '已发货')">
+                      <div class="ant-checkbox" id="chk_SHIPPED"></div>
+                      <span>已发货</span>
+                    </div>
+                    <div class="tree-node-item" onclick="toggleStatusItem('REFUNDED', '已退费')">
+                      <div class="ant-checkbox" id="chk_REFUNDED"></div>
+                      <span>已退费</span>
+                    </div>
+                    <div class="tree-node-item" onclick="toggleStatusItem('FINISHED', '交易完成')">
+                      <div class="ant-checkbox" id="chk_FINISHED"></div>
+                      <span>交易完成</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-item">
+                <label>订单类型</label>
+                <div class="form-control">
+                  <div class="ant-select-trigger" id="triggerOrderType" onclick="toggleDropdown('popupOrderType')">
+                    <span id="labelOrderType" style="color: #BFBFBF;">请选择订单类型</span>
+                    <span class="ant-select-arrow">&#9660;</span>
+                  </div>
+                  <div class="ant-dropdown-popup" id="popupOrderType">
+                    <div class="select-option-item" onclick="selectOption('OrderType', '全部', false)">全部</div>
+                    <div class="select-option-item" onclick="selectOption('OrderType', '商品订单', true)">商品订单</div>
+                    <div class="select-option-item" onclick="selectOption('OrderType', '员工请购订单', true)">员工请购订单</div>
+                    <div class="select-option-item" onclick="selectOption('OrderType', '集配订单', true)">集配订单</div>
+                    <div class="select-option-item" onclick="selectOption('OrderType', '电子票订单', true)">电子票订单</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-item">
+                <label>所属商城</label>
+                <div class="form-control">
+                  <div class="ant-select-trigger" id="triggerMall" onclick="toggleDropdown('popupMall')">
+                    <span id="labelMall" style="color: #BFBFBF;">请选择所属商城</span>
+                    <span class="ant-select-arrow">&#9660;</span>
+                  </div>
+                  <div class="ant-dropdown-popup" id="popupMall">
+                    <div class="select-option-item" onclick="selectOption('Mall', '全部', false)">全部</div>
+                    <div class="select-option-item" onclick="selectOption('Mall', '员工请购商城', true)">员工请购商城</div>
+                    <div class="select-option-item" onclick="selectOption('Mall', '福利兑换商城', true)">福利兑换商城</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 下单时间 (标准 DateRangePicker 双月日历) -->
+              <div class="form-item">
+                <label>下单时间</label>
+                <div class="form-control">
+                  <div class="ant-select-trigger" id="triggerDateRange" onclick="toggleDropdown('popupDateRange')">
+                    <span id="labelDateRange" style="color: var(--text-main);">2026-11-01 ~ 2026-11-12</span>
+                    <span class="ant-select-arrow">&#9660;</span>
+                  </div>
+                  <div class="ant-picker-range-popup" id="popupDateRange">
+                    <div class="calendar-panels">
+                      <div class="calendar-panel">
+                        <div class="calendar-header">
+                          <span style="cursor: pointer;" onclick="event.stopPropagation(); showToast('切换上一月')">&lt;</span>
+                          <span>2026年 10月</span>
+                          <span style="color: #ccc;">&gt;</span>
+                        </div>
+                        <table class="calendar-table">
+                          <thead><tr><th>一</th><th>二</th><th>三</th><th>四</th><th>五</th><th>六</th><th>日</th></tr></thead>
+                          <tbody>
+                            <tr><td class="other-month">28</td><td class="other-month">29</td><td class="other-month">30</td><td>1</td><td>2</td><td>3</td><td>4</td></tr>
+                            <tr><td>5</td><td>6</td><td>7</td><td>8</td><td>9</td><td>10</td><td>11</td></tr>
+                            <tr><td>12</td><td>13</td><td>14</td><td>15</td><td>16</td><td>17</td><td>18</td></tr>
+                            <tr><td>19</td><td>20</td><td>21</td><td>22</td><td>23</td><td>24</td><td>25</td></tr>
+                            <tr><td>26</td><td>27</td><td>28</td><td>29</td><td>30</td><td>31</td><td class="other-month">1</td></tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div class="calendar-panel">
+                        <div class="calendar-header">
+                          <span style="color: #ccc;">&lt;</span>
+                          <span>2026年 11月</span>
+                          <span style="cursor: pointer;" onclick="event.stopPropagation(); showToast('切换下一月')">&gt;</span>
+                        </div>
+                        <table class="calendar-table">
+                          <thead><tr><th>一</th><th>二</th><th>三</th><th>四</th><th>五</th><th>六</th><th>日</th></tr></thead>
+                          <tbody>
+                            <tr><td class="range-start" onclick="selectDate('2026-11-01')">1</td><td class="in-range">2</td><td class="in-range">3</td><td class="in-range">4</td><td class="in-range">5</td><td class="in-range">6</td><td class="in-range">7</td></tr>
+                            <tr><td class="in-range">8</td><td class="in-range">9</td><td class="in-range">10</td><td class="in-range">11</td><td class="range-end" onclick="selectDate('2026-11-12')">12</td><td>13</td><td>14</td></tr>
+                            <tr><td>15</td><td>16</td><td>17</td><td>18</td><td>19</td><td>20</td><td>21</td></tr>
+                            <tr><td>22</td><td>23</td><td>24</td><td>25</td><td>26</td><td>27</td><td>28</td></tr>
+                            <tr><td>29</td><td>30</td><td class="other-month">1</td><td class="other-month">2</td><td class="other-month">3</td><td class="other-month">4</td><td class="other-month">5</td></tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                    <div class="range-presets">
+                      <span class="range-preset-btn" onclick="applyPreset('今天', '2026-11-12', '2026-11-12')">今天</span>
+                      <span class="range-preset-btn" onclick="applyPreset('近7天', '2026-11-06', '2026-11-12')">近7天</span>
+                      <span class="range-preset-btn" onclick="applyPreset('近30天', '2026-10-13', '2026-11-12')">近30天</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-item">
+                <label>配送方式</label>
+                <div class="form-control">
+                  <div class="ant-select-trigger" id="triggerDelivery" onclick="toggleDropdown('popupDelivery')">
+                    <span id="labelDelivery" style="color: #BFBFBF;">请选择配送方式</span>
+                    <span class="ant-select-arrow">&#9660;</span>
+                  </div>
+                  <div class="ant-dropdown-popup" id="popupDelivery">
+                    <div class="select-option-item" onclick="selectOption('Delivery', '全部', false)">全部</div>
+                    <div class="select-option-item" onclick="selectOption('Delivery', '快递发货', true)">快递发货</div>
+                    <div class="select-option-item" onclick="selectOption('Delivery', '电子卡券', true)">电子卡券</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-item">
+                <label>超时发货</label>
+                <div class="form-control">
+                  <div class="ant-select-trigger" id="triggerTimeout" onclick="toggleDropdown('popupTimeout')">
+                    <span id="labelTimeout" style="color: var(--text-main);">全部</span>
+                    <span class="ant-select-arrow">&#9660;</span>
+                  </div>
+                  <div class="ant-dropdown-popup" id="popupTimeout">
+                    <div class="select-option-item selected" onclick="selectOption('Timeout', '全部', true)">全部</div>
+                    <div class="select-option-item" onclick="selectOption('Timeout', '已超时', true)">已超时</div>
+                    <div class="select-option-item" onclick="selectOption('Timeout', '未超时', true)">未超时</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 操作按钮 -->
+              <div style="grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 8px;">
+                <button class="btn btn-primary" id="btnSearch" onclick="handleSearch()" style="width: 74px;">查 询</button>
+                <button class="btn btn-default" onclick="handleExport()" style="width: 74px;">导 出</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 复合订单表格卡片 (差异点严格对齐: 待审核有查看详情+去处理，已驳回只有查看详情) -->
+          <div class="table-card">
+            <table class="order-table" id="orderListTable">
+              <thead>
+                <tr>
+                  <th style="width: 320px;">商品名称</th>
+                  <th style="width: 90px;">规格</th>
+                  <th style="width: 80px;">数量</th>
+                  <th style="width: 90px; text-align: right;">单价</th>
+                  <th style="width: 100px; text-align: right;">订单金额</th>
+                  <th style="width: 120px;">联系方式</th>
+                  <th style="width: 110px;">订单状态</th>
+                  <th style="width: 150px; text-align: right;">操作</th>
+                </tr>
+              </thead>
+
+              <!-- 订单列表将由 ordersData 动态生成 -->
+            </table>
+
+            <!-- 分页器 -->
+            <div style="margin-top: 24px; display: flex; justify-content: flex-end; align-items: center; gap: 12px;">
+              <span>共 2646 条订单</span>
+              <div style="display: flex; gap: 4px;">
+                <span class="btn btn-default" style="padding: 0 8px; height: 28px;">&lt;</span>
+                <span class="btn btn-primary" style="padding: 0 10px; height: 28px;">1</span>
+                <span class="btn btn-default" style="padding: 0 10px; height: 28px;" onclick="showToast('切换至第 2 页')">2</span>
+                <span class="btn btn-default" style="padding: 0 10px; height: 28px;" onclick="showToast('切换至第 3 页')">3</span>
+                <span class="btn btn-default" style="padding: 0 8px; height: 28px;">&gt;</span>
+              </div>
+              <div style="padding: 2px 8px; border: 1px solid var(--border-input); border-radius: 4px; font-size: 13px;">10 条/页</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========================================================
+             视图 2: 真实的订单详情页 (1:1 复刻 pre-operator.taofuke.cn 订单详情结构 + 审批模块)
+             ======================================================== -->
+        <div id="viewOrderDetail" class="mz-page-content order-details common-detail-container" style="display: none;">
+          <div class="detail-cards-grid">
+            <!-- 动态复刻的原生卡片流 (订单信息 / 用户信息 / 支付信息 / 配送信息 / 商品信息 / 结算信息 / 包裹信息 / 售后信息) -->
+            <div id="nativeDetailCardsContainer" class="detail-cards-grid"></div>
+
+            <!-- 审批 Card (1:1 抄写自真实审批系统，仅请购订单显示) -->
+            <form id="approveForm" class="ant-form ant-form-vertical erp-approve-form">
+              <div class="ant-card" id="cardApprove">
+              <div class="ant-card-head">
+                <div class="ant-card-head-wrapper">
+                  <div class="ant-card-head-title">审批</div>
+                </div>
+              </div>
+              <div class="ant-card-body">
+                <div class="erp-approve-form__container">
+                  <div class="ant-row" style="margin-left: -32px; margin-right: -32px; display: flex;">
+                    <div class="ant-col ant-col-8" style="padding-left: 32px; padding-right: 32px; width: 33.333%;">
+                      <div class="ant-form-item ant-form-item-has-success">
+                        <div class="ant-row ant-form-item-row">
+                          <div class="ant-col ant-form-item-label">
+                            <label for="approveForm_approve_applicant" class="ant-form-item-required" title="申请人">申请人</label>
+                          </div>
+                          <div class="ant-col ant-form-item-control">
+                            <div class="ant-form-item-control-input">
+                              <div class="ant-form-item-control-input-content">
+                                <input id="approveForm_approve_applicant" disabled="" class="ant-input ant-input-disabled ant-input-status-success" type="text" value="刘瑞辰(liuruichen)">
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="ant-col ant-col-16" style="padding-left: 32px; padding-right: 32px; width: 66.666%;">
+                      <div class="ant-form-item ant-form-item-has-success">
+                        <div class="ant-row ant-form-item-row">
+                          <div class="ant-col ant-form-item-label">
+                            <label for="approveForm_approve_status" class="ant-form-item-required" title="审批状态">审批状态</label>
+                          </div>
+                          <div class="ant-col ant-form-item-control">
+                            <div class="ant-form-item-control-input">
+                              <div class="ant-form-item-control-input-content">
+                                <div class="ant-radio-group ant-radio-group-outline beautified-radio" id="approveForm_approve_status" style="display: flex; gap: 24px; align-items: center; height: 32px;">
+                                  <label class="ant-radio-wrapper ant-radio-wrapper-checked ant-radio-wrapper-in-form-item" style="cursor: pointer; display: inline-flex; align-items: center;" onclick="setAuditVerdictVal(1)">
+                                    <span class="ant-radio ant-radio-checked" id="radioSpanPass"><input type="radio" class="ant-radio-input" name="auditVerdict" value="1" checked><span class="ant-radio-inner"></span></span>
+                                    <span style="margin-left: 8px;">通过</span>
+                                  </label>
+                                  <label class="ant-radio-wrapper ant-radio-wrapper-in-form-item" style="cursor: pointer; display: inline-flex; align-items: center;" onclick="setAuditVerdictVal(0)">
+                                    <span class="ant-radio" id="radioSpanReject"><input type="radio" class="ant-radio-input" name="auditVerdict" value="0"><span class="ant-radio-inner"></span></span>
+                                    <span style="margin-left: 8px;">退回</span>
+                                  </label>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="ant-form-item">
+                  <div class="ant-row ant-form-item-row">
+                    <div class="ant-col ant-form-item-label">
+                      <label for="approveForm_approve_comment" class="ant-form-item-required" title="审批意见">审批意见</label>
+                    </div>
+                    <div class="ant-col ant-form-item-control">
+                      <div class="ant-form-item-control-input">
+                        <div class="ant-form-item-control-input-content">
+                          <textarea rows="2" placeholder="请输入审批意见" id="approveForm_approve_comment" class="ant-input" style="height: auto; min-height: 64px;"></textarea>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 审批提交按钮 (未办结时显示) -->
+                <div class="ant-form-item" style="margin-bottom: 0px;" id="approveSubmitBtnContainer">
+                  <div class="ant-row ant-form-item-row">
+                    <div class="ant-col ant-form-item-control">
+                      <div class="ant-form-item-control-input">
+                        <div class="ant-form-item-control-input-content">
+                          <button type="button" class="btn btn-primary" onclick="submitDetailApproval()">
+                            <span>提交审批</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 已办结提示 (已通过或已驳回时替代按钮) -->
+                <div id="approveFinishedNotice" style="display: none; padding: 12px 16px; background: #F5F7FA; border-radius: 4px; font-size: 13px; color: rgba(0,0,0,0.65);">
+                  单据已完成审批归档。处理结论：<strong id="txtFinishedVerdict" style="color: #1B9AEE;">已通过</strong>
+                </div>
+              </div>
+            </div>
+          </form>
+
+          <!-- 流程节点 Card (1:1 抄写自真实审批系统，仅请购订单显示) -->
+          <div class="ant-card" id="cardFlowNodes">
+            <div class="ant-card-head">
+              <div class="ant-card-head-wrapper">
+                <div class="ant-card-head-title">流程节点</div>
+              </div>
+            </div>
+            <div class="ant-card-body">
+              <div class="ant-table-wrapper">
+                <div class="ant-spin-nested-loading">
+                  <div class="ant-spin-container">
+                    <div class="ant-table ant-table-bordered ant-table-layout-fixed ant-table-scroll-horizontal">
+                      <div class="ant-table-container">
+                        <div class="ant-table-content" style="overflow: auto hidden;">
+                          <table style="width: 100%; min-width: 100%; table-layout: fixed;">
+                            <colgroup>
+                              <col style="width: 80px;">
+                              <col style="width: 140px;">
+                              <col style="width: 200px;">
+                              <col style="width: 120px;">
+                              <col style="width: 180px;">
+                              <col style="width: 180px;">
+                              <col style="width: 100px;">
+                              <col style="width: 300px;">
+                            </colgroup>
+                            <thead class="ant-table-thead">
+                              <tr>
+                                <th class="ant-table-cell">序号</th>
+                                <th class="ant-table-cell">节点名称</th>
+                                <th class="ant-table-cell">执行人</th>
+                                <th class="ant-table-cell">状态</th>
+                                <th class="ant-table-cell">开始时间</th>
+                                <th class="ant-table-cell">结束时间</th>
+                                <th class="ant-table-cell">节点耗时</th>
+                                <th class="ant-table-cell">处理意见</th>
+                              </tr>
+                            </thead>
+                            <tbody class="ant-table-tbody" id="flowNodesTableBody">
+                              <!-- 节点数据动态渲染 -->
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          </div>
+
+          <!-- 生产系统真实吸底操作栏 (.common-detail-container__footer) -->
+          <div class="common-detail-container__footer" id="detailFooterBar">
+            <div class="footer-left-actions" id="detailFooterLeft"></div>
+            <div class="back-button">
+              <button type="button" class="btn btn-default" onclick="backToOrderList()">
+                <span>返 回</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- ========================================================
+       现货库存不足拦截警示弹窗 (Ant Design 4 规范模态窗)
+       ======================================================== -->
+  <div class="ant-modal-mask" id="stockAlertModal">
+    <div class="ant-modal-card">
+      <div class="ant-modal-header" style="background: #FFF1F0; border-bottom: 1px solid #FFA39E;">
+        <span style="color: #CF1322; display: flex; align-items: center; gap: 8px;">
+          <svg class="svg-icon" style="width: 18px; height: 18px;"><use xlink:href="#icon-alert"></use></svg>
+          现货库存不足拦截警示
+        </span>
+        <span style="cursor: pointer; color: #999; font-size: 18px;" onclick="closeStockAlertModal()">x</span>
+      </div>
+      <div class="ant-modal-body">
+        <div style="font-size: 15px; font-weight: bold; color: rgba(0,0,0,0.85); margin-bottom: 10px;" id="alertModalTitle">
+          该请购商品物理可用库存不足！
+        </div>
+        <p style="color: rgba(0,0,0,0.65); line-height: 1.8;">
+          当前单据请购商品为：<strong id="alertGoodsName" style="color: rgba(0,0,0,0.85);">Dell 27英寸 4K 显示器</strong><br>
+          系统实时查库显示：该 SKU 当前现货可用库存为 <strong style="color: #FF4D4F; font-size: 16px;">0</strong> 件（本次请购需扣减 1 件）。无法直接流转至仓库安排发货！
+        </p>
+        <div style="background: #FFFBE6; border: 1px solid #FFE58F; padding: 12px 14px; border-radius: 4px; font-size: 13px; color: #D48806; margin-top: 14px;">
+          <strong>处置方案决策：</strong><br>
+          1. 若采购已紧急调拨到货，可点击【补充库存并通过】完成自动补货并放行；<br>
+          2. 若短期内无法供给，请点击【直接驳回】，商品将自动退回该员工的购物车；<br>
+          3. 若需等待线下沟通确认，可点击【暂不处理】维持待审核状态。
+        </div>
+      </div>
+      <div class="ant-modal-footer">
+        <button class="btn btn-default" onclick="closeStockAlertModal()">暂不处理 (保留待审)</button>
+        <button class="btn" style="background: #FF4D4F; color: #fff; border-color: #FF4D4F;" onclick="confirmRejectDueToOutOfStock()">直接驳回 (回退购物车)</button>
+        <button class="btn btn-primary" onclick="replenishStockAndApprove()">补充库存 (+10件) 并通过</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ant Design 顶部轻量 Toast 提示 -->
+  <div class="ant-toast" id="toastBox">
+    <svg class="svg-icon" style="width: 16px; height: 16px;"><use xlink:href="#icon-check"></use></svg>
+    <span id="toastMsg">提示信息</span>
+  </div>
+
+  <script>
+    // ---------------- 全局数据源与状态 (严格对齐生产详情页结构与请购样本) ----------------
+    const orderListIds = [
+      'PO202611120001',
+      'PO202611120002',
+      'PO202611120003',
+      '2026111211354954125',
+      '2026081918271974354',
+      '2026111609092562209'
+    ];
+
+    const ordersData = {
+      'PO202611120001': {
+        isRequisition: true,
+        orderId: 'PO202611120001',
+        payId: 'PAY202611120001',
+        orderType: '商品订单',
+        listOrderTypeLabel: '商品订单 (员工请购)',
+        mallType: '员工请购商城',
+        mallName: '员工内部请购商城',
+        supplierType: '自有供应商',
+        supplier: 'Apple中国企业直供',
+        createTime: '2026-11-12 10:20:00',
+        payTime: '',
+        shipTime: '',
+        finishTime: '',
+        status: 'WAIT_AUDIT',
+        statusText: '待审核',
+        userRemark: '研发笔记本无法支撑本地大模型调试，申请置换 M3 Pro 开发本。',
+        merchantRemark: '',
+        operatorRemark: '',
+        extraMeta: [],
+        userId: '10880214',
+        userNick: '张三(TF8802)',
+        userPhone: '13800138000',
+        payStatus: '待审核（免在线支付）',
+        orderAmount: '12999.00',
+        voucherAmount: '0.00',
+        cashDiffAmount: '0.00',
+        thirdPayAmount: '0',
+        exchangeCodes: [],
+        deliveryType: '物流配送',
+        receiverName: '张三',
+        receiverPhone: '13800138000',
+        receiverAddress: '广东省深圳市南山区高新南九道淘福客研发中心5楼架构组',
+        applicantSubtext: '申请人：张三 (TF8802 - 架构组)',
+        stockCount: 15,
+        items: [
+          {
+            name: 'Apple MacBook Pro 16英寸 M3 Pro',
+            spec: '18G+512G / 深空黑',
+            skuId: '164480101',
+            qty: 1,
+            cost: '12450.00',
+            serviceFee: '120.00',
+            h5Fee: '0.00',
+            salePrice: '12999.00',
+            afterSaleStatus: '无售后',
+            shipStatus: '未发货',
+            taxRate: '13%',
+            invoiceType: '专票',
+            taxCategory: '便携式计算机',
+            costTotal: '12450.00',
+            feeTotal: '120.00',
+            platformSettleTotal: '12450.00',
+            h5FeeTotal: '0.00'
+          }
+        ],
+        packages: [],
+        afterSales: [],
+        flowNodes: [
+          { seq: 1, name: '申请人', executor: '张三(TF8802)', status: '流程启动', start: '2026-11-12 10:20:00', end: '2026-11-12 10:20:00', cost: '0 分', comment: '提交申请' },
+          { seq: 2, name: '上级审批', executor: '刘瑞辰(liuruichen)', status: '待处理', start: '2026-11-12 10:20:00', end: '', cost: '', comment: '' }
+        ]
+      },
+      'PO202611120002': {
+        isRequisition: true,
+        orderId: 'PO202611120002',
+        payId: 'PAY202611120002',
+        orderType: '商品订单',
+        listOrderTypeLabel: '商品订单 (员工请购)',
+        mallType: '员工请购商城',
+        mallName: '员工内部请购商城',
+        supplierType: '平台供应商',
+        supplier: '戴尔企业自营旗舰店',
+        createTime: '2026-11-12 10:45:12',
+        payTime: '',
+        shipTime: '',
+        finishTime: '',
+        status: 'WAIT_AUDIT',
+        statusText: '待审核',
+        userRemark: 'UI 高保真原型色准校验，申请 4K IPS Black 专业显示器。',
+        merchantRemark: '',
+        operatorRemark: '',
+        extraMeta: [],
+        userId: '10880931',
+        userNick: '李四(TF8809)',
+        userPhone: '13900139000',
+        payStatus: '待审核（免在线支付）',
+        orderAmount: '3499.00',
+        voucherAmount: '0.00',
+        cashDiffAmount: '0.00',
+        thirdPayAmount: '0',
+        exchangeCodes: [],
+        deliveryType: '物流配送',
+        receiverName: '李四',
+        receiverPhone: '13900139000',
+        receiverAddress: '广东省深圳市南山区高新南九道淘福客研发中心4楼体验设计部',
+        applicantSubtext: '申请人：李四 (TF8809 - 设计组)',
+        stockCount: 0, // 0 库存触发提交审批通过时弹窗拦截
+        items: [
+          {
+            name: 'Dell 27英寸 4K 超清专业显示器 U2723QE',
+            spec: '4K IPS Black / 90W',
+            skuId: '164480209',
+            qty: 1,
+            cost: '3280.00',
+            serviceFee: '0.00',
+            h5Fee: '0.00',
+            salePrice: '3499.00',
+            afterSaleStatus: '无售后',
+            shipStatus: '未发货',
+            taxRate: '13%',
+            invoiceType: '专票',
+            taxCategory: '液晶显示器',
+            costTotal: '3280.00',
+            feeTotal: '0.00',
+            platformSettleTotal: '3280.00',
+            h5FeeTotal: '0.00'
+          }
+        ],
+        packages: [],
+        afterSales: [],
+        flowNodes: [
+          { seq: 1, name: '申请人', executor: '李四(TF8809)', status: '流程启动', start: '2026-11-12 10:45:12', end: '2026-11-12 10:45:12', cost: '0 分', comment: '提交申请' },
+          { seq: 2, name: '上级审批', executor: '刘瑞辰(liuruichen)', status: '待处理', start: '2026-11-12 10:45:12', end: '', cost: '', comment: '' }
+        ]
+      },
+      'PO202611120003': {
+        isRequisition: true,
+        orderId: 'PO202611120003',
+        payId: 'PAY202611120003',
+        orderType: '商品订单',
+        listOrderTypeLabel: '商品订单 (员工请购)',
+        mallType: '员工请购商城',
+        mallName: '员工内部请购商城',
+        supplierType: '自有供应商',
+        supplier: '罗技商用外设旗舰店',
+        createTime: '2026-11-12 09:15:30',
+        payTime: '',
+        shipTime: '',
+        finishTime: '',
+        status: 'REJECTED',
+        statusText: '已驳回',
+        userRemark: '现有办公鼠标滚轮损坏，申请换新。',
+        merchantRemark: '',
+        operatorRemark: '',
+        extraMeta: [],
+        userId: '10881542',
+        userNick: '王五(TF8815)',
+        userPhone: '13700137000',
+        payStatus: '未支付（已驳回关闭）',
+        orderAmount: '699.00',
+        voucherAmount: '0.00',
+        cashDiffAmount: '0.00',
+        thirdPayAmount: '0',
+        exchangeCodes: [],
+        deliveryType: '物流配送',
+        receiverName: '王五',
+        receiverPhone: '13700137000',
+        receiverAddress: '广东省深圳市龙华区北站一号14楼用户运营中心',
+        applicantSubtext: '申请人：王五 (TF8815 - 运营组)',
+        stockCount: 8,
+        items: [
+          {
+            name: '罗技 MX Master 3S 无线双模静音鼠标',
+            spec: '珍珠白 / 8K',
+            skuId: '164480315',
+            qty: 1,
+            cost: '610.00',
+            serviceFee: '12.00',
+            h5Fee: '0.00',
+            salePrice: '699.00',
+            afterSaleStatus: '无售后',
+            shipStatus: '未发货',
+            taxRate: '13%',
+            invoiceType: '普票',
+            taxCategory: '鼠标外设',
+            costTotal: '610.00',
+            feeTotal: '12.00',
+            platformSettleTotal: '610.00',
+            h5FeeTotal: '0.00'
+          }
+        ],
+        packages: [],
+        afterSales: [],
+        flowNodes: [
+          { seq: 1, name: '申请人', executor: '王五(TF8815)', status: '流程启动', start: '2026-11-12 09:15:30', end: '2026-11-12 09:15:30', cost: '0 分', comment: '提交申请' },
+          { seq: 2, name: '上级审批', executor: '刘瑞辰(liuruichen)', status: '退回', start: '2026-11-12 09:15:30', end: '2026-11-12 09:30:15', cost: '15 分', comment: '部门办公耗材季度定额已达上限，暂不批准采购外设。' }
+        ]
+      },
+      '2026111211354954125': {
+        isRequisition: false,
+        orderId: '2026111211354954125',
+        payId: '2026111211354954125',
+        orderType: '商品订单',
+        listOrderTypeLabel: '商品订单',
+        mallType: '官方商城',
+        mallName: '淘福客chj专用',
+        supplierType: '自有供应商',
+        supplier: '飞鸽',
+        createTime: '2026-11-12 11:35:54',
+        payTime: '2026-11-12 11:35:54',
+        shipTime: '',
+        finishTime: '',
+        status: 'WAIT_SHIP',
+        statusText: '等待发货',
+        userRemark: '',
+        merchantRemark: '',
+        operatorRemark: '',
+        extraMeta: [],
+        userId: '9295941',
+        userNick: '150****1713',
+        userPhone: '15076701713',
+        payStatus: '已支付',
+        orderAmount: '0.60',
+        voucherAmount: '0.60',
+        cashDiffAmount: '0.00',
+        thirdPayAmount: '0',
+        exchangeCodes: ['8000046720'],
+        deliveryType: '物流配送',
+        receiverName: '刘',
+        receiverPhone: '15076701713',
+        receiverAddress: '广东省深圳市龙华区北站一号14楼',
+        stockCount: 99,
+        items: [
+          {
+            name: '鲜牛奶（测试）',
+            spec: '-',
+            skuId: '164290455',
+            qty: 1,
+            cost: '0.20',
+            serviceFee: '0.02',
+            h5Fee: '0.00',
+            salePrice: '0.60',
+            afterSaleStatus: '无售后',
+            shipStatus: '未发货',
+            taxRate: '免税',
+            invoiceType: '专票',
+            taxCategory: '稻谷',
+            costTotal: '0.20',
+            feeTotal: '0.02',
+            platformSettleTotal: '0.20',
+            h5FeeTotal: '0.00'
+          }
+        ],
+        packages: [],
+        afterSales: [],
+        showAfterSaleCard: true,
+        canApplyAfterSale: true
+      },
+      '2026081918271974354': {
+        isRequisition: false,
+        orderId: '2026081918271974354',
+        payId: '2026081918271974354',
+        orderType: '商品订单',
+        listOrderTypeLabel: '商品订单',
+        mallType: '定制商城',
+        mallName: '电子签收商城',
+        supplierType: '自有供应商',
+        supplier: '苏打优选',
+        createTime: '2026-08-19 18:27:23',
+        payTime: '2026-08-19 18:27:23',
+        shipTime: '2026-11-06 11:18:26',
+        finishTime: '',
+        status: 'SHIPPED',
+        statusText: '已发货',
+        userRemark: '',
+        merchantRemark: '',
+        operatorRemark: '',
+        extraMeta: [],
+        userId: '10724414',
+        userNick: '182****7025',
+        userPhone: '18211567025',
+        payStatus: '已支付',
+        orderAmount: '2.25',
+        voucherAmount: '2.25',
+        cashDiffAmount: '0.00',
+        thirdPayAmount: '0',
+        exchangeCodes: ['8000047260', '8000047260'],
+        deliveryType: '物流配送',
+        receiverName: '测试',
+        receiverPhone: '16675523202',
+        receiverAddress: '广东省深圳市龙华区民治街道北站社区民塘路395号华侨城创想大厦',
+        stockCount: 50,
+        items: [
+          {
+            name: '测试商品单品运费1',
+            spec: '-',
+            skuId: '163897212',
+            qty: 1,
+            cost: '1.00',
+            serviceFee: '0.04',
+            h5Fee: '0.00',
+            salePrice: '2.00',
+            afterSaleStatus: '无售后',
+            shipStatus: '已发货',
+            taxRate: '-',
+            invoiceType: '-',
+            taxCategory: '-',
+            costTotal: '1.00',
+            feeTotal: '0.04',
+            platformSettleTotal: '1.00',
+            h5FeeTotal: '0.00'
+          },
+          {
+            name: '运费',
+            spec: '-',
+            skuId: '2872',
+            qty: 1,
+            cost: '0.25',
+            serviceFee: '0.00',
+            h5Fee: '0.00',
+            salePrice: '0.25',
+            afterSaleStatus: '无售后',
+            shipStatus: '',
+            taxRate: '6%',
+            invoiceType: '-',
+            taxCategory: '其他生产生活服务',
+            costTotal: '0.25',
+            feeTotal: '0.00',
+            platformSettleTotal: '0.25',
+            h5FeeTotal: '0.00'
+          }
+        ],
+        packages: [
+          { pkgId: '20111679', type: '订单原包裹', carrier: '圆通', trackingNo: '666666666666', goodsName: '测试商品单品运费1', spec: '-', qty: 1, trace: '-' }
+        ],
+        afterSales: [],
+        showAfterSaleCard: true,
+        canApplyAfterSale: true
+      },
+      '2026111609092562209': {
+        isRequisition: false,
+        orderId: '2026111609092562209',
+        payId: '2026111609092562209',
+        orderType: '商品订单',
+        listOrderTypeLabel: '商品订单',
+        mallType: '定制商城',
+        mallName: '自动化测试专用商城',
+        supplierType: '平台供应商',
+        supplier: '苏打直供',
+        createTime: '2026-11-16 09:09:28',
+        payTime: '2026-11-16 09:09:28',
+        shipTime: '2026-11-16 09:09:28',
+        finishTime: '2026-11-16 09:09:30（系统自动确认收货）',
+        status: 'CLOSED',
+        statusText: '交易关闭',
+        userRemark: '',
+        merchantRemark: '',
+        operatorRemark: null,
+        extraMeta: [],
+        userId: '11405490',
+        userNick: '182****8231',
+        userPhone: '18275338231',
+        payStatus: '已支付',
+        orderAmount: '0.33',
+        voucherAmount: '0.33',
+        cashDiffAmount: '0.00',
+        thirdPayAmount: '0',
+        exchangeCodes: ['8000047854'],
+        deliveryType: '虚拟商品发货',
+        receiverName: '',
+        receiverPhone: '18275338231',
+        receiverAddress: '',
+        thirdRechargeAccount: '',
+        stockCount: 0,
+        items: [
+          {
+            name: 'ymy电子多SKU商品',
+            spec: '大',
+            skuId: '164364782',
+            qty: 3,
+            cost: '0.80',
+            serviceFee: '0.00',
+            h5Fee: '0.00',
+            salePrice: '0.11',
+            afterSaleStatus: '已退款',
+            shipStatus: '未发货',
+            taxRate: '免税',
+            invoiceType: '普票',
+            taxCategory: '高粱米',
+            costTotal: '2.40',
+            feeTotal: '0.00',
+            platformSettleTotal: '2.40',
+            h5FeeTotal: '0.00'
+          }
+        ],
+        packages: [],
+        afterSales: [
+          { asId: '2026111609095941676', type: '退货', applyTime: '2026-11-16 09:09:59', status: '已退款' },
+          { asId: '2026111609393034230', type: '仅退款（发货后）', applyTime: '2026-11-16 09:39:31', status: '已退款' }
+        ],
+        showAfterSaleCard: true,
+        canApplyAfterSale: false
+      }
+    };
+
+    let activeOrderId = null;
+    let currentAuditVerdict = 1; // 1: 通过 | 0: 退回
+
+    // ---------------- 订单列表动态渲染 ----------------
+    function getStatusDisplay(order) {
+      if (order.status === 'WAIT_AUDIT') return `<span class="status-badge-dot dot-warning"></span><span style="color: #FAAD14; font-weight: 500;">待审核</span>`;
+      if (order.status === 'REJECTED') return `<span class="status-badge-dot dot-danger"></span><span style="color: #FF4D4F; font-weight: 500;">已驳回</span>`;
+      if (order.status === 'WAIT_SHIP') return `<span class="status-badge-dot dot-info"></span><span style="color: #1890FF; font-weight: 500;">等待发货</span>`;
+      if (order.status === 'SHIPPED') return `<span class="status-badge-dot dot-info"></span><span style="color: #1890FF; font-weight: 500;">已发货</span>`;
+      return `<span class="status-badge-dot dot-default"></span><span style="color: #8C8C8C;">${order.statusText || '交易关闭'}</span>`;
+    }
+
+    function getListOpsHtml(order) {
+      if (order.status === 'WAIT_AUDIT') {
+        return `
+          <span class="action-link" onclick="openOrderDetail('${order.orderId}', 'view')">查看详情</span>
+          <span class="action-link primary" onclick="openOrderDetail('${order.orderId}', 'audit')">去处理</span>
+        `;
+      }
+      if (order.status === 'REJECTED') {
+        // 已驳回的订单操作严格只有查看详情
+        return `<span class="action-link" onclick="openOrderDetail('${order.orderId}', 'view')">查看详情</span>`;
+      }
+      if (order.status === 'CLOSED' && order.afterSales && order.afterSales.length > 0) {
+        return `
+          <span class="action-link" onclick="openOrderDetail('${order.orderId}', 'view')">查看售后</span>
+          <span class="action-link" onclick="openOrderDetail('${order.orderId}', 'view')">查看详情</span>
+        `;
+      }
+      if (order.status === 'WAIT_SHIP' || order.status === 'SHIPPED') {
+        const afterBtn = order.isRequisition ? '' : `<span class="action-link" onclick="showToast('已打开申请售后弹窗')">申请售后</span>`;
+        const remarkBtn = order.isRequisition ? '' : `<span class="action-link" onclick="showToast('订单备注：暂无异常')">订单备注</span>`;
+        return `${afterBtn}<span class="action-link" onclick="openOrderDetail('${order.orderId}', 'view')">查看详情</span>${remarkBtn}`;
+      }
+      return `<span class="action-link" onclick="openOrderDetail('${order.orderId}', 'view')">查看详情</span>`;
+    }
+
+    function renderOrderListTable() {
+      const table = document.getElementById('orderListTable');
+      if (!table) return;
+      // 清除旧 tbody
+      table.querySelectorAll('tbody').forEach(el => el.remove());
+
+      orderListIds.forEach(oid => {
+        const order = ordersData[oid];
+        if (!order) return;
+        const primaryItem = order.items[0];
+        const extraRows = order.items.slice(1);
+        const tbody = document.createElement('tbody');
+        tbody.id = 'rowOrder_' + oid;
+
+        const extraRowsHtml = extraRows.map(sub => `
+          <tr class="order-data-row">
+            <td>${sub.name}</td>
+            <td>${sub.spec}</td>
+            <td>${sub.qty}</td>
+            <td style="text-align: right;">${sub.salePrice}</td>
+            <td style="text-align: right;">-</td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+        `).join('');
+
+        tbody.innerHTML = `
+          <tr class="order-group-spacer"><td colspan="8"></td></tr>
+          <tr class="order-header-row">
+            <td colspan="8">
+              <div class="order-header-meta">
+                <span><strong>订单编号：</strong>${order.orderId}</span>
+                <span><strong>支付号：</strong>${order.payId}</span>
+                <span><strong>供应商：</strong>${order.supplier}</span>
+                <span><strong>下单时间：</strong>${order.createTime}</span>
+                <span><strong>供应商类型：</strong>${order.supplierType}</span>
+                <span><strong>订单类型：</strong>${order.listOrderTypeLabel}</span>
+              </div>
+            </td>
+          </tr>
+          <tr class="order-data-row">
+            <td>
+              <div style="font-weight: 500; color: rgba(0,0,0,0.85);">${primaryItem.name}</div>
+              ${order.applicantSubtext ? `<div style="font-size: 12px; color: rgba(0,0,0,0.45); margin-top: 2px;">${order.applicantSubtext}</div>` : ''}
+            </td>
+            <td>${primaryItem.spec}</td>
+            <td>${primaryItem.qty}</td>
+            <td style="text-align: right;">${primaryItem.salePrice}</td>
+            <td style="text-align: right; font-weight: 500;">${order.orderAmount}</td>
+            <td>${order.receiverPhone || order.userPhone}</td>
+            <td id="statusCell_${oid}">${getStatusDisplay(order)}</td>
+            <td style="text-align: right;" id="opCell_${oid}">${getListOpsHtml(order)}</td>
+          </tr>
+          ${extraRowsHtml}
+        `;
+        table.appendChild(tbody);
+      });
+    }
+
+    // ---------------- 真实订单详情卡片渲染 (1:1 复刻 pre-operator.taofuke.cn) ----------------
+    function kvItem(label, value, useSpan = true) {
+      const val = value === undefined || value === null ? '' : value;
+      return `<div class="detail-kv-item">${label}：<span class="second-font-color">${val}</span></div>`;
+    }
+
+    function renderOrderDetailCards(order) {
+      const container = document.getElementById('nativeDetailCardsContainer');
+      const isPlatform = order.supplierType === '平台供应商';
+
+      // 1. 订单信息 Card
+      const orderInfoFields = [
+        kvItem('订单编号', order.orderId),
+        kvItem('订单类型', order.orderType),
+        kvItem('订单状态', order.statusText),
+        kvItem('商城类型', order.mallType),
+        kvItem('供应商类型', order.supplierType),
+        kvItem('供应商名称', order.supplier),
+        kvItem('所属商城', order.mallName),
+        kvItem('下单时间', order.createTime),
+        order.payTime ? kvItem('支付时间', order.payTime) : '',
+        order.shipTime ? kvItem('发货时间', order.shipTime) : '',
+        order.finishTime ? kvItem('完成时间', order.finishTime) : '',
+        kvItem('用户备注', order.userRemark || ''),
+        kvItem('商家备注', order.merchantRemark || ''),
+        order.operatorRemark !== null && order.operatorRemark !== undefined ? kvItem('运营商备注', order.operatorRemark || '') : ''
+      ].filter(Boolean).join('');
+
+      // 2. 用户信息 Card
+      const userInfoFields = [
+        kvItem('用户ID', order.userId),
+        kvItem('用户昵称', order.userNick),
+        kvItem('用户手机号码', order.userPhone)
+      ].join('');
+
+      // 3. 支付信息 Card
+      const exchangeHtml = order.exchangeCodes && order.exchangeCodes.length > 0
+        ? `<div class="detail-kv-item detail-kv-flex">
+             <div class="detail-kv-flex-label">兑换券号：</div>
+             <div class="second-font-color" style="flex: 1;">
+               ${order.exchangeCodes.map((c, idx) => `<span class="${idx === order.exchangeCodes.length - 1 ? 'mr10' : ''}">${c}${idx < order.exchangeCodes.length - 1 ? ', ' : ''}</span>`).join('')}
+               <a class="detail-link" onclick="showToast('兑换券号明细：${order.exchangeCodes[0]}')">明细</a>
+             </div>
+           </div>`
+        : `<div class="detail-kv-item">兑换券号：<span class="second-font-color">-</span></div>`;
+
+      const payInfoFields = [
+        kvItem('支付号', order.payId),
+        kvItem('支付状态', order.payStatus),
+        kvItem('订单金额', order.orderAmount),
+        kvItem('券付金额', order.voucherAmount),
+        kvItem('现金补差金额', order.cashDiffAmount),
+        kvItem('第三方支付金额', order.thirdPayAmount),
+        exchangeHtml,
+        kvItem('收款商户号', '-'),
+        kvItem('商户号ID', '-'),
+        kvItem('优惠券抵扣', '-'),
+        kvItem('优惠券ID', '-')
+      ].join('');
+
+      // 4. 配送信息 Card (适配物流配送 vs 虚拟商品发货)
+      const deliveryFields = order.deliveryType === '虚拟商品发货'
+        ? [
+            kvItem('配送方式', order.deliveryType),
+            kvItem('联系方式', order.receiverPhone),
+            kvItem('第三方充值账号', order.thirdRechargeAccount || '')
+          ].join('')
+        : [
+            kvItem('配送方式', order.deliveryType),
+            kvItem('收货人', order.receiverName),
+            kvItem('联系方式', order.receiverPhone),
+            `<div class="detail-kv-item detail-kv-flex">
+               <div class="detail-kv-flex-label">收货地址：</div>
+               <div class="second-font-color" style="flex: 1;">${order.receiverAddress}</div>
+             </div>`
+          ].join('');
+
+      // 5. 商品信息 Table Card
+      const costHeader = isPlatform ? '平台成本' : '供应商成本';
+      const feeHeader = isPlatform ? '税负' : '供应链服务费';
+      const goodsRowsHtml = order.items.map(item => `
+        <tr class="ant-table-row">
+          <td class="ant-table-cell">${item.name}</td>
+          <td class="ant-table-cell">${item.spec}</td>
+          <td class="ant-table-cell">${item.skuId}</td>
+          <td class="ant-table-cell">${item.qty}</td>
+          <td class="ant-table-cell" style="text-align: right;">${item.cost}</td>
+          <td class="ant-table-cell" style="text-align: right;">${item.serviceFee}</td>
+          <td class="ant-table-cell" style="text-align: right;">${item.h5Fee}</td>
+          <td class="ant-table-cell" style="text-align: right;">${item.salePrice}</td>
+          <td class="ant-table-cell">${item.afterSaleStatus}</td>
+          <td class="ant-table-cell">${item.shipStatus}</td>
+          <td class="ant-table-cell">${item.taxRate}</td>
+          <td class="ant-table-cell">${item.invoiceType}</td>
+          <td class="ant-table-cell">${item.taxCategory}</td>
+          <td class="ant-table-cell" style="text-align: center;">
+            <a class="detail-link" onclick="showToast('商品 SKUID ${item.skuId}（当前可用物理库存：${order.stockCount} 件）')">查看详情</a>
+          </td>
+        </tr>
+      `).join('');
+
+      // 6. 结算信息 Table Card
+      const settleHeaders = isPlatform
+        ? `<th class="ant-table-cell" style="text-align: right;">平台成本总额</th>
+           <th class="ant-table-cell" style="text-align: right;">税负总额</th>
+           <th class="ant-table-cell" style="text-align: right;">平台结算总额</th>
+           <th class="ant-table-cell" style="text-align: right;">用户H5服务费总额</th>`
+        : `<th class="ant-table-cell" style="text-align: right;">供应商结算总额</th>
+           <th class="ant-table-cell" style="text-align: right;">供应链服务费总额</th>
+           <th class="ant-table-cell" style="text-align: right;">用户H5服务费总额</th>`;
+
+      const settleRowsHtml = order.items.map(item => `
+        <tr class="ant-table-row">
+          <td class="ant-table-cell">${item.name}</td>
+          <td class="ant-table-cell">${item.spec}</td>
+          <td class="ant-table-cell">${item.skuId}</td>
+          <td class="ant-table-cell">${item.qty}</td>
+          ${isPlatform
+            ? `<td class="ant-table-cell" style="text-align: right;">${item.costTotal}</td>
+               <td class="ant-table-cell" style="text-align: right;">${item.feeTotal}</td>
+               <td class="ant-table-cell" style="text-align: right;">${item.platformSettleTotal}</td>
+               <td class="ant-table-cell" style="text-align: right;">${item.h5FeeTotal}</td>`
+            : `<td class="ant-table-cell" style="text-align: right;">${item.costTotal}</td>
+               <td class="ant-table-cell" style="text-align: right;">${item.feeTotal}</td>
+               <td class="ant-table-cell" style="text-align: right;">${item.h5FeeTotal}</td>`}
+        </tr>
+      `).join('');
+
+      // 7. 包裹信息 Card (仅已发货 / 交易完成订单显示)
+      const pkgCardHtml = order.packages && order.packages.length > 0 ? `
+        <div class="ant-card">
+          <div class="ant-card-head"><div class="ant-card-head-wrapper"><div class="ant-card-head-title">包裹信息</div></div></div>
+          <div class="ant-card-body">
+            <div class="ant-table-wrapper">
+              <div class="ant-table ant-table-bordered">
+                <div class="ant-table-content">
+                  <table>
+                    <thead class="ant-table-thead">
+                      <tr>
+                        <th class="ant-table-cell">包裹</th>
+                        <th class="ant-table-cell">包裹类型</th>
+                        <th class="ant-table-cell">物流公司</th>
+                        <th class="ant-table-cell">物流单号</th>
+                        <th class="ant-table-cell">商品名称</th>
+                        <th class="ant-table-cell">规格选项</th>
+                        <th class="ant-table-cell">数量</th>
+                        <th class="ant-table-cell">物流动态</th>
+                      </tr>
+                    </thead>
+                    <tbody class="ant-table-tbody">
+                      ${order.packages.map(pkg => `
+                        <tr class="ant-table-row">
+                          <td class="ant-table-cell">${pkg.pkgId}</td>
+                          <td class="ant-table-cell">${pkg.type}</td>
+                          <td class="ant-table-cell">${pkg.carrier}</td>
+                          <td class="ant-table-cell">${pkg.trackingNo}</td>
+                          <td class="ant-table-cell">${pkg.goodsName}</td>
+                          <td class="ant-table-cell">${pkg.spec}</td>
+                          <td class="ant-table-cell">${pkg.qty}</td>
+                          <td class="ant-table-cell">${pkg.trace}</td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>` : '';
+
+      // 8. 售后信息 Card (已支付且非待审核/已驳回单按生产结构渲染)
+      const showAfterSale = order.showAfterSaleCard || order.status === 'WAIT_SHIP' || order.status === 'SHIPPED';
+      const afterSaleCardHtml = showAfterSale ? `
+        <div class="ant-card">
+          <div class="ant-card-head">
+            <div class="ant-card-head-wrapper">
+              <div class="ant-card-head-title">
+                售后信息${order.canApplyAfterSale ? `<span class="ml20"><button type="button" class="reply-sealing" onclick="showToast('已打开申请售后弹窗')"><span>申请售后</span></button></span>` : ''}
+              </div>
+            </div>
+          </div>
+          <div class="ant-card-body">
+            ${order.afterSales && order.afterSales.length > 0 ? `
+              <div class="ant-table-wrapper">
+                <div class="ant-table ant-table-bordered">
+                  <div class="ant-table-content">
+                    <table>
+                      <thead class="ant-table-thead">
+                        <tr>
+                          <th class="ant-table-cell">售后订单号</th>
+                          <th class="ant-table-cell">售后类型</th>
+                          <th class="ant-table-cell">申请时间</th>
+                          <th class="ant-table-cell">售后状态</th>
+                          <th class="ant-table-cell">操作</th>
+                        </tr>
+                      </thead>
+                      <tbody class="ant-table-tbody">
+                        ${order.afterSales.map(asItem => `
+                          <tr class="ant-table-row">
+                            <td class="ant-table-cell">${asItem.asId}</td>
+                            <td class="ant-table-cell">${asItem.type}</td>
+                            <td class="ant-table-cell">${asItem.applyTime}</td>
+                            <td class="ant-table-cell">${asItem.status}</td>
+                            <td class="ant-table-cell"><a class="detail-link" onclick="showToast('售后单号 ${asItem.asId}：${asItem.status}')">查看详情</a></td>
+                          </tr>
+                        `).join('')}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>` : ''}
+          </div>
+        </div>` : '';
+
+      container.innerHTML = `
+        <div class="ant-card">
+          <div class="ant-card-head"><div class="ant-card-head-wrapper"><div class="ant-card-head-title">订单信息</div></div></div>
+          <div class="ant-card-body"><div class="detail-kv-grid">${orderInfoFields}</div></div>
+        </div>
+
+        <div class="ant-card">
+          <div class="ant-card-head"><div class="ant-card-head-wrapper"><div class="ant-card-head-title">用户信息</div></div></div>
+          <div class="ant-card-body"><div class="detail-kv-grid">${userInfoFields}</div></div>
+        </div>
+
+        <div class="ant-card">
+          <div class="ant-card-head"><div class="ant-card-head-wrapper"><div class="ant-card-head-title">支付信息</div></div></div>
+          <div class="ant-card-body"><div class="detail-kv-grid">${payInfoFields}</div></div>
+        </div>
+
+        <div class="ant-card">
+          <div class="ant-card-head"><div class="ant-card-head-wrapper"><div class="ant-card-head-title">配送信息</div></div></div>
+          <div class="ant-card-body"><div class="detail-kv-grid">${deliveryFields}</div></div>
+        </div>
+
+        <div class="ant-card">
+          <div class="ant-card-head"><div class="ant-card-head-wrapper"><div class="ant-card-head-title">商品信息</div></div></div>
+          <div class="ant-card-body">
+            <div class="ant-table-wrapper">
+              <div class="ant-table ant-table-bordered">
+                <div class="ant-table-content">
+                  <table>
+                    <thead class="ant-table-thead">
+                      <tr>
+                        <th class="ant-table-cell">商品名称</th>
+                        <th class="ant-table-cell">规格选项</th>
+                        <th class="ant-table-cell">SKUID</th>
+                        <th class="ant-table-cell">数量</th>
+                        <th class="ant-table-cell" style="text-align: right;">${costHeader}</th>
+                        <th class="ant-table-cell" style="text-align: right;">${feeHeader}</th>
+                        <th class="ant-table-cell" style="text-align: right;">用户H5服务费</th>
+                        <th class="ant-table-cell" style="text-align: right;">销售价</th>
+                        <th class="ant-table-cell">售后状态</th>
+                        <th class="ant-table-cell">发货状态</th>
+                        <th class="ant-table-cell">税率</th>
+                        <th class="ant-table-cell">发票类型</th>
+                        <th class="ant-table-cell">税收分类</th>
+                        <th class="ant-table-cell" style="text-align: center;">操作</th>
+                      </tr>
+                    </thead>
+                    <tbody class="ant-table-tbody">${goodsRowsHtml}</tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ant-card">
+          <div class="ant-card-head"><div class="ant-card-head-wrapper"><div class="ant-card-head-title">结算信息</div></div></div>
+          <div class="ant-card-body">
+            <div class="ant-table-wrapper">
+              <div class="ant-table ant-table-bordered">
+                <div class="ant-table-content">
+                  <table>
+                    <thead class="ant-table-thead">
+                      <tr>
+                        <th class="ant-table-cell">商品名称</th>
+                        <th class="ant-table-cell">规格选项</th>
+                        <th class="ant-table-cell">SKUID</th>
+                        <th class="ant-table-cell">数量</th>
+                        ${settleHeaders}
+                      </tr>
+                    </thead>
+                    <tbody class="ant-table-tbody">${settleRowsHtml}</tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        ${pkgCardHtml}
+        ${afterSaleCardHtml}
+      `;
+
+      // 渲染底部吸底操作栏 (.common-detail-container__footer)
+      const footerLeft = document.getElementById('detailFooterLeft');
+      const showSuperRefund = order.payStatus.startsWith('已支付');
+      footerLeft.innerHTML = `
+        ${showSuperRefund ? `
+          <div class="super-back" onclick="showToast('超级退（非标准）仅供特殊资金退还处理')">
+            <span class="mr8" style="display:inline-flex;align-items:center;">
+              <svg viewBox="64 64 896 896" width="14" height="14" fill="currentColor"><path d="M512 64C264.6 64 64 264.6 64 512s200.6 448 448 448 448-200.6 448-448S759.4 64 512 64zm0 820c-205.4 0-372-166.6-372-372s166.6-372 372-372 372 166.6 372 372-166.6 372-372 372z"></path><path d="M464 688a48 48 0 1096 0 48 48 0 10-96 0zm24-112h48c4.4 0 8-3.6 8-8V296c0-4.4-3.6-8-8-8h-48c-4.4 0-8 3.6-8 8v272c0 4.4 3.6 8 8 8z"></path></svg>
+            </span>超级退（非标准）
+          </div>` : ''}
+        <button type="button" class="btn btn-primary" style="border-radius: 2px;" onclick="showToast('已打开发起工单弹窗')"><span>发起工单</span></button>
+      `;
+    }
+
+    // ---------------- 视图路由与详情展示 ----------------
+    function openOrderDetail(orderId, mode) {
+      activeOrderId = orderId;
+      const order = ordersData[orderId];
+      if (!order) {
+        showToast('未找到订单数据：' + orderId);
+        return;
+      }
+
+      document.getElementById('viewOrderList').style.display = 'none';
+      document.getElementById('viewOrderDetail').style.display = 'block';
+      document.getElementById('bcDetailSeparator').style.display = 'inline';
+      document.getElementById('bcDetailText').style.display = 'inline';
+
+      // 渲染 1:1 真实订单详情原生卡片流
+      renderOrderDetailCards(order);
+
+      // 请购审批与流程节点卡片 (仅员工请购单显示，普通商城单隐藏保持原生纯净)
+      const approveForm = document.getElementById('approveForm');
+      const cardFlowNodes = document.getElementById('cardFlowNodes');
+      const submitBtnContainer = document.getElementById('approveSubmitBtnContainer');
+      const finishedNotice = document.getElementById('approveFinishedNotice');
+      const commentInput = document.getElementById('approveForm_approve_comment');
+
+      if (!order.isRequisition) {
+        approveForm.style.display = 'none';
+        cardFlowNodes.style.display = 'none';
+      } else {
+        approveForm.style.display = 'block';
+        cardFlowNodes.style.display = 'block';
+        if (order.status === 'WAIT_AUDIT') {
+          submitBtnContainer.style.display = 'block';
+          finishedNotice.style.display = 'none';
+          commentInput.disabled = false;
+          commentInput.value = '';
+          setAuditVerdictVal(1);
+        } else {
+          submitBtnContainer.style.display = 'none';
+          finishedNotice.style.display = 'block';
+          commentInput.disabled = true;
+          if (order.status === 'WAIT_SHIP' || order.status === 'SHIPPED') {
+            document.getElementById('txtFinishedVerdict').innerHTML = '<span style="color: #1B9AEE;">审批通过 (流转至等待发货)</span>';
+            commentInput.value = order.flowNodes[order.flowNodes.length - 1].comment || '审核通过。';
+            setAuditVerdictVal(1);
+          } else {
+            document.getElementById('txtFinishedVerdict').innerHTML = '<span style="color: #FF4D4F;">审批退回 (已驳回并归档)</span>';
+            commentInput.value = order.flowNodes[order.flowNodes.length - 1].comment || '审批不通过，予以退回。';
+            setAuditVerdictVal(0);
+          }
+        }
+        renderFlowNodesTable(order.flowNodes || []);
+      }
+
+      const contentEl = document.querySelector('.operator-content');
+      if (mode === 'audit' && order.isRequisition) {
+        setTimeout(() => {
+          document.getElementById('cardApprove').scrollIntoView({ behavior: 'auto', block: 'center' });
+          commentInput.focus();
+        }, 60);
+      } else if (contentEl) {
+        contentEl.scrollTop = 0;
+      }
+    }
+
+    function backToOrderList() {
+      document.getElementById('viewOrderDetail').style.display = 'none';
+      document.getElementById('viewOrderList').style.display = 'block';
+      document.getElementById('bcDetailSeparator').style.display = 'none';
+      document.getElementById('bcDetailText').style.display = 'none';
+      const contentEl = document.querySelector('.operator-content');
+      if (contentEl) contentEl.scrollTop = 0;
+    }
+
+    // 渲染流程节点表
+    function renderFlowNodesTable(nodes) {
+      const tbody = document.getElementById('flowNodesTableBody');
+      tbody.innerHTML = '';
+      nodes.forEach(node => {
+        const tr = document.createElement('tr');
+        tr.className = 'ant-table-row ant-table-row-level-0';
+        tr.innerHTML = `
+          <td class="ant-table-cell">${node.seq}</td>
+          <td class="ant-table-cell">${node.name}</td>
+          <td class="ant-table-cell"><span style="word-break: break-all;">${node.executor}</span></td>
+          <td class="ant-table-cell">
+            <span style="${node.status === '审批通过' || node.status === '流程启动' ? 'color: #52C41A; font-weight: 500;' : (node.status === '退回' || node.status === '已驳回' ? 'color: #FF4D4F; font-weight: 500;' : (node.status === '待处理' ? 'color: #FAAD14; font-weight: 500;' : ''))}">
+              ${node.status}
+            </span>
+          </td>
+          <td class="ant-table-cell">${node.start || '-'}</td>
+          <td class="ant-table-cell">${node.end || '-'}</td>
+          <td class="ant-table-cell">${node.cost || '-'}</td>
+          <td class="ant-table-cell">${node.comment || '-'}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // 审批单选框赋值 (通过/退回)
+    function setAuditVerdictVal(val) {
+      currentAuditVerdict = val;
+      const passSpan = document.getElementById('radioSpanPass');
+      const rejectSpan = document.getElementById('radioSpanReject');
+      if (val === 1) {
+        passSpan.className = 'ant-radio ant-radio-checked';
+        rejectSpan.className = 'ant-radio';
+      } else {
+        passSpan.className = 'ant-radio';
+        rejectSpan.className = 'ant-radio ant-radio-checked';
+      }
+    }
+
+    // 提交审批操作 (含现货库存校验拦截)
+    function submitDetailApproval() {
+      const order = ordersData[activeOrderId];
+      if (!order) return;
+
+      const comment = document.getElementById('approveForm_approve_comment').value.trim();
+
+      if (currentAuditVerdict === 1) {
+        // 选择【通过】时，实时校验物理可用库存
+        if (order.stockCount <= 0) {
+          document.getElementById('alertGoodsName').innerText = order.items[0].name;
+          document.getElementById('stockAlertModal').classList.add('open');
+          return;
+        }
+        applyApprovalSuccess(order, comment || '审批通过，经核验符合采购标准，安排仓库直发。');
+      } else {
+        applyApprovalReject(order, comment || '经管理员复核，暂不符合本期申领条件，予以驳回。');
+      }
+    }
+
+    // 执行通过逻辑
+    function applyApprovalSuccess(order, comment) {
+      const nowStr = '2026-11-12 11:20:00';
+      order.status = 'WAIT_SHIP';
+      order.statusText = '等待发货';
+      order.payTime = nowStr;
+      order.payStatus = '已支付（企业备用金扣除）';
+      order.voucherAmount = order.orderAmount;
+      order.showAfterSaleCard = true;
+      order.canApplyAfterSale = true;
+      order.flowNodes[1].status = '审批通过';
+      order.flowNodes[1].end = nowStr;
+      order.flowNodes[1].cost = '15 分';
+      order.flowNodes[1].comment = comment;
+
+      renderOrderListTable();
+      openOrderDetail(order.orderId, 'view');
+      showToast(`单据 ${order.orderId} 审批已通过！现货库存已核扣，单据流转至【等待发货】`);
+    }
+
+    // 执行退回逻辑
+    function applyApprovalReject(order, comment) {
+      const nowStr = '2026-11-12 11:20:00';
+      order.status = 'REJECTED';
+      order.statusText = '已驳回';
+      order.payStatus = '未支付（已驳回关闭）';
+      order.flowNodes[1].status = '退回';
+      order.flowNodes[1].end = nowStr;
+      order.flowNodes[1].cost = '15 分';
+      order.flowNodes[1].comment = comment;
+
+      renderOrderListTable();
+      openOrderDetail(order.orderId, 'view');
+      showToast(`单据 ${order.orderId} 已退回！状态变更为【已驳回】，商品已退回员工购物车`);
+    }
+
+    // ---------------- 库存不足弹窗交互 ----------------
+    function closeStockAlertModal() {
+      document.getElementById('stockAlertModal').classList.remove('open');
+      showToast('单据维持【待审核】状态，请联系采购补足现货后再行处理');
+    }
+
+    function confirmRejectDueToOutOfStock() {
+      document.getElementById('stockAlertModal').classList.remove('open');
+      const order = ordersData[activeOrderId];
+      applyApprovalReject(order, '因该商品物理可用库存不足，审批直接驳回。商品已自动退回员工购物车。');
+    }
+
+    function replenishStockAndApprove() {
+      document.getElementById('stockAlertModal').classList.remove('open');
+      const order = ordersData[activeOrderId];
+      order.stockCount = 10;
+      applyApprovalSuccess(order, '已完成补货入库 (+10 件)，审批通过并安排发货。');
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      renderOrderListTable();
+      const qs = new URLSearchParams(location.search);
+      const oid = qs.get('id');
+      const mode = qs.get('mode') || 'view';
+      if (oid && ordersData[oid]) {
+        openOrderDetail(oid, mode);
+      }
+    });
+
+    // ---------------- 筛选器通用交互 (下拉/TreeSelect/日历) ----------------
+    let currentOpenDropdown = null;
+
+    function toggleDropdown(popupId) {
+      if (window.event) window.event.stopPropagation();
+      const popup = document.getElementById(popupId);
+      if (currentOpenDropdown && currentOpenDropdown !== popup) {
+        currentOpenDropdown.classList.remove('open');
+      }
+      if (popup.classList.contains('open')) {
+        popup.classList.remove('open');
+        currentOpenDropdown = null;
+      } else {
+        popup.classList.add('open');
+        currentOpenDropdown = popup;
+      }
+    }
+
+    document.addEventListener('click', () => {
+      if (currentOpenDropdown) {
+        currentOpenDropdown.classList.remove('open');
+        currentOpenDropdown = null;
+      }
+    });
+
+    function selectOption(key, text, isSelected) {
+      if (window.event) window.event.stopPropagation();
+      const label = document.getElementById('label' + key);
+      if (label) {
+        label.innerText = text;
+        label.style.color = isSelected ? 'var(--text-main)' : '#BFBFBF';
+      }
+      if (currentOpenDropdown) {
+        currentOpenDropdown.classList.remove('open');
+        currentOpenDropdown = null;
+      }
+    }
+
+    // TreeSelect 订单状态多选逻辑
+    const selectedStatuses = new Set(['WAIT_AUDIT', 'WAIT_SHIP']);
+    const statusNames = {
+      'WAIT_AUDIT': '待审核',
+      'REJECTED': '已驳回',
+      'WAIT_SHIP': '等待发货',
+      'WAIT_PAY': '等待支付',
+      'USER_CANCEL': '用户取消',
+      'INVALID': '订单失效',
+      'SHIPPED': '已发货',
+      'REFUNDED': '已退费',
+      'FINISHED': '交易完成'
+    };
+
+    function toggleStatusItem(code, name) {
+      if (window.event) window.event.stopPropagation();
+      const chk = document.getElementById('chk_' + code);
+      if (selectedStatuses.has(code)) {
+        selectedStatuses.delete(code);
+        chk.classList.remove('checked');
+      } else {
+        selectedStatuses.add(code);
+        chk.classList.add('checked');
+      }
+      renderStatusTags();
+    }
+
+    function removeTag(e, code) {
+      if (e) e.stopPropagation();
+      selectedStatuses.delete(code);
+      const chk = document.getElementById('chk_' + code);
+      if (chk) {
+        chk.classList.remove('checked');
+      }
+      renderStatusTags();
+    }
+
+    function toggleAllStatus(e) {
+      if (e) e.stopPropagation();
+      const allCodes = Object.keys(statusNames);
+      const chkAll = document.getElementById('chkAll');
+      if (selectedStatuses.size === allCodes.length) {
+        selectedStatuses.clear();
+        chkAll.classList.remove('checked');
+        allCodes.forEach(code => {
+          const chk = document.getElementById('chk_' + code);
+          if (chk) { chk.classList.remove('checked'); }
+        });
+      } else {
+        selectedStatuses.clear();
+        allCodes.forEach(code => {
+          selectedStatuses.add(code);
+          const chk = document.getElementById('chk_' + code);
+          if (chk) { chk.classList.add('checked'); }
+        });
+        chkAll.classList.add('checked');
+      }
+      renderStatusTags();
+    }
+
+    function renderStatusTags() {
+      const container = document.getElementById('tagsContainer');
+      container.innerHTML = '';
+      if (selectedStatuses.size === 0) {
+        container.innerHTML = '<span style="color: #BFBFBF;">请选择订单状态</span>';
+        return;
+      }
+      selectedStatuses.forEach(code => {
+        const span = document.createElement('span');
+        span.className = 'ant-tag';
+        span.innerHTML = `${statusNames[code]} <span class="ant-tag-close" onclick="removeTag(event, '${code}')">x</span>`;
+        container.appendChild(span);
+      });
+    }
+
+    // 双月日历快捷选择
+    function selectDate(dateStr) {
+      if (window.event) window.event.stopPropagation();
+      document.getElementById('labelDateRange').innerText = dateStr + ' ~ ' + dateStr;
+      if (currentOpenDropdown) {
+        currentOpenDropdown.classList.remove('open');
+        currentOpenDropdown = null;
+      }
+    }
+
+    function applyPreset(name, start, end) {
+      if (window.event) window.event.stopPropagation();
+      document.getElementById('labelDateRange').innerText = `${start} ~ ${end}`;
+      if (currentOpenDropdown) {
+        currentOpenDropdown.classList.remove('open');
+        currentOpenDropdown = null;
+      }
+      showToast(`已筛选：${name} (${start} ~ ${end})`);
+    }
+
+    function handleSearch() {
+      showToast('已按当前条件刷新复合订单列表');
+    }
+
+    function handleExport() {
+      showToast('正在导出符合筛选条件的订单 Excel 数据...');
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toastBox');
+      document.getElementById('toastMsg').innerText = msg;
+      toast.classList.add('open');
+      setTimeout(() => {
+        toast.classList.remove('open');
+      }, 2500);
+    }
+  </script>
+</body>
+</html>
