@@ -1,0 +1,1681 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>淘福客开放平台 - 设置中心 - 小程序管理</title>
+  <style>
+    :root {
+      --primary-color: #1B9AEE;
+      --primary-hover: #40A9FF;
+      --primary-active: #096DD9;
+      --primary-bg: #E8FAFF;
+      --danger-color: #FF4D4F;
+      --danger-hover: #FF7875;
+      --success-color: #52C41A;
+      --warning-color: #FA8C15;
+      --text-main: rgba(0, 0, 0, 0.85);
+      --text-regular: rgba(0, 0, 0, 0.70);
+      --text-secondary: rgba(0, 0, 0, 0.45);
+      --text-disabled: #BFBFBF;
+      --border-color: #EBEDF0;
+      --border-light: #F0F0F0;
+      --border-input: #D9D9D9;
+      --bg-page: #F5F5F5;
+      --font-family: -apple-system, BlinkMacSystemFont, "HelveticaNeue Helvetica PingFangSC-Regular", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-family);
+      font-size: 14px;
+      color: var(--text-regular);
+      background-color: var(--bg-page);
+      line-height: 1.5715;
+      user-select: none;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* 整体左右两栏后台布局（与真实线上完全一致：独立滚动） */
+    .operator-container {
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+      background-color: var(--bg-page);
+    }
+
+    /* 左侧导航栏 200px */
+    .web-operator-sider {
+      width: 200px;
+      min-width: 200px;
+      height: 100vh;
+      background: #FFFFFF;
+      border-right: 1px solid var(--border-light);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      z-index: 95;
+    }
+
+    .mz-new-aside-logo {
+      height: 72px;
+      display: flex;
+      align-items: center;
+      padding-left: 16px;
+      border-bottom: 1px solid var(--border-light);
+      background: #FFFFFF;
+      flex-shrink: 0;
+    }
+    .mz-new-aside-logo img {
+      width: 152px;
+      height: 40px;
+      object-fit: contain;
+    }
+
+    .sider-menu-scroll {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding-bottom: 24px;
+    }
+    .sider-menu-scroll::-webkit-scrollbar { width: 4px; }
+    .sider-menu-scroll::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.12); border-radius: 2px; }
+
+    .menu-list { list-style: none; }
+
+    .menu-item-lv1,
+    .submenu-title {
+      height: 50px;
+      line-height: 50px;
+      padding: 0 16px 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      color: var(--text-main);
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    .menu-item-lv1:hover,
+    .submenu-title:hover {
+      color: var(--primary-color);
+      background: #FAFAFA;
+    }
+    .menu-left {
+      display: flex;
+      align-items: center;
+      min-width: 0;
+    }
+    .menu-icon {
+      margin-right: 10px;
+      width: 16px;
+      height: 16px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: inherit;
+      flex-shrink: 0;
+    }
+    .submenu-title.open {
+      color: var(--primary-color);
+      font-weight: 500;
+    }
+    .menu-arrow {
+      font-size: 11px;
+      color: #BFBFBF;
+      transition: transform 0.2s;
+      display: inline-flex;
+      align-items: center;
+    }
+    .submenu-title.open .menu-arrow {
+      color: var(--primary-color);
+      transform: rotate(180deg);
+    }
+
+    .menu-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 5px;
+      font-size: 11px;
+      color: #FFFFFF;
+      background: #E62412;
+      border-radius: 9px;
+      margin-left: 6px;
+      font-weight: 500;
+      line-height: 1;
+    }
+
+    .sub-menu-list {
+      list-style: none;
+      background: #FAFAFA;
+    }
+    .menu-item-lv2 {
+      height: 46px;
+      line-height: 46px;
+      padding: 0 16px 0 48px;
+      font-size: 14px;
+      color: var(--text-regular);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.2s;
+    }
+    .menu-item-lv2:hover { color: var(--primary-color); }
+    .menu-item-lv2.is-active {
+      background: var(--primary-bg);
+      color: var(--primary-color);
+      font-weight: 500;
+      border-right: 3px solid var(--primary-color);
+    }
+
+    /* 右侧主区域 */
+    .operator-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      height: 100vh;
+      background: var(--bg-page);
+    }
+
+    /* 顶部 Header 72px */
+    .mz-common-header {
+      height: 72px;
+      min-height: 72px;
+      background: #FFFFFF;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-light);
+      z-index: 90;
+    }
+    .breadcrumb-title {
+      font-size: 14px;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .breadcrumb-title .bc-link { cursor: pointer; transition: color 0.2s; }
+    .breadcrumb-title .bc-link:hover { color: var(--primary-color); }
+    .breadcrumb-title .current { color: var(--text-main); font-weight: 500; }
+
+    .header-user-actions {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      font-size: 14px;
+      color: var(--text-regular);
+    }
+    .header-link {
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: color 0.2s;
+    }
+    .header-link:hover { color: var(--primary-color); }
+    .header-divider {
+      width: 1px;
+      height: 16px;
+      background: #E8E8E8;
+    }
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+    .user-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #87D0FF;
+      color: #FFFFFF;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* 主内容滚动区 */
+    .operator-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 24px 36px;
+    }
+
+    /* 顶部小程序管理说明横幅（1:1 复刻线上浅灰白立体装饰 Banner） */
+    .applet-banner {
+      position: relative;
+      background: linear-gradient(105deg, #F8FAFC 0%, #FFFFFF 48%, #F2F6FA 100%);
+      border-radius: 4px;
+      padding: 30px 36px;
+      margin-bottom: 16px;
+      overflow: hidden;
+      border: 1px solid #F0F2F5;
+      min-height: 152px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .applet-banner-text {
+      position: relative;
+      z-index: 2;
+      max-width: calc(100% - 240px);
+    }
+    .applet-banner-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 12px;
+    }
+    .applet-banner-desc {
+      font-size: 14px;
+      color: rgba(0, 0, 0, 0.62);
+      line-height: 1.85;
+    }
+    .applet-banner-art {
+      position: absolute;
+      right: 28px;
+      bottom: -8px;
+      width: 220px;
+      height: 156px;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* 下方白色主体面板 */
+    .applet-main-card {
+      background: #FFFFFF;
+      border-radius: 4px;
+      padding: 28px 32px 44px;
+    }
+
+    .applet-inner-wrap {
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    /* 区块标题（带淘福客标志性左侧品牌蓝竖条） */
+    .section-header {
+      display: flex;
+      align-items: center;
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text-main);
+      margin-bottom: 18px;
+    }
+    .section-header::before {
+      content: "";
+      display: inline-block;
+      width: 4px;
+      height: 15px;
+      background: var(--primary-color);
+      border-radius: 1px;
+      margin-right: 8px;
+    }
+
+    /* 授权二维码卡片 */
+    .qrcode-panel {
+      background: linear-gradient(180deg, #F5FBFF 0%, #F9FCFF 100%);
+      border-radius: 8px;
+      box-shadow: 0 6px 20px rgba(27, 154, 238, 0.06);
+      border: 1px solid #EDF6FD;
+      padding: 36px 24px 32px;
+      margin: 0 18px 36px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .qrcode-canvas-wrap {
+      width: 176px;
+      height: 176px;
+      background: #FFFFFF;
+      padding: 8px;
+      border-radius: 4px;
+      border: 1px solid #F0F0F0;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .qrcode-tip {
+      font-size: 13px;
+      color: var(--text-regular);
+    }
+    .qrcode-tip strong {
+      color: var(--text-main);
+      font-weight: 600;
+    }
+
+    /* 标准 Ant Alert Info */
+    .ant-alert-info {
+      background-color: #E6F7FF;
+      border: 1px solid #91D5FF;
+      border-radius: 2px;
+      padding: 9px 15px;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--text-main);
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+    .ant-alert-icon {
+      color: #1890FF;
+      flex-shrink: 0;
+      margin-top: 2px;
+      display: inline-flex;
+    }
+
+    /* 已授权小程序表格 */
+    .ant-table-wrapper {
+      width: 100%;
+    }
+    .applet-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+    .applet-table thead th {
+      background: #FAFAFA;
+      color: var(--text-main);
+      font-weight: 500;
+      font-size: 14px;
+      padding: 13px 16px;
+      border-bottom: 1px solid var(--border-light);
+      position: relative;
+      white-space: nowrap;
+    }
+    .applet-table thead th:not(:last-child)::after {
+      content: "";
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 1px;
+      height: 16px;
+      background: rgba(0, 0, 0, 0.06);
+    }
+    .applet-table tbody td {
+      padding: 15px 16px;
+      font-size: 14px;
+      color: var(--text-main);
+      border-bottom: 1px solid var(--border-light);
+      vertical-align: middle;
+      background: #FFFFFF;
+      transition: background 0.15s;
+    }
+    .applet-table tbody tr:hover td {
+      background: #FAFAFA;
+    }
+
+    /* 表头问号气泡提示 */
+    .th-with-tip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .help-tooltip-wrap {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      cursor: pointer;
+      color: rgba(0, 0, 0, 0.45);
+    }
+    .help-tooltip-wrap:hover { color: var(--primary-color); }
+    .help-tooltip-box {
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+      width: 288px;
+      background: rgba(0, 0, 0, 0.82);
+      color: #FFFFFF;
+      font-size: 12px;
+      font-weight: 400;
+      line-height: 1.6;
+      padding: 8px 12px;
+      border-radius: 4px;
+      white-space: normal;
+      box-shadow: 0 3px 6px -4px rgba(0,0,0,0.12), 0 6px 16px 0 rgba(0,0,0,0.08);
+      display: none;
+      z-index: 120;
+      pointer-events: none;
+    }
+    .help-tooltip-box::after {
+      content: "";
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border-width: 5px;
+      border-style: solid;
+      border-color: rgba(0, 0, 0, 0.82) transparent transparent transparent;
+    }
+    .help-tooltip-wrap:hover .help-tooltip-box {
+      display: block;
+    }
+
+    /* 开放商城展示列标签回显 */
+    .visibility-cell {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .vis-tag {
+      display: inline-flex;
+      align-items: center;
+      height: 22px;
+      padding: 0 8px;
+      font-size: 12px;
+      border-radius: 2px;
+      line-height: 20px;
+    }
+    .vis-tag-all {
+      background: #F5F5F5;
+      border: 1px solid #D9D9D9;
+      color: rgba(0, 0, 0, 0.65);
+    }
+    .vis-tag-asset {
+      background: var(--primary-bg);
+      border: 1px solid #91D5FF;
+      color: var(--primary-color);
+      font-weight: 500;
+    }
+    .vis-subtext {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    /* 表格右侧操作链接 */
+    .op-cell {
+      text-align: right;
+      white-space: nowrap;
+    }
+    .op-link {
+      color: var(--primary-color);
+      cursor: pointer;
+      font-size: 14px;
+      transition: color 0.2s;
+      text-decoration: none;
+    }
+    .op-link:hover { color: var(--primary-hover); }
+    .op-link.danger { color: var(--danger-color); }
+    .op-link.danger:hover { color: var(--danger-hover); }
+    .ant-divider-vertical {
+      display: inline-block;
+      width: 1px;
+      height: 14px;
+      margin: 0 8px;
+      vertical-align: middle;
+      background: rgba(0, 0, 0, 0.08);
+    }
+
+    /* 通用按钮 */
+    .ant-btn {
+      height: 32px;
+      padding: 0 15px;
+      font-size: 14px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      border: 1px solid transparent;
+      font-family: inherit;
+      outline: none;
+    }
+    .ant-btn-default {
+      background: #FFFFFF;
+      border-color: var(--border-input);
+      color: var(--text-regular);
+    }
+    .ant-btn-default:hover {
+      color: var(--primary-color);
+      border-color: var(--primary-color);
+    }
+    .ant-btn-primary {
+      background: var(--primary-color);
+      border-color: var(--primary-color);
+      color: #FFFFFF;
+      box-shadow: 0 2px 0 rgba(0, 0, 0, 0.045);
+    }
+    .ant-btn-primary:hover {
+      background: var(--primary-hover);
+      border-color: var(--primary-hover);
+    }
+    .ant-btn-danger {
+      background: var(--danger-color);
+      border-color: var(--danger-color);
+      color: #FFFFFF;
+    }
+    .ant-btn-danger:hover {
+      background: var(--danger-hover);
+      border-color: var(--danger-hover);
+    }
+
+    /* 模态弹窗 Modal */
+    @keyframes antFadeIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .ant-modal-mask {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.45);
+      z-index: 2000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .ant-modal-mask.open {
+      display: flex;
+    }
+    .ant-modal-card {
+      width: 600px;
+      max-width: 100%;
+      background: #FFFFFF;
+      border-radius: 4px;
+      box-shadow: 0 6px 16px -8px rgba(0,0,0,0.08), 0 9px 28px 0 rgba(0,0,0,0.05), 0 12px 48px 16px rgba(0,0,0,0.03);
+      overflow: hidden;
+      animation: antFadeIn 0.18s ease-out;
+    }
+    .ant-modal-header {
+      height: 54px;
+      padding: 0 24px;
+      border-bottom: 1px solid var(--border-light);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-weight: 500;
+      font-size: 16px;
+      color: var(--text-main);
+    }
+    .ant-modal-close {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      color: rgba(0, 0, 0, 0.45);
+      width: 28px;
+      height: 28px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      transition: color 0.2s, background 0.2s;
+    }
+    .ant-modal-close:hover {
+      color: rgba(0, 0, 0, 0.85);
+      background: #F5F5F5;
+    }
+    .ant-modal-body {
+      padding: 20px 24px 24px;
+      font-size: 14px;
+      color: var(--text-regular);
+    }
+    .ant-modal-footer {
+      height: 54px;
+      padding: 0 24px;
+      border-top: 1px solid var(--border-light);
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      background: #FFFFFF;
+    }
+
+    /* 1.1.5 展示设置表单样式 */
+    .config-form-row {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 20px;
+    }
+    .config-form-row:last-child {
+      margin-bottom: 0;
+    }
+    .config-form-label {
+      width: 196px;
+      min-width: 196px;
+      text-align: right;
+      padding-right: 12px;
+      line-height: 32px;
+      color: var(--text-main);
+      font-size: 14px;
+      white-space: nowrap;
+    }
+    .required-star {
+      color: var(--danger-color);
+      margin-right: 4px;
+      font-family: SimSun, sans-serif;
+    }
+    .config-form-control {
+      flex: 1;
+      min-width: 0;
+    }
+
+    /* Ant Design Radio 单选组件 */
+    .ant-radio-group {
+      display: flex;
+      align-items: center;
+      flex-wrap: nowrap;
+      gap: 24px;
+      min-height: 32px;
+    }
+    .ant-radio-wrapper {
+      display: inline-flex;
+      align-items: center;
+      cursor: pointer;
+      color: var(--text-main);
+      font-size: 14px;
+      gap: 8px;
+      white-space: nowrap;
+    }
+    .ant-radio-circle {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 1px solid var(--border-input);
+      background: #FFFFFF;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+    .ant-radio-wrapper:hover .ant-radio-circle {
+      border-color: var(--primary-color);
+    }
+    .ant-radio-wrapper.checked .ant-radio-circle {
+      border-color: var(--primary-color);
+    }
+    .ant-radio-wrapper.checked .ant-radio-circle::after {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--primary-color);
+    }
+
+    /* 资产失效有效期同行排版与右侧自定义天数输入框 */
+    .expiry-options-row {
+      display: flex;
+      align-items: center;
+      flex-wrap: nowrap;
+      gap: 24px;
+      min-height: 32px;
+    }
+    .custom-days-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      white-space: nowrap;
+    }
+    .custom-days-inline-box {
+      display: none;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-main);
+      font-size: 14px;
+      white-space: nowrap;
+    }
+    .custom-days-inline-box.visible {
+      display: inline-flex;
+    }
+    .days-input {
+      width: 92px;
+      height: 32px;
+      padding: 4px 10px;
+      font-size: 14px;
+      color: var(--text-main);
+      border: 1px solid var(--border-input);
+      border-radius: 4px;
+      outline: none;
+      transition: all 0.2s;
+      text-align: center;
+      font-family: inherit;
+    }
+    .days-input:hover,
+    .days-input:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(27, 154, 238, 0.15);
+    }
+    .days-input.has-error {
+      border-color: var(--danger-color);
+      box-shadow: 0 0 0 2px rgba(255, 77, 79, 0.15);
+    }
+    .field-error-msg {
+      color: var(--danger-color);
+      font-size: 12px;
+      margin-top: 4px;
+      display: none;
+    }
+    .field-error-msg.visible {
+      display: block;
+    }
+
+    /* 绑定商城穿梭双栏弹窗（100% 复刻线上真实绑定商城弹窗） */
+    .bound-shop-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      border: 1px solid var(--border-color);
+      border-radius: 2px;
+      height: 310px;
+      overflow: hidden;
+    }
+    .bound-shop-col {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      min-height: 0;
+    }
+    .bound-shop-col:first-child {
+      border-right: 1px solid var(--border-color);
+    }
+    .bound-shop-head {
+      height: 44px;
+      min-height: 44px;
+      padding: 0 16px;
+      background: #FAFAFA;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 14px;
+      color: var(--text-main);
+      font-weight: 500;
+    }
+    .bound-shop-list {
+      list-style: none;
+      flex: 1;
+      overflow-y: auto;
+    }
+    .bound-shop-list::-webkit-scrollbar { width: 5px; }
+    .bound-shop-list::-webkit-scrollbar-thumb { background: #CCCCCC; border-radius: 3px; }
+    .bound-shop-item {
+      height: 44px;
+      padding: 0 16px;
+      border-bottom: 1px solid #F5F5F5;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 14px;
+      color: var(--text-main);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .bound-shop-item:hover { background: #FAFAFA; }
+    .ant-checkbox-box {
+      width: 16px;
+      height: 16px;
+      border: 1px solid var(--border-input);
+      border-radius: 2px;
+      background: #FFFFFF;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+      color: transparent;
+      font-size: 11px;
+      font-weight: bold;
+    }
+    .ant-checkbox-box.checked {
+      background: var(--primary-color);
+      border-color: var(--primary-color);
+      color: #FFFFFF;
+    }
+    .ant-checkbox-box.indeterminate {
+      border-color: var(--primary-color);
+      position: relative;
+    }
+    .ant-checkbox-box.indeterminate::after {
+      content: "";
+      width: 8px;
+      height: 8px;
+      background: var(--primary-color);
+    }
+    .remove-shop-btn {
+      color: rgba(0, 0, 0, 0.45);
+      font-size: 16px;
+      line-height: 1;
+      padding: 4px;
+      cursor: pointer;
+      transition: color 0.15s;
+    }
+    .remove-shop-btn:hover { color: var(--danger-color); }
+    .empty-bound-tip {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-disabled);
+      font-size: 13px;
+    }
+
+    /* 顶部轻量提示 Toast */
+    .ant-toast {
+      position: fixed;
+      top: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 3000;
+      background: #FFFFFF;
+      border-radius: 4px;
+      padding: 9px 16px;
+      box-shadow: 0 3px 6px -4px rgba(0,0,0,0.12), 0 6px 16px 0 rgba(0,0,0,0.08), 0 9px 28px 8px rgba(0,0,0,0.05);
+      display: none;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: var(--text-main);
+    }
+    .ant-toast.open {
+      display: inline-flex;
+      animation: antFadeIn 0.2s ease-out;
+    }
+  </style>
+</head>
+<body>
+  <!-- 内联 SVG 符号集（零外部依赖） -->
+  <svg aria-hidden="true" style="position: absolute; width: 0; height: 0; overflow: hidden;">
+    <symbol id="icon-overview" viewBox="0 0 1024 1024"><path fill="currentColor" d="M512 128l384 312v456H608V640H416v256H128V440l384-312zm0 92.8L200 474.4V824h144V568h336v256h144V474.4L512 220.8z"/></symbol>
+    <symbol id="icon-mall" viewBox="0 0 1024 1024"><path fill="currentColor" d="M880 184H712v-64c0-17.7-14.3-32-32-32H344c-17.7 0-32 14.3-32 32v64H144c-17.7 0-32 14.3-32 32v664c0 17.7 14.3 32 32 32h736c17.7 0 32-14.3 32-32V216c0-17.7-14.3-32-32-32zM384 160h256v24H384v-24zm456 680H184V256h656v584z"/></symbol>
+    <symbol id="icon-goods" viewBox="0 0 1024 1024"><path fill="currentColor" d="M832 312H696v-16c0-101.6-82.4-184-184-184s-184 82.4-184 184v16H192c-17.7 0-32 14.3-32 32v536c0 17.7 14.3 32 32 32h640c17.7 0 32-14.3 32-32V344c0-17.7-14.3-32-32-32zm-432-16c0-61.9 50.1-112 112-112s112 50.1 112 112v16H400v-16zm392 544H232V384h96v88c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8v-88h224v88c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8v-88h96v456z"/></symbol>
+    <symbol id="icon-card" viewBox="0 0 1024 1024"><path fill="currentColor" d="M928 160H96c-17.7 0-32 14.3-32 32v640c0 17.7 14.3 32 32 32h832c17.7 0 32-14.3 32-32V192c0-17.7-14.3-32-32-32zm-40 112H136v-40h752v40zm0 496H136V432h752v336z"/></symbol>
+    <symbol id="icon-customer" viewBox="0 0 1024 1024"><path fill="currentColor" d="M678.3 642.4c24.2-13 51.9-20.4 81.4-20.4h.1c3 0 4.4-3.6 2.2-5.6a371.67 371.67 0 00-103.7-65.8c-.4-.2-.8-.3-1.2-.5C719.2 505 759.6 431.7 759.6 349c0-137-110.8-248-247.5-248S264.6 212 264.6 349c0 82.7 40.4 156 102.6 201.1-.4.2-.8.3-1.2.5-44.7 18.9-84.8 46-119.3 80.6a373.42 373.42 0 00-80.4 119.5A373.6 373.6 0 00137 888.8a8 8 0 008 8.2h59.9c4.3 0 7.9-3.5 8-7.8 2-77.2 32.9-149.5 87.6-204.3C357 628.2 432.2 597 512.2 597c56.7 0 111.1 15.7 158 45.1a8.1 8.1 0 008.1.3zM512.2 521c-45.8 0-88.9-17.9-121.4-50.4A171.2 171.2 0 01340.5 349c0-45.9 17.9-89.1 50.3-121.6S466.3 177 512.2 177s88.9 17.9 121.4 50.4A171.2 171.2 0 01683.9 349c0 45.9-17.9 89.1-50.3 121.6C601.1 503.1 558 521 512.2 521z"/></symbol>
+    <symbol id="icon-order" viewBox="0 0 1024 1024"><path fill="currentColor" d="M880 112H144c-17.7 0-32 14.3-32 32v736c0 17.7 14.3 32 32 32h736c17.7 0 32-14.3 32-32V144c0-17.7-14.3-32-32-32zm-40 728H184V184h656v656zM304 312h416v56H304v-56zm0 176h416v56H304v-56zm0 176h280v56H304v-56z"/></symbol>
+    <symbol id="icon-supplier" viewBox="0 0 1024 1024"><path fill="currentColor" d="M512 88C277.8 88 88 277.8 88 512s189.8 424 424 424 424-189.8 424-424S746.2 88 512 88zm0 776c-194.4 0-352-157.6-352-352s157.6-352 352-352 352 157.6 352 352-157.6 352-352 352zm-96-496h192v64H416v-64zm-48 144h288v64H368v-64zm64 144h160v64H432v-64z"/></symbol>
+    <symbol id="icon-app" viewBox="0 0 1024 1024"><path fill="currentColor" d="M512 96l360 208v416L512 928 152 720V304L512 96zm0 83.2L224 345.6v332.8L512 844.8l288-166.4V345.6L512 179.2zM512 368l136 78.5v157L512 682l-136-78.5v-157L512 368z"/></symbol>
+    <symbol id="icon-setting" viewBox="0 0 1024 1024"><path fill="currentColor" d="M924.8 625.7l-65.5-56c3.1-19 4.7-38.4 4.7-57.8s-1.6-38.8-4.7-57.8l65.5-56a32.03 32.03 0 009.3-35.2l-.9-2.6a443.74 443.74 0 00-79.7-137.9l-1.8-2.1a32.12 32.12 0 00-35.1-9.5l-81.3 28.9c-30-24.6-63.5-44-99.7-57.6l-15.7-85a32.05 32.05 0 00-25.8-25.7l-2.7-.5c-52.1-9.4-106.9-9.4-159 0l-2.7.5a32.05 32.05 0 00-25.8 25.7l-15.8 85.4a351.86 351.86 0 00-99 57.4l-81.9-29.1a32 32 0 00-35.1 9.5l-1.8 2.1a446.02 446.02 0 00-79.7 137.9l-.9 2.6c-4.5 12.5-.8 26.5 9.3 35.2l66.3 56.6c-3.1 18.8-4.6 38-4.6 57.1 0 19.2 1.5 38.4 4.6 57.1L99 625.5a32.03 32.03 0 00-9.3 35.2l.9 2.6c18.1 50.4 44.9 96.9 79.7 137.9l1.8 2.1a32.12 32.12 0 0035.1 9.5l81.9-29.1c29.8 24.5 63.1 43.9 99 57.4l15.8 85.4a32.05 32.05 0 0025.8 25.7l2.7.5a449.4 449.4 0 00159 0l2.7-.5a32.05 32.05 0 0025.8-25.7l15.7-85a350 350 0 0099.7-57.6l81.3 28.9a32 32 0 0035.1-9.5l1.8-2.1c34.8-41.1 61.6-87.5 79.7-137.9l.9-2.6c4.5-12.3.8-26.3-9.3-35zM788.3 465.9c2.5 15.1 3.8 30.6 3.8 46.1s-1.3 31-3.8 46.1l-6.6 40.1 74.7 63.9a370.03 370.03 0 01-42.6 73.6L721 702.8l-31.4 25.8c-23.9 19.6-50.5 35-79.3 45.8l-38.1 14.3-17.9 97a377.5 377.5 0 01-85 0l-17.9-97.2-37.8-14.5c-28.5-10.8-55-26.2-78.7-45.7l-31.4-25.9-93.4 33.2c-17-22.9-31.2-47.6-42.6-73.6l75.5-64.5-6.5-40c-2.4-14.9-3.7-30.3-3.7-45.5 0-15.3 1.2-30.6 3.7-45.5l6.5-40-75.5-64.5c11.3-26.1 25.6-50.7 42.6-73.6l93.4 33.2 31.4-25.9c23.7-19.5 50.2-34.9 78.7-45.7l37.9-14.3 17.9-97.2c28.1-3.2 56.8-3.2 85 0l17.9 97 38.1 14.3c28.7 10.8 55.4 26.2 79.3 45.8l31.4 25.8 92.8-32.9c17 22.9 31.3 47.6 42.6 73.6L781.8 426l6.5 39.9zM512 326c-97.2 0-176 78.8-176 176s78.8 176 176 176 176-78.8 176-176-78.8-176-176-176zm79.2 255.2A111.6 111.6 0 01512 614c-29.9 0-58-11.7-79.2-32.8A111.6 111.6 0 01400 502c0-29.9 11.7-58 32.8-79.2C454 401.6 482.1 390 512 390c29.9 0 58 11.6 79.2 32.8A111.6 111.6 0 01624 502c0 29.9-11.7 58-32.8 79.2z"/></symbol>
+    <symbol id="icon-question" viewBox="64 64 896 896"><path fill="currentColor" d="M512 64C264.6 64 64 264.6 64 512s200.6 448 448 448 448-200.6 448-448S759.4 64 512 64zm0 820c-205.4 0-372-166.6-372-372s166.6-372 372-372 372 166.6 372 372-166.6 372-372 372z"/><path fill="currentColor" d="M623.6 316.7C593.6 290.4 554 276 512 276s-81.6 14.5-111.6 40.7C369.2 344 352 380.7 352 420v7.6c0 4.4 3.6 8 8 8h48c4.4 0 8-3.6 8-8V420c0-44.1 43.1-80 96-80s96 35.9 96 80c0 31.1-22 59.6-56.1 72.7-21.2 8.1-39.2 22.3-52.1 40.9-13.1 19-19.9 41.8-19.9 64.9V620c0 4.4 3.6 8 8 8h48c4.4 0 8-3.6 8-8v-22.7a48.3 48.3 0 0130.9-44.8c59-22.7 97.1-74.7 97.1-132.5.1-39.3-17.1-76-48.3-103.3zM472 732a40 40 0 1080 0 40 40 0 10-80 0z"/></symbol>
+    <symbol id="icon-info-fill" viewBox="64 64 896 896"><path fill="currentColor" d="M512 64C264.6 64 64 264.6 64 512s200.6 448 448 448 448-200.6 448-448S759.4 64 512 64zm32 664c0 4.4-3.6 8-8 8h-48c-4.4 0-8-3.6-8-8V456c0-4.4 3.6-8 8-8h48c4.4 0 8 3.6 8 8v272zm-32-344a48.01 48.01 0 010-96 48.01 48.01 0 010 96z"/></symbol>
+    <symbol id="icon-check-fill" viewBox="64 64 896 896"><path fill="#52C41A" d="M512 64C264.6 64 64 264.6 64 512s200.6 448 448 448 448-200.6 448-448S759.4 64 512 64zm193.5 301.7l-210.6 292a31.8 31.8 0 01-51.7 0L318.5 484.9c-3.8-5.3 0-12.7 6.5-12.7h46.9c10.2 0 19.9 4.9 25.9 13.3l71.2 98.8 157.2-218c6-8.3 15.6-13.3 25.9-13.3H699c6.5 0 10.3 7.4 6.5 12.7z"/></symbol>
+    <symbol id="icon-warn-fill" viewBox="64 64 896 896"><path fill="#FAAD14" d="M512 64C264.6 64 64 264.6 64 512s200.6 448 448 448 448-200.6 448-448S759.4 64 512 64zm-32 232c0-4.4 3.6-8 8-8h48c4.4 0 8 3.6 8 8v272c0 4.4-3.6 8-8 8h-48c-4.4 0-8-3.6-8-8V296zm32 440a48.01 48.01 0 010-96 48.01 48.01 0 010 96z"/></symbol>
+    <symbol id="icon-user" viewBox="64 64 896 896"><path fill="currentColor" d="M858.5 763.6a374 374 0 00-80.6-119.5 375.63 375.63 0 00-119.5-80.6c-.4-.2-.8-.3-1.2-.5C719.5 518 760 444.7 760 362c0-137-111-248-248-248S264 225 264 362c0 82.7 40.5 156 102.8 201.1-.4.2-.8.3-1.2.5-44.8 18.9-85 46-119.5 80.6a375.63 375.63 0 00-80.6 119.5A371.7 371.7 0 00136 901.8a8 8 0 008 8.2h60c4.4 0 7.9-3.5 8-7.8 2-77.2 33-149.5 87.8-204.3 56.7-56.7 132-87.9 212.2-87.9s155.5 31.2 212.2 87.9C779 752.7 810 825 812 902.2c.1 4.4 3.6 7.8 8 7.8h60a8 8 0 008-8.2c-1-47.8-10.9-94.3-29.5-138.2zM512 534c-45.9 0-89.1-17.9-121.6-50.4S340 407.9 340 362c0-45.9 17.9-89.1 50.4-121.6S466.1 190 512 190s89.1 17.9 121.6 50.4S684 316.1 684 362c0 45.9-17.9 89.1-50.4 121.6S557.9 534 512 534z"/></symbol>
+    <symbol id="icon-close" viewBox="64 64 896 896"><path fill="currentColor" d="M563.8 512l262.5-312.9c4.4-5.2.7-13.1-6.1-13.1h-79.8c-4.7 0-9.2 2.1-12.3 5.7L511.6 449.8 295.1 191.7c-3-3.6-7.5-5.7-12.3-5.7H203c-6.8 0-10.5 7.9-6.1 13.1L459.4 512 196.9 824.9A7.95 7.95 0 00203 838h79.8c4.7 0 9.2-2.1 12.3-5.7l216.5-258.1 216.5 258.1c3 3.6 7.5 5.7 12.3 5.7h79.8c6.8 0 10.5-7.9 6.1-13.1L563.8 512z"/></symbol>
+    <symbol id="icon-arrow-right" viewBox="0 0 1024 1024"><path fill="currentColor" d="M765.7 486.8L314.9 134.7A7.97 7.97 0 00302 141v77.3c0 4.9 2.3 9.6 6.1 12.6l360 281.1-360 281.1c-3.9 3-6.1 7.7-6.1 12.6V883c0 6.7 7.7 10.4 12.9 6.3l450.8-352.1a31.96 31.96 0 000-50.4z"/></symbol>
+    <symbol id="icon-arrow-down" viewBox="0 0 1024 1024"><path fill="currentColor" d="M884 256h-75c-5.1 0-9.9 2.5-12.9 6.6L512 654.2 227.9 262.6c-3-4.1-7.8-6.6-12.9-6.6h-75c-6.5 0-10.3 7.4-6.5 12.7l352.6 486.1c12.8 17.6 39 17.6 51.7 0l352.6-486.1c3.9-5.3.1-12.7-6.4-12.7z"/></symbol>
+  </svg>
+
+  <div class="operator-container">
+    <!-- 左侧侧边栏（完全对齐线上运营商系统结构） -->
+    <aside class="web-operator-sider">
+      <div class="mz-new-aside-logo">
+        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIIAAAAcCAMAAACasZf8AAADAFBMVEXOzs7Nzc3Q0NDMzMzMzMzQ0NDNzc3JycnOzs7IyMjKysrPz8/R0dEbmu/MzMzPz8/Nzc3MzMzIyMjNzs7Ly8vOzs7MzMzKysrMzMzOzs7FxcXMzMzNzc3JycnJycnPz8/CwsLOzs4lne3Ozs7Nzc3Hx8fPz8/Ozs7Nzc3Ozs7MzMzBwcHNzc0gnO7MzMzT09POzs7Nzc0nnuzOzs4fm+3R0dHGx8jLy8vLy8wuoOs+pejNzc1BpefOzc0dmu4em+1Fp+Yqn+zS0tLMzMxDpujJyck/peg8pOjPz88qnusdm+4cm+/Ozs4bmu+Hudsqn+sem+7MzMzIyssonuxDpebJyMfIyMguoOvGxsYem+4inO1rseBLqObOzs4cm+5GpufR0dEqn+s/pOdfreJiruEine0em+4hnO3Nzc2JutrGyMnOzs4dm+4jne05ouk3ounOzs4cmu4xoesknO1QqeSFudzOzs5PqeXDw8NMqOVcreMinO2DuNysxNMtn+tir+FKqOYyoespnuunw9Vkr+EinO0sn+wvoOtJp+aVvdhLqOWAuNwpnuwpnuwjne2UvdgzouqBuNxUq+Q1oepbreI1ouqPu9pXrOTMzMxBpuhztN9XrONApehfr+OBt9w6o+iow9Wqw9O8yNFApehEp+cfnO2Qu9hJqOfyizHxjDn6fhZTq+WzxtPV1dVhruE7oujBys96tt5VquN0tN80oeoqn+y7ytM5o+mhwNZfreEyoet/t9ymw9ZFp+ebv9X5gBv6fRT3gyP4fxstn+tpseCSvdkjne04oeiIu9xqseEzoepus98nnuypxNRpsOCZv9ZMqeY7o+lqsN9YrOXukUPpoWb1hynxjDbvkEHxjTjrmFPZuqD1iS7ko286oug1ounxjz43ouljr+F4tttMqOVeruFJqOi4x9NTq+RDp+fHxMFrst7Ay9NVquJhruBSquT5fhffrIDtlUn6fRTftZDpnmFdruL2hSjbroron2SxxdRTqeO/xcvFzNMbmu76fRSUp6g2AAAA/nRSTlMfJBsjFyUhExoXESAW/hkMFA8cKig8Hh02FRUnNCYhOgtD0jk4DhAoLz48EEziMR1AP9VC6RwfLDvKoi6mTvbjeKwiRZUIkGA1xvP6M/xX0uEyOtB2LyWTG+zmeIlH9Xk2w5ZOUeDu6kpaKizx3J+zSfiUzGJRUYQZgnLeRD3IbY+jsUhU1L6zbC9eZrfK2VCtTo6vhbpmkgpmYD51RF+DRDNHfZvoQn9tY/NpUxh4cUJYSmuajz2rUVrBSlCWQNP+weCfOCfAfDtjqny7XXI7VpNhkYg9qG9ppExFtl6ne5x+gjxZiVA0f6I4TUReXnnsKFf8N3YszVV4WJQsI9TElAYAAAmwSURBVHicbVd5XFPHFr4JSSCBBMi+h5BgAgIBIiES4SmgIhDKIgiICgIKhEVKFZRFEBRQFsGl7jvia923utc+l7rXavu6+15XX1vbvn3tm/bMBJD44/vjLnPnznxz5jtnzqG8AyZy3H1kXmw2g8328pITeI1AJvMBuAM4HM6ECRN9A7y9/fz8vL29A3wnkP8YR3g83hH4Vy7DHTkcd3cfH5mczeDl8CUmk0QiiaTn4A54ODaDweN50OmRkXy6B4/BlrlzfAMoX46PHHePjMTtdLoHAG50PgE9x6MepmAwYAhMB6aY6AuYiOeXs2G4SJNYLJaQIXlkHlgLzwOmpzxZbgQslidliqQTREpMYspTzWKx1BZKwq9nyNwnUBwZIwd3Z8XFQbunE2rciYX/hhaKssAkEidvuRzbA1Yq92J40CXH5szpcnODPz0tlBh38cjJOXlmzk5KHfdw7SsjWAu4YaEoT5jGjcZUlVfYaxWqbDe1hc9ju1NyXiTFoqkUQoCCqWJiqBT41WAoN0CbQqViZtOAjhomoXsAC5lMLv/mhgdfbOmKRbEvOzEH4ysK8A1Cc2hMxSI0FtwuGm1nUVFRcXFxe3t7LbKfb28vLio6eXLndar+4bFjO3bMnkowe/bs7/fCBT8vIJg69Wkjbt7xs5CZ/eEHHxw6dOgvsC28a5XbLSza28gVu8HuccIkVGsQvOP6JddgMFSg8bCK4k9ybXn9ddf3RYnv4luaMSvqw18AV9+UYKXcRBVrVUL/F4brVCgMt241NjYePHhlaPny5XXLMYaGhvZ32hzvjMsAnaF2ujYkN1W5NqzR9ODbhkTld7/DFP72sdhkMomnIWTvPFhb29q/FNDf33/x4mmEzgsEDucG+Et/WjiMhIUL3x1KDw39EQabAUhISLh8GS74eRVCx6g/uM6YWfDCylqexeLbn6wZf8QMfvk9iAiE9f+XuWiBsf/R7bO6DJ1eKk1UpgP3RpvNuVb7I83qsaPMSlQqrzx6tEefYRUFhpu1WnNYeGBQhvLg+fYuqtt1xqo9dteGXQ+Ims6F//s1zODPf6eBm7Ae0lQ7an5M90fcDYD169fnFyR2I/vT0NDG1tZKhDqCAl12/o6+QCqdMTg4iWAxBtwHJw0O7mdR024WFhaSaStnAW5vmzWrGWOyExeWfIu/lcRr3yJKeE/IpMXFddl3GwTnrzQ9p7tBL61FuSkpSqW0rQIl9YVfQujCOifyEZph1WRkRIwnhU4a5WawKfu4+OVUoEgUFBQEhgrTxs+bV1oaTPAS/la95D9XMYU3s8qZ4KBFsK4sY8rK5yMlaHQhaHViolSq74C3MPMphDbdvTsXYwpCR2HoPjualJmZ+dIoMjPBFb5nAgWjcjkeJOk4UMAIDDNr4w+f+mLgf69+ffe/h5Pxx69jiBavfmYTKJg0WlENQj1XlLD7K9ch9EZbW9txkaYGFQIB3TY7Ktmn1W503c7wwEAwRp0WFrekNDgmJji4NHhdXQSy72USK3QQxQwbASjselIyYuLNd4m67ju1+GmKkwKtGPh3SFfk5x8HqbRgbYnaEFqv1+usIOej2vj4udwxDOz7wsLDC5H93LncyVM2bo65f/fApkqytsEoFeUmtKXkEVOKgqwajdUa1Lfm+d+5MVPwrWHZvzCD1z5Jh43AFJi3VqMqqVUUbm5BaC7R9y6EFup0GmzRaLyPcx+/ivH48cDAwEboEfZs3z7tXKfnj04Qu8qholgKRz9522bN0AE0t8dG1gvBREPVMZ9iCh9JQx1CFWiBxhTu7R6SLqyKjgapVEdHR9cFrgA7azR7cKTjtswDYy9zIia4dF48eKH50oPLm/LG7o49s25POlhBrRLsx+8VGdhvpAUnXJxpwCmFL4I/IjFBaRQYsBzdmEKHsensGP/twFu9UqNxBrbMjfPnx45gPuCCVntgdOk1DUmjLBo6symKZlhFoiAED0BTw/DH5IaewsLmsqOk4+El72EKb6U7DCoanItxNIUgK+XEGK4HRAcQOqHrqwCh9tqrv33B9dZrzWuweSY1YykEx2zeOKV5MeHU6UZJWExySuRDCAWQAwFxu1ee1YA6RYFP8GtvfPw/iEsaBQocmdSsrbGxM9KblqamliWjnrKystS2oA0I7QE5wn7kXz6wCXFxVOGiRZObm2EvE7Tm6uqWB5fiQSXgEcGlpUvmxZ9bkdDdUMSi+BbnKVFsszkctqdkG5JXQIwBHy+Q6ogUnoSFfUZCY5Qwm0XyiXvIfjFUqdeI+sAnsT8EWQtRbEGBVA/yXGm+FAFCXrbsPlZRcOkA+IjZfCp6BFMw8ENV1ekfFGqq3kROiVyHQFBeLlhA6Ox22GxZRqMxNNQZ/1YEWT8hYSGLGeeJU4KuZFQbZbwXkimC6NQS3hFSadX1ohLYSOkdhPrCzYtQcl5e3mKINnCDZe0KC38DjYcFTIpi0IkUuhU4V1HcI3Yvx/mKwSAQRJGT294EpxA5Id6P88TnpAnyhP0CWy6q1ddhgiWoUi9dhHrS09NTwBhWURvXdSL7s0BR4bgUfnCTUDJeLn5825nnEYf8nDYMpuoafvcPNRqzSHT8K0WShchaVNMl3MtFHRmtIMKzNSDm7+yoAxuuAfUWZGxDKC8iIgJG7oVbDcoTiawNqCTViTIsntTUpUshJH7pSafctxM227F9qevk+To1DE81OXFPCwQGITmlDvEhSeV5bOei7jhm8ZjFtIZehH5RUVFZyeheivQnON3DtFoQ5T6IWkmoR6fXx6JCUKtOl2ENAp1r4IRPWYNqaGIexfnnTIwckuDeIM/ONJqk0jNnbt269UsahIKPfwt4H+fIbMYZhGZa4sZS2D2rFy6QcDYidC0L+1Wlf0REErJHRPiDou8oUw5CAub/ApJQg4XOpnA5AIUDm4DBIOk65Os4Y4c0lV3vAdWAWGxyJtByUlbI0lCuRUKxPp82imJsrk7Yu7WgkvKo1hd2fIbR2D6uFG7yGT4UqUlwWo7hrFtI1UIA7TKvEWIy5ycOZ3ta2hkGjy6h1CQlV+G0uzUtLe0kpPs7kpK+ylYUrQ4J+c0IQkJCXhEIfl6VRh5HAB/glzP1Mg61xdvPOyDAl9QnGL6+AVAxkZrJz1kzOelhXuSjL2kidQxfAnUJAQUJvrNa4UeKKbUbTSUUOKIwHKAjqBlGBA4VApQIUCzQ3FgWSQ5DxvGlpk+fvsVvuEgjU3v7bdkyfQRbcOmGCQaMEiMNmIUcqrYjvGHV4FJqtJaiS8QWbCBmdjZUIFAOAUMConEolICz2MT3qPfy4fh6/wpKIXObk1nkSwAAAABJRU5ErkJggg==" alt="淘福客开放平台">
+      </div>
+      <div class="sider-menu-scroll" id="siderMenuScroll">
+        <ul class="menu-list">
+          <li class="menu-item-lv1" onclick="showToast('当前演示聚焦于「设置中心 - 小程序管理」')">
+            <div class="menu-left"><span class="menu-icon"><svg width="16" height="16"><use href="#icon-overview"/></svg></span><span>概况</span></div>
+          </li>
+          <li class="menu-item-lv1" onclick="showToast('当前演示聚焦于「设置中心 - 小程序管理」')">
+            <div class="menu-left"><span class="menu-icon"><svg width="16" height="16"><use href="#icon-mall"/></svg></span><span>商城管理</span></div>
+          </li>
+          <li class="menu-item-lv1" onclick="showToast('当前演示聚焦于「设置中心 - 小程序管理」')">
+            <div class="menu-left"><span class="menu-icon"><svg width="16" height="16"><use href="#icon-goods"/></svg></span><span>商品中心</span></div>
+            <span class="menu-arrow"><svg width="10" height="10"><use href="#icon-arrow-right"/></svg></span>
+          </li>
+          <li class="menu-item-lv1" onclick="showToast('当前演示聚焦于「设置中心 - 小程序管理」')">
+            <div class="menu-left"><span class="menu-icon"><svg width="16" height="16"><use href="#icon-card"/></svg></span><span>卡券积分</span><span class="menu-badge">21</span></div>
+            <span class="menu-arrow"><svg width="10" height="10"><use href="#icon-arrow-right"/></svg></span>
+          </li>
+          <li class="menu-item-lv1" onclick="showToast('当前演示聚焦于「设置中心 - 小程序管理」')">
+            <div class="menu-left"><span class="menu-icon"><svg width="16" height="16"><use href="#icon-customer"/></svg></span><span>客户管理</span></div>
+            <span class="menu-arrow"><svg width="10" height="10"><use href="#icon-arrow-right"/></svg></span>
+          </li>
+          <li class="menu-item-lv1" onclick="showToast('当前演示聚焦于「设置中心 - 小程序管理」')">
+            <div class="menu-left"><span class="menu-icon"><svg width="16" height="16"><use href="#icon-mall"/></svg></span><span>企业集配</span></div>
+            <span class="menu-arrow"><svg width="10" height="10"><use href="#icon-arrow-right"/></svg></span>
+          </li>
+          <li class="menu-item-lv1" onclick="showToast('当前演示聚焦于「设置中心 - 小程序管理」')">
+            <div class="menu-left"><span class="menu-icon"><svg width="16" height="16"><use href="#icon-customer"/></svg></span><span>客服中心</span><span class="menu-badge">4</span></div>
+            <span class="menu-arrow"><svg width="10" height="10"><use href="#icon-arrow-right"/></svg></span>
+          </li>
+          <li class="menu-item-lv1" onclick="showToast('当前演示聚焦于「设置中心 - 小程序管理」')">
+            <div class="menu-left"><span class="menu-icon"><svg width="16" height="16"><use href="#icon-order"/></svg></span><span>订单中心</span></div>
+            <span class="menu-arrow"><svg width="10" height="10"><use href="#icon-arrow-right"/></svg></span>
+          </li>
+          <li class="menu-item-lv1" onclick="showToast('当前演示聚焦于「设置中心 - 小程序管理」')">
+            <div class="menu-left"><span class="menu-icon"><svg width="16" height="16"><use href="#icon-overview"/></svg></span><span>数据中心</span></div>
+            <span class="menu-arrow"><svg width="10" height="10"><use href="#icon-arrow-right"/></svg></span>
+          </li>
+          <li class="menu-item-lv1" onclick="showToast('当前演示聚焦于「设置中心 - 小程序管理」')">
+            <div class="menu-left"><span class="menu-icon"><svg width="16" height="16"><use href="#icon-card"/></svg></span><span>资产中心</span></div>
+            <span class="menu-arrow"><svg width="10" height="10"><use href="#icon-arrow-right"/></svg></span>
+          </li>
+          <li class="menu-item-lv1" onclick="showToast('当前演示聚焦于「设置中心 - 小程序管理」')">
+            <div class="menu-left"><span class="menu-icon"><svg width="16" height="16"><use href="#icon-supplier"/></svg></span><span>自有供应商</span></div>
+            <span class="menu-arrow"><svg width="10" height="10"><use href="#icon-arrow-right"/></svg></span>
+          </li>
+          <li class="menu-item-lv1" onclick="showToast('当前演示聚焦于「设置中心 - 小程序管理」')">
+            <div class="menu-left"><span class="menu-icon"><svg width="16" height="16"><use href="#icon-app"/></svg></span><span>应用中心</span></div>
+          </li>
+
+          <!-- 当前展开菜单：设置中心 -->
+          <li id="settingMenuGroup">
+            <div class="submenu-title open" id="settingMenuToggle" onclick="toggleSettingSubmenu()">
+              <div class="menu-left">
+                <span class="menu-icon"><svg width="16" height="16"><use href="#icon-setting"/></svg></span>
+                <span>设置中心</span>
+              </div>
+              <span class="menu-arrow"><svg width="10" height="10"><use href="#icon-arrow-down"/></svg></span>
+            </div>
+            <ul class="sub-menu-list" id="settingSubMenu">
+              <li class="menu-item-lv2" onclick="showToast('当前演示聚焦于「小程序管理」')">
+                <span>账号管理</span>
+                <span class="menu-arrow"><svg width="9" height="9"><use href="#icon-arrow-right"/></svg></span>
+              </li>
+              <li class="menu-item-lv2" onclick="showToast('当前演示聚焦于「小程序管理」')"><span>用户绑券规则</span></li>
+              <li class="menu-item-lv2" onclick="showToast('当前演示聚焦于「小程序管理」')"><span>流程审批设置</span></li>
+              <li class="menu-item-lv2" onclick="showToast('当前演示聚焦于「小程序管理」')">
+                <span>财务设置</span>
+                <span class="menu-arrow"><svg width="9" height="9"><use href="#icon-arrow-right"/></svg></span>
+              </li>
+              <li class="menu-item-lv2" onclick="showToast('当前演示聚焦于「小程序管理」')"><span>地区管控通知</span></li>
+              <li class="menu-item-lv2" onclick="showToast('当前演示聚焦于「小程序管理」')">
+                <span>短信管理</span>
+                <span class="menu-arrow"><svg width="9" height="9"><use href="#icon-arrow-right"/></svg></span>
+              </li>
+              <li class="menu-item-lv2 is-active" id="activeAppletMenuItem"><span>小程序管理</span></li>
+              <li class="menu-item-lv2" onclick="showToast('当前演示聚焦于「小程序管理」')"><span>自定义商户号</span></li>
+              <li class="menu-item-lv2" onclick="showToast('当前演示聚焦于「小程序管理」')"><span>商城免登设置</span></li>
+              <li class="menu-item-lv2" onclick="showToast('当前演示聚焦于「小程序管理」')">
+                <span>风险控制管理</span>
+                <span class="menu-arrow"><svg width="9" height="9"><use href="#icon-arrow-right"/></svg></span>
+              </li>
+              <li class="menu-item-lv2" onclick="showToast('白名单手机号不受「开放商城展示」限制，全部可见')"><span>商城白名单</span></li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </aside>
+
+    <!-- 右侧主界面 -->
+    <main class="operator-main">
+      <!-- 顶部导航条 -->
+      <header class="mz-common-header">
+        <div class="breadcrumb-title">
+          <span class="bc-link">设置中心</span>
+          <span>/</span>
+          <span class="current">小程序管理</span>
+        </div>
+        <div class="header-user-actions">
+          <span class="header-link" onclick="showToast('已打开商城前台窗口')">
+            <svg width="15" height="15"><use href="#icon-goods"/></svg>
+            <span>访问商城</span>
+          </span>
+          <span class="header-link" onclick="showToast('已打开帮助中心文档')">
+            <svg width="15" height="15"><use href="#icon-question"/></svg>
+            <span>帮助中心</span>
+          </span>
+          <span class="header-divider"></span>
+          <div class="user-info">
+            <span class="user-avatar">
+              <svg width="16" height="16"><use href="#icon-user"/></svg>
+            </span>
+            <span>刘瑞辰</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- 主内容滚动区 -->
+      <div class="operator-content">
+        <!-- 顶部说明横幅（复刻线上小程序管理 Banner） -->
+        <div class="applet-banner">
+          <div class="applet-banner-text">
+            <div class="applet-banner-title">
+              <!-- 双环小程序蓝白图标 -->
+              <svg width="28" height="28" viewBox="0 0 36 36" fill="none">
+                <circle cx="14" cy="14" r="10" fill="#1B9AEE"/>
+                <circle cx="21" cy="21" r="10" fill="#8CD4FF" fill-opacity="0.88"/>
+                <path d="M16.2 14.5a2.6 2.6 0 113.6 3.6l-1.3 1.3a2.6 2.6 0 01-3.6 0m3.6-2.4a2.6 2.6 0 11-3.6-3.6l1.3-1.3a2.6 2.6 0 013.6 0" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+              <span>小程序管理</span>
+            </div>
+            <div class="applet-banner-desc">
+              ·授权后，用户可使用小程序访问商城。<br>
+              ·如微信支付需使用自定义商户号收款，请确保授权小程序主体与商户号主体一致，否则用户将无法使用微信支付。
+            </div>
+          </div>
+
+          <!-- 右侧浅色立体装饰插画（纯内联 SVG，零外链依赖） -->
+          <svg class="applet-banner-art" viewBox="0 0 240 165" fill="none">
+            <defs>
+              <radialGradient id="ballGrad1" cx="35%" cy="30%" r="70%">
+                <stop offset="0%" stop-color="#FFFFFF"/>
+                <stop offset="65%" stop-color="#EAEEF3"/>
+                <stop offset="100%" stop-color="#D5DCE5"/>
+              </radialGradient>
+              <radialGradient id="ballGrad2" cx="35%" cy="30%" r="70%">
+                <stop offset="0%" stop-color="#FFFFFF"/>
+                <stop offset="70%" stop-color="#E4E9F0"/>
+                <stop offset="100%" stop-color="#CCD5E0"/>
+              </radialGradient>
+            </defs>
+            <ellipse cx="148" cy="145" rx="74" ry="18" fill="#E3E8EF" fill-opacity="0.65"/>
+            <ellipse cx="148" cy="108" rx="68" ry="22" stroke="#DCE3EC" stroke-width="1.5"/>
+            <circle cx="122" cy="64" r="34" fill="url(#ballGrad1)"/>
+            <circle cx="110" cy="54" r="3.5" fill="#4BD16F"/>
+            <circle cx="131" cy="58" r="3.5" fill="#4BD16F"/>
+            <circle cx="166" cy="102" r="27" fill="url(#ballGrad2)"/>
+            <circle cx="155" cy="96" r="3" fill="#4A5568"/>
+            <circle cx="171" cy="99" r="3" fill="#4A5568"/>
+            <rect x="82" y="106" width="28" height="28" rx="8" transform="rotate(-18 82 106)" fill="#FFFFFF" stroke="#E2E8F0"/>
+            <path d="M95 123c-1.8 1.8-4.6 1.8-6.4 0-1.8-1.8-1.8-4.6 0-6.4l3.5-3.5c1.8-1.8 4.6-1.8 6.4 0" stroke="#1B9AEE" stroke-width="2.4" stroke-linecap="round"/>
+          </svg>
+        </div>
+
+        <!-- 主体白底面板 -->
+        <div class="applet-main-card">
+          <div class="applet-inner-wrap">
+            <!-- 1. 授权二维码 -->
+            <div class="section-header">授权二维码</div>
+            <div class="qrcode-panel">
+              <div class="qrcode-canvas-wrap">
+                <canvas id="authQrCanvas" width="160" height="160"></canvas>
+              </div>
+              <div class="qrcode-tip">
+                小程序管理员微信扫一扫授权，授权时授权项请<strong>全部勾选</strong>
+              </div>
+            </div>
+
+            <!-- 2. 已授权小程序（含 1.1.5 开放商城展示配置） -->
+            <div class="section-header">已授权小程序</div>
+            <div class="ant-alert-info">
+              <span class="ant-alert-icon"><svg width="16" height="16"><use href="#icon-info-fill"/></svg></span>
+              <div>小程序能绑定已上线且未被其他小程序绑定的商城。</div>
+            </div>
+
+            <div class="ant-table-wrapper">
+              <table class="applet-table">
+                <thead>
+                  <tr>
+                    <th style="width: 22%;">小程序名称</th>
+                    <th style="width: 12%;">授权状态</th>
+                    <th style="width: 11%;">状态</th>
+                    <th style="width: 13%;">绑定商城</th>
+                    <th style="width: 22%;">开放商城展示</th>
+                    <th style="width: 20%; text-align: right;">操作</th>
+                  </tr>
+                </thead>
+                <tbody id="appletTableBody">
+                  <!-- JS 动态渲染 -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ==================== 弹窗 1：开放商城展示设置 (1.1.5 核心新增) ==================== -->
+  <div class="ant-modal-mask" id="visibilityModal">
+    <div class="ant-modal-card" style="width: 740px;">
+      <div class="ant-modal-header">
+        <span>展示设置</span>
+        <button type="button" class="ant-modal-close" onclick="closeVisibilityModal()" aria-label="Close">
+          <svg width="14" height="14"><use href="#icon-close"/></svg>
+        </button>
+      </div>
+      <div class="ant-modal-body">
+        <!-- 顶部提示文案 -->
+        <div class="ant-alert-info" style="margin-bottom: 24px;">
+          <span class="ant-alert-icon"><svg width="16" height="16"><use href="#icon-info-fill"/></svg></span>
+          <div>
+            <div>1、【全部可见】：对于小程序绑定的开放商城，用户访问小程序时全部可见</div>
+            <div>2、【有资产可见】：对于小程序绑定的开放商城，用户访问小程序时仅可见自己有资产的商城</div>
+            <div>3、资产指已绑定的卡券或积分，对于资产失效用户可配置访问商城有效期</div>
+          </div>
+        </div>
+
+        <!-- 开放商城展示开关 -->
+        <div class="config-form-row">
+          <div class="config-form-label"><span class="required-star">*</span>开放商城展示：</div>
+          <div class="config-form-control">
+            <div class="ant-radio-group">
+              <div class="ant-radio-wrapper checked" id="radioVisAll" onclick="selectVisibilityMode('ALL')">
+                <span class="ant-radio-circle"></span>
+                <span>全部可见</span>
+              </div>
+              <div class="ant-radio-wrapper" id="radioVisAsset" onclick="selectVisibilityMode('ASSET_ONLY')">
+                <span class="ant-radio-circle"></span>
+                <span>有资产可见</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 勾选「有资产可见」后联动展示：统一的「资产失效用户访问有效期」 -->
+        <div class="config-form-row" id="expiryConfigRow" style="display: none;">
+          <div class="config-form-label"><span class="required-star">*</span>资产失效用户访问有效期：</div>
+          <div class="config-form-control">
+            <div class="expiry-options-row">
+              <!-- 选项1：一直允许（默认选中） -->
+              <div class="ant-radio-wrapper checked" id="radioExpiryAlways" onclick="selectExpiryType('ALWAYS')">
+                <span class="ant-radio-circle"></span>
+                <span>一直允许</span>
+              </div>
+
+              <!-- 选项2：自定义有效天数（同行右侧展示输入框，默认不填） -->
+              <div class="custom-days-group">
+                <div class="ant-radio-wrapper" id="radioExpiryCustom" onclick="selectExpiryType('CUSTOM')">
+                  <span class="ant-radio-circle"></span>
+                  <span>自定义有效天数</span>
+                </div>
+                <div class="custom-days-inline-box" id="customDaysInlineBox">
+                  <span>失效</span>
+                  <input
+                    type="text"
+                    inputmode="numeric"
+                    maxlength="3"
+                    class="days-input"
+                    id="customDaysInput"
+                    oninput="handleDaysInput(this)"
+                  />
+                  <span>天内</span>
+                </div>
+              </div>
+            </div>
+            <div class="field-error-msg" id="customDaysError">请输入正整数有效天数</div>
+          </div>
+        </div>
+      </div>
+      <div class="ant-modal-footer">
+        <button type="button" class="ant-btn ant-btn-default" onclick="closeVisibilityModal()">取 消</button>
+        <button type="button" class="ant-btn ant-btn-primary" onclick="saveVisibilityConfig()">确 定</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 弹窗 2：绑定商城 / 修改商城（复刻线上原生弹窗） ==================== -->
+  <div class="ant-modal-mask" id="bindMallModal">
+    <div class="ant-modal-card" style="width: 640px;">
+      <div class="ant-modal-header">
+        <span>绑定商城</span>
+        <button type="button" class="ant-modal-close" onclick="closeBindMallModal()" aria-label="Close">
+          <svg width="14" height="14"><use href="#icon-close"/></svg>
+        </button>
+      </div>
+      <div class="ant-modal-body">
+        <div class="ant-alert-info">
+          <span class="ant-alert-icon"><svg width="16" height="16"><use href="#icon-info-fill"/></svg></span>
+          <div>注：一个商城仅支持绑定一个小程序</div>
+        </div>
+        <div class="bound-shop-grid">
+          <div class="bound-shop-col">
+            <div class="bound-shop-head">
+              <span>商城列表</span>
+              <span class="ant-checkbox-box" id="checkAllShopsBox" onclick="toggleAllShops()">✓</span>
+            </div>
+            <ul class="bound-shop-list" id="allShopListUl"></ul>
+          </div>
+          <div class="bound-shop-col">
+            <div class="bound-shop-head">
+              <span>已绑定商城</span>
+              <span style="font-size: 12px; font-weight: 400; color: var(--text-secondary);" id="boundCountLabel">0 个</span>
+            </div>
+            <ul class="bound-shop-list" id="selectedShopListUl"></ul>
+          </div>
+        </div>
+      </div>
+      <div class="ant-modal-footer">
+        <button type="button" class="ant-btn ant-btn-default" onclick="closeBindMallModal()">取 消</button>
+        <button type="button" class="ant-btn ant-btn-primary" onclick="saveBindMall()">确 定</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 弹窗 3：关闭小程序二次确认弹窗 ==================== -->
+  <div class="ant-modal-mask" id="confirmToggleModal">
+    <div class="ant-modal-card" style="width: 440px;">
+      <div class="ant-modal-header">
+        <span>操作确认</span>
+        <button type="button" class="ant-modal-close" onclick="closeConfirmModal()" aria-label="Close">
+          <svg width="14" height="14"><use href="#icon-close"/></svg>
+        </button>
+      </div>
+      <div class="ant-modal-body" style="display: flex; gap: 12px; align-items: flex-start; padding-top: 24px;">
+        <span style="flex-shrink: 0; margin-top: 2px;"><svg width="22" height="22"><use href="#icon-warn-fill"/></svg></span>
+        <div id="confirmModalText" style="color: var(--text-main); line-height: 1.7;"></div>
+      </div>
+      <div class="ant-modal-footer">
+        <button type="button" class="ant-btn ant-btn-default" onclick="closeConfirmModal()">取 消</button>
+        <button type="button" class="ant-btn ant-btn-primary" id="confirmModalOkBtn" onclick="confirmToggleStatus()">确 定</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 顶部全局 Toast -->
+  <div class="ant-toast" id="globalToast">
+    <svg width="16" height="16"><use href="#icon-check-fill"/></svg>
+    <span id="globalToastText">操作成功</span>
+  </div>
+
+  <script>
+    // 1. 线上真实可选商城池数据
+    const ALL_MALLS = [
+      '第三方积分商城包子铺',
+      'amy-test',
+      '电影商城',
+      '设计展示商城03',
+      '淘福客chj专用',
+      'colin-t17',
+      '第三方麦芽积分商城2',
+      '自动化积分商城',
+      '自动化测试专用商城',
+      '积分通用商城88',
+      '中国建筑集团内部演示',
+      'simonmin积分',
+      'liuruich测试',
+      '商城通',
+      '线上积分商城配置1'
+    ];
+
+    // 2. 已授权小程序列表初始状态（默认开放商城展示为「全部可见」，自定义天数默认不填）
+    const applets = [
+      {
+        id: 'wx30f1d82741ad4972',
+        name: '中娱宏图产品专用',
+        authorized: true,
+        active: true,
+        boundMalls: ['第三方积分商城包子铺', 'amy-test', '电影商城', '设计展示商城03', '淘福客chj专用'],
+        openMallVisibility: 'ALL',     // 'ALL' | 'ASSET_ONLY'
+        expiryType: 'ALWAYS',          // 'ALWAYS' | 'CUSTOM'
+        customDays: ''
+      },
+      {
+        id: 'wxf75c2a23f798165e',
+        name: '中娱宏图研发专用',
+        authorized: false,
+        active: false,
+        boundMalls: [],
+        openMallVisibility: 'ALL',
+        expiryType: 'ALWAYS',
+        customDays: ''
+      }
+    ];
+
+    // 当前正在编辑展示设置的状态
+    let editingVisAppletId = null;
+    let tempVisMode = 'ALL';
+    let tempExpiryType = 'ALWAYS';
+    let tempCustomDays = '';
+
+    // 当前正在编辑绑定商城的状态
+    let editingBindAppletId = null;
+    let tempBoundMalls = [];
+
+    // 当前正在确认开启/关闭的小程序
+    let pendingToggleAppletId = null;
+
+    // 绘制拟真微信授权二维码（纯本地 Canvas，无外链依赖）
+    function drawAuthQrCode() {
+      const canvas = document.getElementById('authQrCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const size = 33;
+      const cell = canvas.width / size;
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      function drawFinder(ox, oy) {
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(ox * cell, oy * cell, 7 * cell, 7 * cell);
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect((ox + 1) * cell, (oy + 1) * cell, 5 * cell, 5 * cell);
+        ctx.fillStyle = '#000000';
+        ctx.fillRect((ox + 2) * cell, (oy + 2) * cell, 3 * cell, 3 * cell);
+      }
+
+      drawFinder(1, 1);
+      drawFinder(size - 8, 1);
+      drawFinder(1, size - 8);
+
+      // 固定随机种子绘制细腻二维码模块
+      let seed = 20261124;
+      function rand() {
+        seed = (seed * 1664525 + 1013904223) % 4294967296;
+        return seed / 4294967296;
+      }
+
+      ctx.fillStyle = '#000000';
+      for (let r = 1; r < size - 1; r++) {
+        for (let c = 1; c < size - 1; c++) {
+          const inTL = r <= 8 && c <= 8;
+          const inTR = r <= 8 && c >= size - 9;
+          const inBL = r >= size - 9 && c <= 8;
+          if (inTL || inTR || inBL) continue;
+          if (r === 7 || c === 7) {
+            if ((r + c) % 2 === 0) ctx.fillRect(c * cell, r * cell, Math.ceil(cell), Math.ceil(cell));
+            continue;
+          }
+          if (rand() > 0.52) {
+            ctx.fillRect(c * cell, r * cell, Math.ceil(cell), Math.ceil(cell));
+          }
+        }
+      }
+    }
+
+    // 渲染已授权小程序列表
+    function renderAppletTable() {
+      const tbody = document.getElementById('appletTableBody');
+      tbody.innerHTML = applets.map(item => {
+        const authText = item.authorized ? '已授权' : '未授权';
+        const statusText = item.active ? '使用中' : '关闭';
+        const boundText = item.boundMalls.length > 0 ? '已绑定' : '未绑定';
+        const visText = item.openMallVisibility === 'ALL' ? '全部可见' : '有资产可见';
+
+        const toggleActionHtml = item.active
+          ? '<a class="op-link danger" onclick="handleToggleApplet(\'' + item.id + '\')">关闭</a>'
+          : '<a class="op-link" onclick="handleToggleApplet(\'' + item.id + '\')">开启</a>';
+
+        const bindActionLabel = item.boundMalls.length > 0 ? '修改商城' : '绑定商城';
+
+        return '<tr>' +
+          '<td>' + item.name + '</td>' +
+          '<td>' + authText + '</td>' +
+          '<td>' + statusText + '</td>' +
+          '<td>' + boundText + '</td>' +
+          '<td>' + visText + '</td>' +
+          '<td class="op-cell">' +
+            toggleActionHtml +
+            '<span class="ant-divider-vertical"></span>' +
+            '<a class="op-link" onclick="openBindMallModal(\'' + item.id + '\')">' + bindActionLabel + '</a>' +
+            '<span class="ant-divider-vertical"></span>' +
+            '<a class="op-link" onclick="openVisibilityModal(\'' + item.id + '\')">展示设置</a>' +
+          '</td>' +
+        '</tr>';
+      }).join('');
+    }
+
+    // ==================== 1.1.5 开放商城展示设置弹窗逻辑 ====================
+    function openVisibilityModal(appletId) {
+      const item = applets.find(a => a.id === appletId);
+      if (!item) return;
+      editingVisAppletId = appletId;
+      tempVisMode = item.openMallVisibility;
+      tempExpiryType = item.expiryType || 'ALWAYS';
+      tempCustomDays = item.customDays !== '' && item.customDays !== null ? String(item.customDays) : '';
+
+      document.getElementById('customDaysInput').value = tempCustomDays;
+      hideDaysError();
+
+      syncVisibilityModalUI();
+      document.getElementById('visibilityModal').classList.add('open');
+    }
+
+    function closeVisibilityModal() {
+      document.getElementById('visibilityModal').classList.remove('open');
+      editingVisAppletId = null;
+    }
+
+    function selectVisibilityMode(mode) {
+      tempVisMode = mode;
+      if (mode === 'ASSET_ONLY' && !tempExpiryType) {
+        tempExpiryType = 'ALWAYS';
+      }
+      hideDaysError();
+      syncVisibilityModalUI();
+    }
+
+    function selectExpiryType(type) {
+      tempExpiryType = type;
+      hideDaysError();
+      syncVisibilityModalUI();
+      if (type === 'CUSTOM') {
+        const input = document.getElementById('customDaysInput');
+        setTimeout(() => input.focus(), 30);
+      }
+    }
+
+    function handleDaysInput(el) {
+      const cleaned = el.value.replace(/[^\d]/g, '').replace(/^0+/, '');
+      el.value = cleaned;
+      tempCustomDays = cleaned;
+      if (cleaned) hideDaysError();
+    }
+
+    function showDaysError(msg) {
+      const input = document.getElementById('customDaysInput');
+      const err = document.getElementById('customDaysError');
+      input.classList.add('has-error');
+      if (msg) err.textContent = msg;
+      err.classList.add('visible');
+    }
+
+    function hideDaysError() {
+      document.getElementById('customDaysInput').classList.remove('has-error');
+      document.getElementById('customDaysError').classList.remove('visible');
+    }
+
+    function syncVisibilityModalUI() {
+      const isAssetOnly = tempVisMode === 'ASSET_ONLY';
+      document.getElementById('radioVisAll').classList.toggle('checked', !isAssetOnly);
+      document.getElementById('radioVisAsset').classList.toggle('checked', isAssetOnly);
+
+      document.getElementById('expiryConfigRow').style.display = isAssetOnly ? 'flex' : 'none';
+
+      const isCustom = tempExpiryType === 'CUSTOM';
+      document.getElementById('radioExpiryAlways').classList.toggle('checked', !isCustom);
+      document.getElementById('radioExpiryCustom').classList.toggle('checked', isCustom);
+      document.getElementById('customDaysInlineBox').classList.toggle('visible', isCustom);
+    }
+
+    function saveVisibilityConfig() {
+      const item = applets.find(a => a.id === editingVisAppletId);
+      if (!item) return;
+
+      if (tempVisMode === 'ASSET_ONLY' && tempExpiryType === 'CUSTOM') {
+        const raw = document.getElementById('customDaysInput').value.trim();
+        const days = Number(raw);
+        if (!raw || !Number.isInteger(days) || days < 1 || days > 999) {
+          showDaysError('请输入 1~999 之间的正整数有效天数');
+          document.getElementById('customDaysInput').focus();
+          return;
+        }
+        item.customDays = days;
+      }
+
+      item.openMallVisibility = tempVisMode;
+      if (tempVisMode === 'ASSET_ONLY') {
+        item.expiryType = tempExpiryType;
+      }
+
+      renderAppletTable();
+      closeVisibilityModal();
+
+      const summary = item.openMallVisibility === 'ALL' ? '全部可见' : '有资产可见';
+      showToast('已更新「' + item.name + '」开放商城展示为：' + summary);
+    }
+
+    // ==================== 绑定商城 / 修改商城弹窗逻辑 ====================
+    function openBindMallModal(appletId) {
+      const item = applets.find(a => a.id === appletId);
+      if (!item) return;
+      editingBindAppletId = appletId;
+      tempBoundMalls = [...item.boundMalls];
+      renderBindShopLists();
+      document.getElementById('bindMallModal').classList.add('open');
+    }
+
+    function closeBindMallModal() {
+      document.getElementById('bindMallModal').classList.remove('open');
+      editingBindAppletId = null;
+    }
+
+    function getOtherAppletBoundMalls() {
+      const occupied = new Set();
+      applets.forEach(a => {
+        if (a.id !== editingBindAppletId) {
+          a.boundMalls.forEach(m => occupied.add(m));
+        }
+      });
+      return occupied;
+    }
+
+    function renderBindShopLists() {
+      const occupied = getOtherAppletBoundMalls();
+      const selectableMalls = ALL_MALLS.filter(m => !occupied.has(m));
+      const allUl = document.getElementById('allShopListUl');
+      allUl.innerHTML = selectableMalls.map(mall => {
+        const checked = tempBoundMalls.includes(mall);
+        return '<li class="bound-shop-item" onclick="toggleShopItem(\'' + mall + '\')">' +
+          '<span>' + mall + '</span>' +
+          '<span class="ant-checkbox-box ' + (checked ? 'checked' : '') + '">' + (checked ? '✓' : '') + '</span>' +
+        '</li>';
+      }).join('');
+
+      const allBox = document.getElementById('checkAllShopsBox');
+      allBox.className = 'ant-checkbox-box';
+      if (tempBoundMalls.length > 0 && tempBoundMalls.length === selectableMalls.length) {
+        allBox.classList.add('checked');
+        allBox.textContent = '✓';
+      } else if (tempBoundMalls.length > 0) {
+        allBox.classList.add('indeterminate');
+        allBox.textContent = '';
+      } else {
+        allBox.textContent = '';
+      }
+
+      document.getElementById('boundCountLabel').textContent = tempBoundMalls.length + ' 个';
+      const selUl = document.getElementById('selectedShopListUl');
+      if (tempBoundMalls.length === 0) {
+        selUl.innerHTML = '<li class="empty-bound-tip">暂未选择绑定商城</li>';
+      } else {
+        selUl.innerHTML = tempBoundMalls.map(mall => (
+          '<li class="bound-shop-item" style="cursor: default;">' +
+            '<span>' + mall + '</span>' +
+            '<span class="remove-shop-btn" title="移除" onclick="removeShopItem(\'' + mall + '\')">&times;</span>' +
+          '</li>'
+        )).join('');
+      }
+    }
+
+    function toggleShopItem(mall) {
+      const idx = tempBoundMalls.indexOf(mall);
+      if (idx >= 0) {
+        tempBoundMalls.splice(idx, 1);
+      } else {
+        tempBoundMalls.push(mall);
+      }
+      renderBindShopLists();
+    }
+
+    function removeShopItem(mall) {
+      tempBoundMalls = tempBoundMalls.filter(m => m !== mall);
+      renderBindShopLists();
+    }
+
+    function toggleAllShops() {
+      const occupied = getOtherAppletBoundMalls();
+      const selectableMalls = ALL_MALLS.filter(m => !occupied.has(m));
+      if (tempBoundMalls.length === selectableMalls.length) {
+        tempBoundMalls = [];
+      } else {
+        tempBoundMalls = [...selectableMalls];
+      }
+      renderBindShopLists();
+    }
+
+    function saveBindMall() {
+      const item = applets.find(a => a.id === editingBindAppletId);
+      if (!item) return;
+      item.boundMalls = [...tempBoundMalls];
+      renderAppletTable();
+      closeBindMallModal();
+      showToast('已保存「' + item.name + '」绑定商城（共 ' + item.boundMalls.length + ' 个）');
+    }
+
+    // ==================== 开启 / 关闭小程序状态切换 ====================
+    function handleToggleApplet(appletId) {
+      const item = applets.find(a => a.id === appletId);
+      if (!item) return;
+      if (!item.active && !item.authorized) {
+        showToast('该小程序处于「未授权」状态，请管理员先使用微信扫码授权');
+        return;
+      }
+      pendingToggleAppletId = appletId;
+      const actionWord = item.active ? '关闭' : '开启';
+      document.getElementById('confirmModalText').textContent = item.active
+        ? '确定要关闭小程序「' + item.name + '」吗？关闭后用户将暂时无法通过该小程序访问已绑定商城。'
+        : '确定要开启小程序「' + item.name + '」吗？开启后已绑定商城将按当前展示规则对外生效。';
+      const okBtn = document.getElementById('confirmModalOkBtn');
+      okBtn.className = item.active ? 'ant-btn ant-btn-danger' : 'ant-btn ant-btn-primary';
+      okBtn.textContent = '确 定' + (actionWord === '关闭' ? '' : '');
+      document.getElementById('confirmToggleModal').classList.add('open');
+    }
+
+    function closeConfirmModal() {
+      document.getElementById('confirmToggleModal').classList.remove('open');
+      pendingToggleAppletId = null;
+    }
+
+    function confirmToggleStatus() {
+      const item = applets.find(a => a.id === pendingToggleAppletId);
+      if (!item) return;
+      item.active = !item.active;
+      renderAppletTable();
+      closeConfirmModal();
+      showToast('小程序「' + item.name + '」已' + (item.active ? '开启' : '关闭'));
+    }
+
+    // ==================== 侧边栏折叠与全局 Toast ====================
+    function toggleSettingSubmenu() {
+      const sub = document.getElementById('settingSubMenu');
+      const title = document.getElementById('settingMenuToggle');
+      const isHidden = sub.style.display === 'none';
+      sub.style.display = isHidden ? 'block' : 'none';
+      title.classList.toggle('open', isHidden);
+    }
+
+    let toastTimer = null;
+    function showToast(msg) {
+      const toast = document.getElementById('globalToast');
+      document.getElementById('globalToastText').textContent = msg;
+      toast.classList.add('open');
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toast.classList.remove('open');
+      }, 2400);
+    }
+
+    // 点击遮罩空白处关闭弹窗 & ESC 快捷键支持
+    document.querySelectorAll('.ant-modal-mask').forEach(mask => {
+      mask.addEventListener('click', (e) => {
+        if (e.target === mask) {
+          mask.classList.remove('open');
+        }
+      });
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.ant-modal-mask.open').forEach(m => m.classList.remove('open'));
+      }
+    });
+
+    // 初始化页面并自动将左侧菜单滚动至「设置中心 - 小程序管理」可见位置
+    window.addEventListener('DOMContentLoaded', () => {
+      drawAuthQrCode();
+      renderAppletTable();
+      const siderScroll = document.getElementById('siderMenuScroll');
+      if (siderScroll) {
+        siderScroll.scrollTop = siderScroll.scrollHeight;
+      }
+    });
+  </script>
+</body>
+</html>
