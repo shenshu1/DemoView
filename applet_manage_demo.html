@@ -638,43 +638,103 @@
       background: #FFFFFF;
     }
 
-    /* 1.1.5 展示设置表单样式 */
-    .config-form-row {
-      display: flex;
-      align-items: flex-start;
-      margin-bottom: 20px;
+    /* 1.1.5 展示设置弹窗卡片式样式（对齐最新 UI 设计稿 1.1 & 1.2） */
+    #visibilityModal .ant-modal-card {
+      width: 700px;
+      border-radius: 8px;
     }
-    .config-form-row:last-child {
-      margin-bottom: 0;
+    #visibilityModal .ant-modal-header {
+      height: 56px;
+      padding: 0 24px;
     }
-    .config-form-label {
-      width: 196px;
-      min-width: 196px;
-      text-align: right;
-      padding-right: 12px;
-      line-height: 32px;
-      color: var(--text-main);
+    #visibilityModal .ant-modal-body {
+      padding: 22px 24px 26px;
+    }
+    #visibilityModal .ant-modal-footer {
+      height: 60px;
+      padding: 0 24px;
+    }
+    #visibilityModal .ant-modal-footer .ant-btn {
+      padding: 0 18px;
+    }
+
+    .vis-section-title {
       font-size: 14px;
-      white-space: nowrap;
+      font-weight: 500;
+      color: var(--text-main);
+      line-height: 22px;
+      margin-bottom: 12px;
     }
-    .required-star {
+    .required-star-after {
       color: var(--danger-color);
-      margin-right: 4px;
+      margin-left: 4px;
       font-family: SimSun, sans-serif;
     }
-    .config-form-control {
+
+    /* 双卡片单选组 */
+    .vis-option-cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .vis-option-card {
+      border: 1px solid #E5E6EB;
+      border-radius: 6px;
+      padding: 16px;
+      background: #FFFFFF;
+      cursor: pointer;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      transition: all 0.2s;
+    }
+    .vis-option-card:hover {
+      border-color: #91D5FF;
+    }
+    .vis-option-card.checked {
+      background: #EDF7FF;
+      border-color: var(--primary-color);
+    }
+    .vis-card-icon {
+      width: 32px;
+      height: 32px;
+      min-width: 32px;
+      border-radius: 50%;
+      background: #F2F3F5;
+      color: #4E5969;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      margin-top: 1px;
+    }
+    .vis-option-card.checked .vis-card-icon {
+      background: #D6EEFF;
+      color: var(--primary-color);
+    }
+    .vis-card-main {
       flex: 1;
       min-width: 0;
     }
-
-    /* Ant Design Radio 单选组件 */
-    .ant-radio-group {
+    .vis-card-head {
       display: flex;
       align-items: center;
-      flex-wrap: nowrap;
-      gap: 24px;
-      min-height: 32px;
+      justify-content: space-between;
+      line-height: 22px;
+      margin-bottom: 6px;
     }
+    .vis-card-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-main);
+    }
+    .vis-card-desc {
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--text-secondary);
+    }
+
+    /* Ant Design Radio 单选圆点 */
     .ant-radio-wrapper {
       display: inline-flex;
       align-items: center;
@@ -696,13 +756,16 @@
       transition: all 0.2s;
       flex-shrink: 0;
     }
-    .ant-radio-wrapper:hover .ant-radio-circle {
+    .ant-radio-wrapper:hover .ant-radio-circle,
+    .vis-option-card:hover .ant-radio-circle {
       border-color: var(--primary-color);
     }
-    .ant-radio-wrapper.checked .ant-radio-circle {
+    .ant-radio-wrapper.checked .ant-radio-circle,
+    .vis-option-card.checked .ant-radio-circle {
       border-color: var(--primary-color);
     }
-    .ant-radio-wrapper.checked .ant-radio-circle::after {
+    .ant-radio-wrapper.checked .ant-radio-circle::after,
+    .vis-option-card.checked .ant-radio-circle::after {
       content: "";
       width: 8px;
       height: 8px;
@@ -710,24 +773,28 @@
       background: var(--primary-color);
     }
 
-    /* 资产失效有效期同行排版与右侧自定义天数输入框 */
+    /* 有资产可见展开区：分割线 + 同行单选与右侧输入框 + 底部说明 */
+    .vis-section-divider {
+      border-top: 1px solid var(--border-light);
+      margin: 20px 0;
+    }
     .expiry-options-row {
       display: flex;
       align-items: center;
       flex-wrap: nowrap;
-      gap: 24px;
+      gap: 20px;
       min-height: 32px;
     }
     .custom-days-group {
       display: inline-flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
       white-space: nowrap;
     }
     .custom-days-inline-box {
       display: none;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
       color: var(--text-main);
       font-size: 14px;
       white-space: nowrap;
@@ -760,11 +827,17 @@
     .field-error-msg {
       color: var(--danger-color);
       font-size: 12px;
-      margin-top: 4px;
+      margin-top: 6px;
       display: none;
     }
     .field-error-msg.visible {
       display: block;
+    }
+    .vis-expiry-desc {
+      margin-top: 12px;
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--text-secondary);
     }
 
     /* 绑定商城穿梭双栏弹窗（100% 复刻线上真实绑定商城弹窗） */
@@ -1122,9 +1195,9 @@
     </main>
   </div>
 
-  <!-- ==================== 弹窗 1：开放商城展示设置 (1.1.5 核心新增) ==================== -->
+  <!-- ==================== 弹窗 1：开放商城展示设置 (对齐 UI 设计稿 1.1 & 1.2) ==================== -->
   <div class="ant-modal-mask" id="visibilityModal">
-    <div class="ant-modal-card" style="width: 740px;">
+    <div class="ant-modal-card">
       <div class="ant-modal-header">
         <span>展示设置</span>
         <button type="button" class="ant-modal-close" onclick="closeVisibilityModal()" aria-label="Close">
@@ -1132,71 +1205,83 @@
         </button>
       </div>
       <div class="ant-modal-body">
-        <!-- 顶部提示文案 -->
-        <div class="ant-alert-info" style="margin-bottom: 24px;">
-          <span class="ant-alert-icon"><svg width="16" height="16"><use href="#icon-info-fill"/></svg></span>
-          <div>
-            <div>1、【全部可见】：对于小程序绑定的开放商城，用户访问小程序时全部可见</div>
-            <div>2、【有资产可见】：对于小程序绑定的开放商城，用户访问小程序时仅可见自己有资产的商城</div>
-            <div>3、资产指已绑定的卡券或积分，对于资产失效用户可配置访问商城有效期</div>
+        <!-- 开放商城展示（双卡片选择） -->
+        <div class="vis-section-title">开放商城展示<span class="required-star-after">*</span></div>
+        <div class="vis-option-cards">
+          <!-- 左卡：全部可见 -->
+          <div class="vis-option-card checked" id="radioVisAll" onclick="selectVisibilityMode('ALL')">
+            <span class="vis-card-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path d="M2 12s3.8-6.5 10-6.5S22 12 22 12s-3.8 6.5-10 6.5S2 12 2 12z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/>
+              </svg>
+            </span>
+            <div class="vis-card-main">
+              <div class="vis-card-head">
+                <span class="vis-card-title">全部可见</span>
+                <span class="ant-radio-circle"></span>
+              </div>
+              <div class="vis-card-desc">对于小程序绑定的开放商城，用户访问小程序时全部可见</div>
+            </div>
           </div>
-        </div>
 
-        <!-- 开放商城展示开关 -->
-        <div class="config-form-row">
-          <div class="config-form-label"><span class="required-star">*</span>开放商城展示：</div>
-          <div class="config-form-control">
-            <div class="ant-radio-group">
-              <div class="ant-radio-wrapper checked" id="radioVisAll" onclick="selectVisibilityMode('ALL')">
+          <!-- 右卡：有资产可见 -->
+          <div class="vis-option-card" id="radioVisAsset" onclick="selectVisibilityMode('ASSET_ONLY')">
+            <span class="vis-card-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <rect x="3" y="5.5" width="18" height="13" rx="2.2" stroke="currentColor" stroke-width="1.8"/>
+                <path d="M21 9.8h-4.2a2.2 2.2 0 000 4.4H21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="16.8" cy="12" r="0.9" fill="currentColor"/>
+              </svg>
+            </span>
+            <div class="vis-card-main">
+              <div class="vis-card-head">
+                <span class="vis-card-title">有资产可见</span>
                 <span class="ant-radio-circle"></span>
-                <span>全部可见</span>
               </div>
-              <div class="ant-radio-wrapper" id="radioVisAsset" onclick="selectVisibilityMode('ASSET_ONLY')">
-                <span class="ant-radio-circle"></span>
-                <span>有资产可见</span>
-              </div>
+              <div class="vis-card-desc">对于小程序绑定的开放商城，用户访问小程序时仅可见自己有资产的商城</div>
             </div>
           </div>
         </div>
 
-        <!-- 勾选「有资产可见」后联动展示：统一的「资产失效用户访问有效期」 -->
-        <div class="config-form-row" id="expiryConfigRow" style="display: none;">
-          <div class="config-form-label"><span class="required-star">*</span>资产失效用户访问有效期：</div>
-          <div class="config-form-control">
-            <div class="expiry-options-row">
-              <!-- 选项1：一直允许（默认选中） -->
-              <div class="ant-radio-wrapper checked" id="radioExpiryAlways" onclick="selectExpiryType('ALWAYS')">
-                <span class="ant-radio-circle"></span>
-                <span>一直允许</span>
-              </div>
+        <!-- 勾选「有资产可见」后展开区域 -->
+        <div id="expiryConfigRow" style="display: none; flex-direction: column;">
+          <div class="vis-section-divider"></div>
+          <div class="vis-section-title" style="margin-bottom: 14px;">资产失效用户访问有效期<span class="required-star-after">*</span></div>
+          <div class="expiry-options-row">
+            <!-- 选项1：一直允许（默认选中） -->
+            <div class="ant-radio-wrapper checked" id="radioExpiryAlways" onclick="selectExpiryType('ALWAYS')">
+              <span class="ant-radio-circle"></span>
+              <span>一直允许</span>
+            </div>
 
-              <!-- 选项2：自定义有效天数（同行右侧展示输入框，默认不填） -->
-              <div class="custom-days-group">
-                <div class="ant-radio-wrapper" id="radioExpiryCustom" onclick="selectExpiryType('CUSTOM')">
-                  <span class="ant-radio-circle"></span>
-                  <span>自定义有效天数</span>
-                </div>
-                <div class="custom-days-inline-box" id="customDaysInlineBox">
-                  <span>失效</span>
-                  <input
-                    type="text"
-                    inputmode="numeric"
-                    maxlength="3"
-                    class="days-input"
-                    id="customDaysInput"
-                    oninput="handleDaysInput(this)"
-                  />
-                  <span>天内</span>
-                </div>
+            <!-- 选项2：自定义有效天数（右侧紧接展示输入框，默认不填） -->
+            <div class="custom-days-group">
+              <div class="ant-radio-wrapper" id="radioExpiryCustom" onclick="selectExpiryType('CUSTOM')">
+                <span class="ant-radio-circle"></span>
+                <span>自定义有效天数</span>
+              </div>
+              <div class="custom-days-inline-box" id="customDaysInlineBox">
+                <span>失效</span>
+                <input
+                  type="text"
+                  inputmode="numeric"
+                  maxlength="3"
+                  class="days-input"
+                  id="customDaysInput"
+                  oninput="handleDaysInput(this)"
+                />
+                <span>天内</span>
               </div>
             </div>
-            <div class="field-error-msg" id="customDaysError">请输入正整数有效天数</div>
           </div>
+          <div class="field-error-msg" id="customDaysError">请输入 1~999 之间的正整数有效天数</div>
+          <div class="vis-expiry-desc">资产指已绑定的卡券或积分，对于资产失效用户可配置访问商城有效期</div>
         </div>
       </div>
       <div class="ant-modal-footer">
-        <button type="button" class="ant-btn ant-btn-default" onclick="closeVisibilityModal()">取 消</button>
-        <button type="button" class="ant-btn ant-btn-primary" onclick="saveVisibilityConfig()">确 定</button>
+        <button type="button" class="ant-btn ant-btn-default" onclick="closeVisibilityModal()">取消</button>
+        <button type="button" class="ant-btn ant-btn-primary" onclick="saveVisibilityConfig()">确定</button>
       </div>
     </div>
   </div>
